@@ -7,6 +7,7 @@ void Input::init(GLFWwindow *window)
     inst = this;
     glfwSetKeyCallback(window, keyCB);
     glfwSetCursorPosCallback(window, cursorCB);
+    glfwSetMouseButtonCallback(window, mouseBtnCB);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     if (glfwRawMouseMotionSupported())
     {
@@ -54,6 +55,14 @@ void Input::keyCB(GLFWwindow *, int key, int, int action, int)
             inst->respawn = pressed;
             break;
 
+        case GLFW_KEY_ENTER:
+            if (action == GLFW_PRESS)
+            {
+                inst->save = true;
+            }
+
+            break;
+
         case GLFW_KEY_ESCAPE:
         default:
             break;
@@ -79,4 +88,36 @@ void Input::cursorCB(GLFWwindow *, double x, double y)
     inst->mouseDY += (float)(y - inst->lastY);
     inst->lastX = x;
     inst->lastY = y;
+}
+
+void Input::mouseBtnCB(GLFWwindow *, int btn, int action, int)
+{
+    if (!inst || action != GLFW_PRESS)
+    {
+        return;
+    }
+
+    if (btn == GLFW_MOUSE_BUTTON_LEFT)
+    {
+        inst->placeBlock = true;
+    }
+
+    if (btn == GLFW_MOUSE_BUTTON_RIGHT)
+    {
+        inst->destroyBlock = true;
+    }
+}
+
+bool Input::getPlaceBlock()
+{
+    bool temp = placeBlock;
+    placeBlock = false;
+    return temp;
+}
+
+bool Input::getDestroyBlock()
+{
+    bool temp = destroyBlock;
+    destroyBlock = false;
+    return temp;
 }

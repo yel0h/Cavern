@@ -9,10 +9,15 @@ private:
     double lastY = 0.0;
     bool firstMouse = true;
     static Input *inst;
+    bool placeBlock = false;
+    bool destroyBlock = false;
+    bool save = false;
 
     static void keyCB(GLFWwindow *, int key, int, int action, int);
 
     static void cursorCB(GLFWwindow *, double x, double y);
+
+    static void mouseBtnCB(GLFWwindow *, int btn, int action, int);
 
 public:
     bool forward = false;
@@ -27,5 +32,9 @@ public:
     void init(GLFWwindow *window);
 
     void beginFrame();
+
+    bool getPlaceBlock();
+
+    bool getDestroyBlock();
 };
 #endif//CAVERN_INPUT_HPP

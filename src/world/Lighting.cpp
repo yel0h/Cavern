@@ -21,4 +21,17 @@ namespace Lighting
             }
         }
     }
+
+    void propagateColumn(World &world, int wx, int wz)
+    {
+        bool lit = true;
+        for (int wy = World::BLOCK_H - 1; wy >= 0; wy--)
+        {
+            world.setLight(wx, wy, wz, lit ? 1u : 0u);
+            if (blockDef(world.getBlock(wx, wy, wz)).opaque)
+            {
+                lit = false;
+            }
+        }
+    }
 }

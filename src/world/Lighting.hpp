@@ -5,5 +5,7 @@ class World;
 namespace Lighting
 {
     void propagate(World &world);
+
+    void propagateColumn(World &world, int wx, int wz);
 }
 #endif//CAVERN_LIGHTING_HPP
