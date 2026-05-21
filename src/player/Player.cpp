@@ -184,6 +184,7 @@ Player::RayHit Player::castRay(const World &world) const
     float tMaxX = (dir.x != 0.f) ? std::abs(((stepX > 0 ? std::floor(eye.x) + 1.f : std::floor(eye.x)) - eye.x) / dir.x) : 1e30f;
     float tMaxY = (dir.y != 0.f) ? std::abs(((stepY > 0 ? std::floor(eye.y) + 1.f : std::floor(eye.y)) - eye.y) / dir.y) : 1e30f;
     float tMaxZ = (dir.z != 0.f) ? std::abs(((stepZ > 0 ? std::floor(eye.z) + 1.f : std::floor(eye.z)) - eye.z) / dir.z) : 1e30f;
+    int face = 0;
     int prevX = ix;
     int prevY = iy;
     int prevZ = iz;
@@ -192,7 +193,7 @@ Player::RayHit Player::castRay(const World &world) const
     {
         if (i > 0 && World::inBounds(ix, iy, iz) && blockDef(world.getBlock(ix, iy, iz)).opaque)
         {
-            return {true, ix, iy, iz, prevX, prevY, prevZ};
+            return {true, ix, iy, iz, face, prevX, prevY, prevZ};
         }
 
         prevX = ix;
@@ -206,6 +207,7 @@ Player::RayHit Player::castRay(const World &world) const
             }
 
             ix += stepX;
+            face = (stepX > 0) ? 2 : 3;
             tMaxX += tDeltaX;
         }
         else if (tMaxY < tMaxZ)
@@ -216,6 +218,7 @@ Player::RayHit Player::castRay(const World &world) const
             }
 
             iy += stepY;
+            face = (stepY > 0) ? 1 : 0;
             tMaxY += tDeltaY;
         }
         else
@@ -226,6 +229,7 @@ Player::RayHit Player::castRay(const World &world) const
             }
 
             iz += stepZ;
+            face = (stepZ > 0) ? 4 : 5;
             tMaxZ += tDeltaZ;
         }
     }

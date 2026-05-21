@@ -33,5 +33,9 @@ public:
     void setLight(int wx, int wy, int wz, unsigned char v);
 
     void generate(unsigned int seed);
+
+    bool save(const char *path) const;
+
+    bool load(const char *path);
 };
 #endif//CAVERN_WORLD_HPP

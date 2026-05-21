@@ -36,5 +36,7 @@ public:
     bool getPlaceBlock();
 
     bool getDestroyBlock();
+
+    bool getSave();
 };
 #endif//CAVERN_INPUT_HPP

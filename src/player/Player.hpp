@@ -14,6 +14,7 @@ public:
         int bx = 0;
         int by = 0;
         int bz = 0;
+        int face = 0;
         int px = 0;
         int py = 0;
         int pz = 0;

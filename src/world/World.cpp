@@ -3,6 +3,7 @@
 #include "WorldGen.hpp"
 #include <fstream>
 
+static constexpr unsigned int magic = 0x4341564E;
 static constexpr unsigned int version = 1;
 
 World::World()
@@ -155,4 +156,66 @@ void World::generate(unsigned int seed)
             c->dirty = true;
         }
     }
+}
+
+bool World::save(const char *path) const
+{
+    std::ofstream f(path, std::ios::binary);
+    if (!f)
+    {
+        return false;
+    }
+
+    f.write(reinterpret_cast<char const *>(&magic), sizeof(magic));
+    f.write(reinterpret_cast<char const *>(&version), sizeof(version));
+    for (auto &c : chunks)
+    {
+        if (!c)
+        {
+            continue;
+        }
+
+        f.write(reinterpret_cast<char const *>(c->blocks.data()), c->blocks.size());
+    }
+
+    return true;
+}
+
+bool World::load(const char *path)
+{
+    std::ifstream f(path, std::ios::binary);
+    if (!f)
+    {
+        return false;
+    }
+
+    unsigned int fMagic = 0;
+    unsigned int fVersion = 0;
+    f.read(reinterpret_cast<char *>(&fMagic), sizeof(fMagic));
+    f.read(reinterpret_cast<char *>(&fVersion), sizeof(fVersion));
+    if (fMagic != magic || fVersion != version)
+    {
+        return false;
+    }
+
+    for (auto &c : chunks)
+    {
+        if (!c)
+        {
+            continue;
+        }
+
+        f.read(reinterpret_cast<char *>(c->blocks.data()), c->blocks.size());
+    }
+
+    Lighting::propagate(*this);
+    for (auto &c : chunks)
+    {
+        if (c)
+        {
+            c->dirty = true;
+        }
+    }
+
+    return true;
 }

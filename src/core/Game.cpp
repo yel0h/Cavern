@@ -39,10 +39,18 @@ void Game::init()
     glfwSetFramebufferSizeCallback(window, framebufferSizeCB);
     input.init(window);
     renderer.init();
-    std::cout << "Generating world..." << std::endl;
-    auto t0 = glfwGetTime();
-    world.generate((unsigned int)std::time(nullptr));
-    std::cout << "World generated in " << glfwGetTime() - t0 << " s" << std::endl;
+    if (!world.load("world.dat"))
+    {
+        std::cout << "Generating world..." << std::endl;
+        auto t0 = glfwGetTime();
+        world.generate(0u);
+        std::cout << "World generated in " << glfwGetTime() - t0 << " s" << std::endl;
+    }
+    else
+    {
+        std::cout << "World loaded from world.dat" << std::endl;
+    }
+
     player.respawn();
     timer.start();
 }
@@ -50,6 +58,12 @@ void Game::init()
 void Game::tick()
 {
     player.tick(0.01666667, world, input);
+    if (input.getSave())
+    {
+        world.save("world.dat");
+        std::cout << "World saved." << std::endl;
+    }
+
     camera.position = player.eyePos();
     camera.yaw = player.yaw;
     camera.pitch = player.pitch;
@@ -57,7 +71,13 @@ void Game::tick()
 
 void Game::render()
 {
-    renderer.renderFrame(world, camera, winW, winH);
+    Renderer::HighlightFace hl;
+    if (player.hitBlock.valid)
+    {
+        hl = {true, player.hitBlock.bx, player.hitBlock.by, player.hitBlock.bz, player.hitBlock.face};
+    }
+
+    renderer.renderFrame(world, camera, winW, winH, hl, (float)glfwGetTime());
     glfwSwapBuffers(window);
 }
 
@@ -82,6 +102,7 @@ void Game::run()
 
 void Game::shutdown()
 {
+    world.save("world.dat");
     renderer.shutdown();
     glfwDestroyWindow(window);
     glfwTerminate();

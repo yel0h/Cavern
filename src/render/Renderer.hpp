@@ -10,10 +10,23 @@ class World;
 
 class Renderer
 {
+public:
+    struct HighlightFace
+    {
+        bool valid = false;
+        int bx = 0;
+        int by = 0;
+        int bz = 0;
+        int face = 0;
+    };
+
 private:
     Shader shader;
+    Shader hlShader;
     TextureAtlas atlas;
     std::array<ChunkMesh, 256> meshes;
+    unsigned int hlVao = 0;
+    unsigned int hlVbo = 0;
 
     static constexpr const char *vertSrc = R"(
 #version 330 core
@@ -42,7 +55,6 @@ void main()
     vFogFactor = clamp((fogFar - eyeDist) / (fogFar - fogNear), 0.0, 1.0);
 }
 )";
-
     static constexpr const char *fragSrc = R"(
 #version 330 core
 in vec2 vUV;
@@ -72,14 +84,41 @@ void main()
     fragColor = vec4(final, 1.0);
 }
 )";
+    static constexpr const char *hlVertSrc = R"(
+#version 330 core
+layout(location=0) in vec3 aPos;
+
+uniform mat4 uMVP;
+
+void main()
+{
+    gl_Position = uMVP * vec4(aPos, 1.0);
+}
+)";
+    static constexpr const char *hlFragSrc = R"(
+#version 330 core
+uniform float uTime;
+
+out vec4 fragColor;
+
+void main()
+{
+    float a = 0.25 + (0.25 * abs(sin(uTime * 5.0)));
+    fragColor = vec4(1.0, 1.0, 1.0, a);
+}
+)";
 
     void rebuildDirty(const World &world);
+
+    void initHighlight();
+
+    void renderHighlight(const HighlightFace& hl, const float* vp, float time);
 
 public:
     void init();
 
     void shutdown();
 
-    void renderFrame(const World &world, const Camera &cam, int winW, int winH);
+    void renderFrame(const World &world, const Camera &cam, int winW, int winH, const HighlightFace &hl, float time);
 };
 #endif//CAVERN_RENDERER_HPP

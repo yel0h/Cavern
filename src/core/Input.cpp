@@ -121,3 +121,10 @@ bool Input::getDestroyBlock()
     destroyBlock = false;
     return temp;
 }
+
+bool Input::getSave()
+{
+    bool temp = save;
+    save = false;
+    return temp;
+}
