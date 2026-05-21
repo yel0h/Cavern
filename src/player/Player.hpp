@@ -34,6 +34,8 @@ public:
     void respawn();
 
 private:
+    [[nodiscard]] static bool isBlockSolid(const World &world, int wx, int wy, int wz) ;
+
     [[nodiscard]] RayHit castRay(const World &world) const;
 };
 #endif//CAVERN_PLAYER_HPP

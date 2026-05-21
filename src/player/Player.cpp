@@ -5,6 +5,16 @@
 #include <algorithm>
 #include <random>
 
+bool Player::isBlockSolid(const World &world, int wx, int wy, int wz)
+{
+    if (wy < 0)
+    {
+        return false;
+    }
+
+    return blockDef(world.getBlock(wx, wy, wz)).opaque;
+}
+
 static float halfW() { return Physics::width * 0.5f; }
 
 static void resolveAABB(glm::vec3 &pos, glm::vec3 delta, const World &world, bool &onGround)
@@ -239,6 +249,14 @@ Player::RayHit Player::castRay(const World &world) const
 
 void Player::tick(float dt, World &world, Input &input)
 {
+    int fx = (int)std::floor(position.x);
+    int fy = (int)std::floor(position.y);
+    int fz = (int)std::floor(position.z);
+    if (isBlockSolid(world, fx, fy, fz))
+    {
+        position.y += 5.0f;
+    }
+
     yaw += input.mouseDX * 0.1f;
     pitch -= input.mouseDY * 0.1f;
     pitch = std::clamp(pitch, -89.f, 89.f);
