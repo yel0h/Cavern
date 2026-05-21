@@ -2,8 +2,10 @@
 #define CAVERN_GAME_HPP
 #include "Input.hpp"
 #include "Timer.hpp"
+#include "src/entity/WandererManager.hpp"
 #include "src/player/Player.hpp"
 #include "src/render/Renderer.hpp"
+#include "src/render/WandererRenderer.hpp"
 #include "src/world/World.hpp"
 #include <GLFW/glfw3.h>
 
@@ -17,6 +19,8 @@ private:
     Renderer renderer;
     Camera camera;
     Player player;
+    WandererManager wanderers;
+    WandererRenderer wandererRenderer;
     int winW = 800;
     int winH = 600;
     static Game *inst;

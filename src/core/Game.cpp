@@ -51,6 +51,8 @@ void Game::init()
         std::cout << "World loaded from world.dat" << std::endl;
     }
 
+    wandererRenderer.init();
+    wanderers.spawn(world);
     player.respawn();
     timer.start();
 }
@@ -58,6 +60,7 @@ void Game::init()
 void Game::tick()
 {
     player.tick(0.01666667, world, input);
+    wanderers.tick((float)Timer::dt, world);
     if (input.getSave())
     {
         world.save("world.dat");
@@ -78,6 +81,7 @@ void Game::render()
     }
 
     renderer.renderFrame(world, camera, winW, winH, hl, (float)glfwGetTime());
+    wandererRenderer.render(wanderers, camera, winW, winH, (float)glfwGetTime());
     glfwSwapBuffers(window);
 }
 
@@ -104,6 +108,7 @@ void Game::shutdown()
 {
     world.save("world.dat");
     renderer.shutdown();
+    wandererRenderer.shutdown();
     glfwDestroyWindow(window);
     glfwTerminate();
 }

@@ -46,6 +46,11 @@ add_executable(Cavern src/main.cpp
         src/core/Timer.hpp
         src/core/Game.cpp
         src/core/Game.hpp
+        src/entity/Wanderer.hpp
+        src/entity/WandererManager.cpp
+        src/entity/WandererManager.hpp
+        src/render/WandererRenderer.cpp
+        src/render/WandererRenderer.hpp
 )
 target_include_directories(Cavern PRIVATE ${CMAKE_SOURCE_DIR})
 target_compile_definitions(Cavern PRIVATE GLFW_INCLUDE_NONE)
