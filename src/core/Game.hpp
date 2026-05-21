@@ -1,0 +1,37 @@
+#ifndef CAVERN_GAME_HPP
+#define CAVERN_GAME_HPP
+#include "Input.hpp"
+#include "Timer.hpp"
+#include "src/player/Player.hpp"
+#include "src/render/Renderer.hpp"
+#include "src/world/World.hpp"
+#include <GLFW/glfw3.h>
+
+class Game
+{
+private:
+    GLFWwindow* window = nullptr;
+    Input input;
+    Timer timer;
+    World world;
+    Renderer renderer;
+    Camera camera;
+    Player player;
+    int winW = 800;
+    int winH = 600;
+    static Game *inst;
+
+    void init();
+
+    void tick();
+
+    void render();
+
+    void shutdown();
+
+    static void framebufferSizeCB(GLFWwindow *w, int width, int height);
+
+public:
+    void run();
+};
+#endif//CAVERN_GAME_HPP
