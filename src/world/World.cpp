@@ -1,6 +1,9 @@
 #include "World.hpp"
 #include "Lighting.hpp"
 #include "WorldGen.hpp"
+#include <fstream>
+
+static constexpr unsigned int version = 1;
 
 World::World()
 {
@@ -64,14 +67,49 @@ void World::setBlock(int wx, int wy, int wz, BlockType t)
         return;
     }
 
-    Chunk *c = getChunk(wx / Chunk::WIDTH, wz / Chunk::DEPTH);
+    int cx = wx / Chunk::WIDTH;
+    int cz = wz / Chunk::DEPTH;
+    int lx = wx % Chunk::WIDTH;
+    int lz = wz % Chunk::DEPTH;
+    Chunk* c = getChunk(cx, cz);
     if (!c)
     {
         return;
     }
 
-    c->set(wx % Chunk::WIDTH, wy, wz % Chunk::DEPTH, t);
+    c->set(lx, wy, lz, t);
     c->dirty = true;
+    if (lx == 0)
+    {
+        if (auto *n = getChunk(cx - 1, cz))
+        {
+            n->dirty = true;
+        }
+    }
+
+    if (lx == Chunk::WIDTH - 1)
+    {
+        if (auto *n = getChunk(cx + 1, cz))
+        {
+            n->dirty = true;
+        }
+    }
+
+    if (lz == 0)
+    {
+        if (auto *n = getChunk(cx, cz - 1))
+        {
+            n->dirty = true;
+        }
+    }
+
+    if (lz == Chunk::DEPTH - 1)
+    {
+        if (auto *n = getChunk(cx, cz + 1))
+        {
+            n->dirty = true;
+        }
+    }
 }
 
 unsigned char World::getLight(int wx, int wy, int wz) const
@@ -110,10 +148,6 @@ void World::generate(unsigned int seed)
 {
     WorldGen::generate(*this, seed);
     Lighting::propagate(*this);
-    WorldGen::turfPass(*this);
-    WorldGen::cavePass(*this, seed);
-    Lighting::propagate(*this);
-    WorldGen::turfPass(*this);
     for (auto &c : chunks)
     {
         if (c)
