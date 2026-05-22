@@ -70,6 +70,7 @@ void Game::init()
     }
 
     wandererRenderer.init();
+    particleRenderer.init();
     wanderers.spawn(world);
     player.respawn();
     timer.start();
@@ -78,6 +79,12 @@ void Game::init()
 void Game::tick()
 {
     player.tick(0.01666667, world, input);
+    if (player.lastBroken.valid)
+    {
+        particles.spawnFromBlock(player.lastBroken.bx, player.lastBroken.by, player.lastBroken.bz, player.lastBroken.type);
+    }
+
+    particles.tick(0.01666667, world);
     wanderers.tick((float)Timer::dt, world);
     world.tickDynamic();
     if (input.getSlot(0))
@@ -131,6 +138,9 @@ void Game::render()
 
     renderer.renderFrame(world, camera, winW, winH, hl, (float)glfwGetTime(), player.selectedBlock);
     wandererRenderer.render(wanderers, camera, winW, winH, (float)glfwGetTime());
+    float aspect = (winH > 0) ? (float)winW / (float)winH : 1.f;
+    glm::mat4 vp = camera.viewProjection(aspect);
+    particleRenderer.render(particles.particles, vp);
     glfwSwapBuffers(window);
 }
 
@@ -158,6 +168,7 @@ void Game::shutdown()
     world.save("world.dat");
     renderer.shutdown();
     wandererRenderer.shutdown();
+    particleRenderer.shutdown();
     glfwDestroyWindow(window);
     glfwTerminate();
 }

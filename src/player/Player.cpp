@@ -261,8 +261,11 @@ void Player::tick(float dt, World &world, Input &input)
     pitch -= input.mouseDY * 0.1f;
     pitch = std::clamp(pitch, -89.f, 89.f);
     hitBlock = castRay(world);
+    lastBroken = {};
     if (input.getDestroyBlock() && hitBlock.valid)
     {
+        lastBroken = {true, hitBlock.bx, hitBlock.by, hitBlock.bz,
+                      world.getBlock(hitBlock.bx, hitBlock.by, hitBlock.bz)};
         world.setBlock(hitBlock.bx, hitBlock.by, hitBlock.bz, BlockType::Air);
         Lighting::propagateColumn(world, hitBlock.bx, hitBlock.bz);
     }

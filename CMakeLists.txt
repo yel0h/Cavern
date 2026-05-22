@@ -51,6 +51,10 @@ add_executable(Cavern src/main.cpp
         src/entity/WandererManager.hpp
         src/render/WandererRenderer.cpp
         src/render/WandererRenderer.hpp
+        src/entity/ParticleManager.cpp
+        src/entity/ParticleManager.hpp
+        src/render/ParticleRenderer.cpp
+        src/render/ParticleRenderer.hpp
 )
 target_include_directories(Cavern PRIVATE ${CMAKE_SOURCE_DIR})
 target_compile_definitions(Cavern PRIVATE GLFW_INCLUDE_NONE)

@@ -2,8 +2,10 @@
 #define CAVERN_GAME_HPP
 #include "Input.hpp"
 #include "Timer.hpp"
+#include "src/entity/ParticleManager.hpp"
 #include "src/entity/WandererManager.hpp"
 #include "src/player/Player.hpp"
+#include "src/render/ParticleRenderer.hpp"
 #include "src/render/Renderer.hpp"
 #include "src/render/WandererRenderer.hpp"
 #include "src/world/World.hpp"
@@ -21,6 +23,8 @@ private:
     Player player;
     WandererManager wanderers;
     WandererRenderer wandererRenderer;
+    ParticleManager particles;
+    ParticleRenderer particleRenderer;
     int winW = 800;
     int winH = 600;
     bool isFullscreen = false;

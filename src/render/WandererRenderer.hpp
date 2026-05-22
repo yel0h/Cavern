@@ -32,11 +32,6 @@ private:
     };
 
     std::vector<MobVertex> verts;
-
-    void buildMobMesh(float wx, float wy, float wz, float yawDeg, float leftArmAngle, float rightArmAngle, float light);
-
-    void addBox(float x0, float y0, float z0, float x1, float y1, float z1, float br, float bg, float bb, float light, float yawDeg, float wx, float wy, float wz, float pvtX, float pvtY, float rotAngle);
-
     static constexpr const char *vertSrc = R"(
 #version 330 core
 layout(location=0) in vec3 aPos;
@@ -86,5 +81,9 @@ void main()
     fragColor  = vec4(final, 1.0);
 }
 )";
+
+    void buildMobMesh(float wx, float wy, float wz, float yawDeg, float leftArmAngle, float rightArmAngle, float light);
+
+    void addBox(float x0, float y0, float z0, float x1, float y1, float z1, float br, float bg, float bb, float light, float yawDeg, float wx, float wy, float wz, float pvtX, float pvtY, float rotAngle);
 };
 #endif//CAVERN_WANDERERRENDERER_HPP

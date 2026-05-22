@@ -10,7 +10,8 @@ class Input;
 class Player
 {
 public:
-    struct RayHit {
+    struct RayHit
+    {
         bool valid = false;
         int bx = 0;
         int by = 0;
@@ -26,7 +27,18 @@ public:
     float yaw = 0.f;
     float pitch = 0.f;
     bool onGround = false;
+
+    struct BrokenEvent
+    {
+        bool valid = false;
+        int bx = 0;
+        int by = 0;
+        int bz = 0;
+        BlockType type = BlockType::Air;
+    };
+
     RayHit hitBlock;
+    BrokenEvent lastBroken;
     BlockType selectedBlock = BlockType::Stone;
 
     [[nodiscard]] glm::vec3 eyePos() const { return position + glm::vec3(0.f, Physics::eye, 0.f); }

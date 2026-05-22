@@ -34,7 +34,6 @@ private:
     unsigned int xhVbo = 0;
     unsigned int hudVao = 0;
     unsigned int hudVbo = 0;
-
     static constexpr const char *vertSrc = R"(
 #version 330 core
 layout(location=0) in vec3 aPos;
