@@ -14,6 +14,8 @@ private:
 
     void pickDirection(Wanderer &w);
 
+    static int surfaceY(const World &world, int wx, int wz) ;
+
 public:
     static constexpr int count = 100;
     std::vector<Wanderer> wanderers;

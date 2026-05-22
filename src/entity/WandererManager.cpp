@@ -12,21 +12,37 @@ void WandererManager::pickDirection(Wanderer &w)
     w.ticksLeft  = dist(mt);
 }
 
+int WandererManager::surfaceY(const World &world, int wx, int wz)
+{
+    for (int wy = World::BLOCK_H - 1; wy >= 0; wy--)
+    {
+        if (blockDef(world.getBlock(wx, wy, wz)).opaque)
+        {
+            return wy + 1;
+        }
+    }
+
+    return 1;
+}
+
 void WandererManager::spawn(const World &world)
 {
     wanderers.clear();
     wanderers.reserve(count);
-    static std::uniform_real_distribution<float> wDist(0.5f, World::BLOCK_W - 0.5f);
-    static std::uniform_real_distribution<float> dDist(0.5f, World::BLOCK_D - 0.5f);
+    static std::uniform_int_distribution<int> wDist(0, World::BLOCK_W - 1);
+    static std::uniform_int_distribution<int> dDist(0, World::BLOCK_D - 1);
     for (int i = 0; i < count; i++)
     {
+        int bx = wDist(mt);
+        int bz = dDist(mt);
+        int sy = surfaceY(world, bx, bz);
         Wanderer w;
-        w.position.x = wDist(mt);
-        w.position.y = 44.f;
-        w.position.z = dDist(mt);
+        w.position.x = (float)bx + 0.5f;
+        w.position.y = (float)sy;
+        w.position.z = (float)bz + 0.5f;
         w.leftArmPhase = angleDist(mt);
         w.rightArmPhase = angleDist(mt);
-        w.light = (float)world.getLight((int)w.position.x, 44, (int)w.position.z);
+        w.light = (float)world.getLight(bx, sy, bz);
         pickDirection(w);
         wanderers.push_back(w);
     }
@@ -35,6 +51,10 @@ void WandererManager::spawn(const World &world)
 void WandererManager::tick(float dt, const World &world)
 {
     constexpr float speed = 2.0f;
+    wanderers.erase(
+            std::remove_if(wanderers.begin(), wanderers.end(),
+                           [](const Wanderer &w) { return w.position.y < -100.f; }),
+            wanderers.end());
     for (auto &w : wanderers)
     {
         if (--w.ticksLeft <= 0)
@@ -48,11 +68,13 @@ void WandererManager::tick(float dt, const World &world)
         nz = std::clamp(nz, 0.5f, (float)World::BLOCK_D - 0.5f);
         int bx = (int)std::floor(nx);
         int bz = (int)std::floor(nz);
-        bool airAhead = !blockDef(world.getBlock(bx, 44, bz)).opaque;
-        bool groundBelow = blockDef(world.getBlock(bx, 43, bz)).opaque;
-        if (airAhead && groundBelow)
+        int sy = surfaceY(world, bx, bz);
+        bool airAtFeet = !blockDef(world.getBlock(bx, sy, bz)).opaque;
+        bool groundBelow = (sy > 0) && blockDef(world.getBlock(bx, sy - 1, bz)).opaque;
+        if (airAtFeet && groundBelow)
         {
             w.position.x = nx;
+            w.position.y = (float)sy;
             w.position.z = nz;
         }
         else
@@ -60,6 +82,6 @@ void WandererManager::tick(float dt, const World &world)
             pickDirection(w);
         }
 
-        w.light = (float)world.getLight(bx, 44, bz);
+        w.light = (float)world.getLight(bx, sy, bz);
     }
 }
