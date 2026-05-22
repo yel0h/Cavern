@@ -4,7 +4,7 @@
 #include <fstream>
 
 static constexpr unsigned int magic = 0x4341564E;
-static constexpr unsigned int version = 1;
+static constexpr unsigned int version = 2;
 
 World::World()
 {
@@ -193,7 +193,7 @@ bool World::load(const char *path)
     unsigned int fVersion = 0;
     f.read(reinterpret_cast<char *>(&fMagic), sizeof(fMagic));
     f.read(reinterpret_cast<char *>(&fVersion), sizeof(fVersion));
-    if (fMagic != magic || fVersion != version)
+    if (fMagic != magic || (fVersion != version && fVersion != 1))
     {
         return false;
     }
@@ -206,6 +206,20 @@ bool World::load(const char *path)
         }
 
         f.read(reinterpret_cast<char *>(c->blocks.data()), c->blocks.size());
+    }
+
+    if (fVersion == 1)
+    {
+        for (int wx = 0; wx < BLOCK_W; wx++)
+        {
+            for (int wz = 0; wz < BLOCK_D; wz++)
+            {
+                for (int wy = 0; wy < BLOCK_H; wy++)
+                {
+                    setBlock(wx, wy, wz, BlockType::Stone);
+                }
+            }
+        }
     }
 
     Lighting::propagate(*this);
