@@ -269,10 +269,13 @@ void Player::tick(float dt, World &world, Input &input)
 
     if (input.getPlaceBlock() && hitBlock.valid)
     {
-        int px = hitBlock.px, py = hitBlock.py, pz = hitBlock.pz;
+        int px = hitBlock.px;
+        int py = hitBlock.py;
+        int pz = hitBlock.pz;
+        BlockType toPlace = (selectedBlock == BlockType::Turf) ? BlockType::Soil : selectedBlock;
         if (World::inBounds(px, py, pz) && world.getBlock(px, py, pz) == BlockType::Air)
         {
-            world.setBlock(px, py, pz, BlockType::Stone);
+            world.setBlock(px, py, pz, toPlace);
         }
 
         Lighting::propagateColumn(world, hitBlock.px, hitBlock.pz);
@@ -314,8 +317,17 @@ void Player::tick(float dt, World &world, Input &input)
         move = glm::normalize(move) * Physics::walk;
     }
 
-    velocity.x = move.x;
-    velocity.z = move.z;
+    if (onGround)
+    {
+        velocity.x = move.x;
+        velocity.z = move.z;
+    }
+    else
+    {
+        velocity.x += (move.x - velocity.x) * Physics::airControl;
+        velocity.z += (move.z - velocity.z) * Physics::airControl;
+    }
+
     if (input.jump && onGround)
     {
         velocity.y = Physics::jump;

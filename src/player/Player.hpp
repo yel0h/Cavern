@@ -1,7 +1,8 @@
 #ifndef CAVERN_PLAYER_HPP
 #define CAVERN_PLAYER_HPP
-#include <glm/glm.hpp>
 #include "Physics.hpp"
+#include "src/world/Block.hpp"
+#include <glm/glm.hpp>
 
 class World;
 class Input;
@@ -26,6 +27,7 @@ public:
     float pitch = 0.f;
     bool onGround = false;
     RayHit hitBlock;
+    BlockType selectedBlock = BlockType::Stone;
 
     [[nodiscard]] glm::vec3 eyePos() const { return position + glm::vec3(0.f, Physics::eye, 0.f); }
 
