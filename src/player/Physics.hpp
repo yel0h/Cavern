@@ -5,8 +5,8 @@ namespace Physics
     inline constexpr float height  = 1.7f;
     inline constexpr float eye = 1.62f;
     inline constexpr float width = 0.6f;
-    inline constexpr float gravity = -28.f;
-    inline constexpr float jump = 9.f;
-    inline constexpr float walk = 5.f;
+    inline constexpr float gravity = -36.f;
+    inline constexpr float jump = 12.f;
+    inline constexpr float walk = 8.f;
 }
 #endif//CAVERN_PHYSICS_HPP
