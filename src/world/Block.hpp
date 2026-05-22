@@ -16,10 +16,13 @@ struct BlockDef
     unsigned char texBottom;
 };
 
-inline constexpr BlockDef blockDefs[3] = {
+inline constexpr BlockDef blockDefs[6] = {
         {false, true,  0, 0, 0},
         {true, false, 1, 2, 3},
         {true, false, 4, 4, 4},
+        {true, false, 5, 5, 5},
+        {true, false, 3, 3, 3},
+        {true, false, 6, 6, 6},
 };
 
 inline constexpr const BlockDef &blockDef(BlockType t)
