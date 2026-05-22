@@ -5,7 +5,9 @@ enum class BlockType : unsigned char
     Air = 0,
     Turf = 1,
     Stone = 2,
+    Rubble = 3,
     Soil = 4,
+    Timber = 5,
 };
 
 struct BlockDef

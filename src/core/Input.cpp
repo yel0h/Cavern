@@ -63,6 +63,52 @@ void Input::keyCB(GLFWwindow *, int key, int, int action, int)
 
             break;
 
+        case GLFW_KEY_G:
+            if (action == GLFW_PRESS)
+            {
+                inst->spawnMob = true;
+            }
+
+            break;
+
+        case GLFW_KEY_1:
+            if (action == GLFW_PRESS)
+            {
+                inst->slot[0] = true;
+            }
+
+            break;
+
+        case GLFW_KEY_2:
+            if (action == GLFW_PRESS)
+            {
+                inst->slot[1] = true;
+            }
+
+            break;
+
+        case GLFW_KEY_3:
+            if (action == GLFW_PRESS)
+            {
+                inst->slot[2] = true;
+            }
+
+            break;
+        case GLFW_KEY_4:
+            if (action == GLFW_PRESS)
+            {
+                inst->slot[3] = true;
+            }
+
+            break;
+        case GLFW_KEY_F11:
+            if (action == GLFW_PRESS)
+            {
+                inst->toggleFullscreen = true;
+            }
+
+            break;
+
         case GLFW_KEY_ESCAPE:
         default:
             break;
@@ -97,12 +143,12 @@ void Input::mouseBtnCB(GLFWwindow *, int btn, int action, int)
         return;
     }
 
-    if (btn == GLFW_MOUSE_BUTTON_LEFT)
+    if (btn == GLFW_MOUSE_BUTTON_RIGHT)
     {
         inst->placeBlock = true;
     }
 
-    if (btn == GLFW_MOUSE_BUTTON_RIGHT)
+    if (btn == GLFW_MOUSE_BUTTON_LEFT)
     {
         inst->destroyBlock = true;
     }
@@ -126,5 +172,26 @@ bool Input::getSave()
 {
     bool temp = save;
     save = false;
+    return temp;
+}
+
+bool Input::getSpawnMob()
+{
+    bool temp = spawnMob;
+    spawnMob = false;
+    return temp;
+}
+
+bool Input::getSlot(unsigned char index)
+{
+    bool temp = slot[index];
+    slot[index] = false;
+    return temp;
+}
+
+bool Input::getToggleFullscreen()
+{
+    bool temp = toggleFullscreen;
+    toggleFullscreen = false;
     return temp;
 }

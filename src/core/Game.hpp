@@ -23,6 +23,11 @@ private:
     WandererRenderer wandererRenderer;
     int winW = 800;
     int winH = 600;
+    bool isFullscreen = false;
+    int storedX = 0;
+    int storedY = 0;
+    int storedW = 800;
+    int storedH = 600;
     static Game *inst;
 
     void init();
@@ -32,6 +37,8 @@ private:
     void render();
 
     void shutdown();
+
+    void toggleFullscreen();
 
     static void framebufferSizeCB(GLFWwindow *w, int width, int height);
 

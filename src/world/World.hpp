@@ -34,6 +34,8 @@ public:
 
     void generate(unsigned int seed);
 
+    void tickDynamic();
+
     bool save(const char *path) const;
 
     bool load(const char *path);

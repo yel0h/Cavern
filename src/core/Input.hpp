@@ -12,6 +12,9 @@ private:
     bool placeBlock = false;
     bool destroyBlock = false;
     bool save = false;
+    bool spawnMob = false;
+    bool slot[4] = {};
+    bool toggleFullscreen = false;
 
     static void keyCB(GLFWwindow *, int key, int, int action, int);
 
@@ -38,5 +41,11 @@ public:
     bool getDestroyBlock();
 
     bool getSave();
+
+    bool getSpawnMob();
+
+    bool getSlot(unsigned char index);
+
+    bool getToggleFullscreen();
 };
 #endif//CAVERN_INPUT_HPP

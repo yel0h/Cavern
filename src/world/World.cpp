@@ -2,6 +2,7 @@
 #include "Lighting.hpp"
 #include "WorldGen.hpp"
 #include <fstream>
+#include <random>
 
 static constexpr unsigned int magic = 0x4341564E;
 static constexpr unsigned int version = 2;
@@ -154,6 +155,57 @@ void World::generate(unsigned int seed)
         if (c)
         {
             c->dirty = true;
+        }
+    }
+}
+
+void World::tickDynamic()
+{
+    static std::mt19937 mt{std::random_device()()};
+    static std::uniform_int_distribution<int> wDist(0, BLOCK_W - 1);
+    static std::uniform_int_distribution<int> hDist(0, BLOCK_H - 1);
+    static std::uniform_int_distribution<int> dDist(0, BLOCK_D - 1);
+    static const int dx[4] = {1, -1, 0,  0};
+    static const int dz[4] = {0,  0, 1, -1};
+    for (int i = 0; i < 200; i++)
+    {
+        int wx = wDist(mt);
+        int wy = hDist(mt);
+        int wz = dDist(mt);
+        BlockType bt = getBlock(wx, wy, wz);
+        if (bt == BlockType::Turf)
+        {
+            int above = wy + 1;
+            bool blocked = (above < BLOCK_H && blockDef(getBlock(wx, above, wz)).opaque) || (getLight(wx, wy, wz) == 0);
+            if (blocked)
+            {
+                setBlock(wx, wy, wz, BlockType::Soil);
+                Lighting::propagateColumn(*this, wx, wz);
+            }
+        }
+        else if (bt == BlockType::Soil)
+        {
+            int above = wy + 1;
+            bool open = (above >= BLOCK_H) || !blockDef(getBlock(wx, above, wz)).opaque;
+            if (open && getLight(wx, wy, wz) == 1)
+            {
+                for (int d = 0; d < 4; d++)
+                {
+                    int nx = wx + dx[d];
+                    int nz = wz + dz[d];
+                    if (!inBounds(nx, wy, nz))
+                    {
+                        continue;
+                    }
+
+                    if (getBlock(nx, wy, nz) == BlockType::Turf && getLight(nx, wy, nz) == 1)
+                    {
+                        setBlock(wx, wy, wz, BlockType::Turf);
+                        Lighting::propagateColumn(*this, wx, wz);
+                        break;
+                    }
+                }
+            }
         }
     }
 }

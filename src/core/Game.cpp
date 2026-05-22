@@ -12,6 +12,24 @@ void Game::framebufferSizeCB(GLFWwindow *w, int width, int height)
     }
 }
 
+void Game::toggleFullscreen()
+{
+    if (!isFullscreen)
+    {
+        glfwGetWindowPos(window, &storedX, &storedY);
+        glfwGetWindowSize(window, &storedW, &storedH);
+        GLFWmonitor *monitor = glfwGetPrimaryMonitor();
+        const GLFWvidmode *mode = glfwGetVideoMode(monitor);
+        glfwSetWindowMonitor(window, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
+        isFullscreen = true;
+    }
+    else
+    {
+        glfwSetWindowMonitor(window, nullptr, storedX, storedY, storedW, storedH, 0);
+        isFullscreen = false;
+    }
+}
+
 void Game::init()
 {
     inst = this;
@@ -61,6 +79,37 @@ void Game::tick()
 {
     player.tick(0.01666667, world, input);
     wanderers.tick((float)Timer::dt, world);
+    world.tickDynamic();
+    if (input.getSlot(0))
+    {
+        player.selectedBlock = BlockType::Stone;
+    }
+
+    if (input.getSlot(1))
+    {
+        player.selectedBlock = BlockType::Rubble;
+    }
+
+    if (input.getSlot(2))
+    {
+        player.selectedBlock = BlockType::Soil;
+    }
+
+    if (input.getSlot(3))
+    {
+        player.selectedBlock = BlockType::Timber;
+    }
+
+    if (input.getSpawnMob())
+    {
+        wanderers.spawnOne(world, player.position.x, player.position.z);
+    }
+
+    if (input.getToggleFullscreen())
+    {
+        toggleFullscreen();
+    }
+
     if (input.getSave())
     {
         world.save("world.dat");
@@ -80,7 +129,7 @@ void Game::render()
         hl = {true, player.hitBlock.bx, player.hitBlock.by, player.hitBlock.bz, player.hitBlock.face};
     }
 
-    renderer.renderFrame(world, camera, winW, winH, hl, (float)glfwGetTime());
+    renderer.renderFrame(world, camera, winW, winH, hl, (float)glfwGetTime(), player.selectedBlock);
     wandererRenderer.render(wanderers, camera, winW, winH, (float)glfwGetTime());
     glfwSwapBuffers(window);
 }

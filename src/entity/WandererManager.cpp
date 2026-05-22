@@ -48,6 +48,25 @@ void WandererManager::spawn(const World &world)
     }
 }
 
+void WandererManager::spawnOne(const World &world, float x, float z)
+{
+    static std::uniform_int_distribution<int> dist(-5, 5);
+    int bx = (int)std::floor(x) + dist(mt);
+    int bz = (int)std::floor(z) + dist(mt);
+    bx = std::clamp(bx, 0, World::BLOCK_W - 1);
+    bz = std::clamp(bz, 0, World::BLOCK_D - 1);
+    int sy = surfaceY(world, bx, bz);
+    Wanderer w;
+    w.position.x = (float)bx + 0.5f;
+    w.position.y = (float)sy;
+    w.position.z = (float)bz + 0.5f;
+    w.leftArmPhase = angleDist(mt);
+    w.rightArmPhase = angleDist(mt);
+    w.light = (float)world.getLight(bx, sy, bz);
+    pickDirection(w);
+    wanderers.push_back(w);
+}
+
 void WandererManager::tick(float dt, const World &world)
 {
     constexpr float speed = 2.0f;

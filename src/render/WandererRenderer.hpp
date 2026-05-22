@@ -64,7 +64,6 @@ void main()
     vFogFactor = clamp((fogFar - eyeDist) / (fogFar - fogNear), 0.0, 1.0);
 }
 )";
-
     static constexpr const char *fragSrc = R"(
 #version 330 core
 in vec3  vColor;
@@ -80,7 +79,7 @@ out vec4 fragColor;
 
 void main()
 {
-    vec3 lit   = vColor * mix(0.25, 1.0, vLight);
+    vec3 lit = vColor * mix(0.45, 1.0, vLight);
     vec3 first = mix(mix(vec3(0.1), uFogColor, vLight), lit, vFogFactor);
     float secondFactor = clamp((uFogFar - vEyeDist) / (uFogFar - uFogNear), 0.0, 1.0);
     vec3 final = mix(uFogColor, first, mix(secondFactor, 1.0, vLight));
