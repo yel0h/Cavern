@@ -257,11 +257,6 @@ void Player::tick(float dt, World &world, Input &input)
         position.y += 5.0f;
     }
 
-    constexpr float sensitivity = 0.12f;
-    yaw += input.mouseDX * sensitivity;
-    float pitchDelta = input.mouseDY * sensitivity;
-    pitch += input.invertY ? pitchDelta : -pitchDelta;
-    pitch = std::clamp(pitch, -89.f, 89.f);
     hitBlock = castRay(world);
     lastBroken = {};
     if (input.getDestroyBlock() && hitBlock.valid)
