@@ -198,7 +198,7 @@ Player::RayHit Player::castRay(const World &world) const
     int prevX = ix;
     int prevY = iy;
     int prevZ = iz;
-    constexpr float maxReach = 5.f;
+    constexpr float maxReach = 4.5f;
     for (int i = 0; i < 50; i++)
     {
         if (i > 0 && World::inBounds(ix, iy, iz) && blockDef(world.getBlock(ix, iy, iz)).opaque)
@@ -257,8 +257,10 @@ void Player::tick(float dt, World &world, Input &input)
         position.y += 5.0f;
     }
 
-    yaw += input.mouseDX * 0.1f;
-    pitch -= input.mouseDY * 0.1f;
+    constexpr float sensitivity = 0.12f;
+    yaw += input.mouseDX * sensitivity;
+    float pitchDelta = input.mouseDY * sensitivity;
+    pitch += input.invertY ? pitchDelta : -pitchDelta;
     pitch = std::clamp(pitch, -89.f, 89.f);
     hitBlock = castRay(world);
     lastBroken = {};

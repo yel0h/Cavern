@@ -127,6 +127,14 @@ void Input::keyCB(GLFWwindow *, int key, int, int action, int)
 
             break;
 
+        case GLFW_KEY_Y:
+            if (action == GLFW_PRESS)
+            {
+                inst->invertY = !inst->invertY;
+            }
+
+            break;
+
         case GLFW_KEY_ESCAPE:
         default:
             break;

@@ -31,6 +31,7 @@ public:
     bool respawn = false;
     float mouseDX = 0.f;
     float mouseDY = 0.f;
+    bool invertY = false;
 
     void init(GLFWwindow *window);
 
