@@ -25,13 +25,13 @@ private:
     WandererRenderer wandererRenderer;
     ParticleManager particles;
     ParticleRenderer particleRenderer;
-    int winW = 800;
-    int winH = 600;
+    int winW = 640;
+    int winH = 480;
     bool isFullscreen = false;
     int storedX = 0;
     int storedY = 0;
-    int storedW = 800;
-    int storedH = 600;
+    int storedW = 640;
+    int storedH = 480;
     int fps = 0;
     int frameCount = 0;
     int chunks = 0;

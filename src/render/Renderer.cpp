@@ -98,28 +98,31 @@ void Renderer::initHighlight()
     glGenBuffers(1, &hlVbo);
     glBindVertexArray(hlVao);
     glBindBuffer(GL_ARRAY_BUFFER, hlVbo);
-    glBufferData(GL_ARRAY_BUFFER, 4 * 3 * sizeof(float), nullptr, GL_DYNAMIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, 6 * 4 * 3 * sizeof(float), nullptr, GL_DYNAMIC_DRAW);
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr);
     glBindVertexArray(0);
 }
 
-void Renderer::renderHighlight(const Renderer::HighlightFace &hl, const float *vp, float time)
+void Renderer::renderHighlight(const Renderer::HighlightBlock &hl, const float *vp, float time)
 {
     if (!hl.valid)
     {
         return;
     }
 
-    const auto &corners = faceCorners[hl.face];
-    const float *norm = faceNormals[hl.face];
-    constexpr float nudge = 0.002f;
-    float verts[4][3];
-    for (int i = 0; i < 4; i++)
+    constexpr float kNudge = 0.003f;
+    float verts[6][4][3];
+    for (int f = 0; f < 6; f++)
     {
-        verts[i][0] = (float)hl.bx + corners[i][0] + (norm[0] * nudge);
-        verts[i][1] = (float)hl.by + corners[i][1] + (norm[1] * nudge);
-        verts[i][2] = (float)hl.bz + corners[i][2] + (norm[2] * nudge);
+        const auto &corners = faceCorners[f];
+        const float *norm = faceNormals[f];
+        for (int i = 0; i < 4; i++)
+        {
+            verts[f][i][0] = (float)hl.bx + corners[i][0] + (norm[0] * kNudge);
+            verts[f][i][1] = (float)hl.by + corners[i][1] + (norm[1] * kNudge);
+            verts[f][i][2] = (float)hl.bz + corners[i][2] + (norm[2] * kNudge);
+        }
     }
 
     glBindBuffer(GL_ARRAY_BUFFER, hlVbo);
@@ -131,7 +134,11 @@ void Renderer::renderHighlight(const Renderer::HighlightFace &hl, const float *v
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glDepthFunc(GL_LEQUAL);
     glBindVertexArray(hlVao);
-    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+    for (int f = 0; f < 6; f++)
+    {
+        glDrawArrays(GL_TRIANGLE_FAN, f * 4, 4);
+    }
+
     glBindVertexArray(0);
     glDepthFunc(GL_LESS);
     glDisable(GL_BLEND);
@@ -244,7 +251,7 @@ void Renderer::initText()
     glBindVertexArray(0);
 }
 
-void Renderer::drawText(const char *text, float py, int scale, int winW, int winH)
+void Renderer::drawText(const char *text, float px, float py, int scale, int winW, int winH)
 {
     float fw = winW;
     float fh = winH;
@@ -252,7 +259,7 @@ void Renderer::drawText(const char *text, float py, int scale, int winW, int win
     float ch = Font::CHAR_H * scale;
     std::vector<float> verts;
     verts.reserve(64 * 6 * 4);
-    float cx = 4.0;
+    float cx = px;
     for (const char *p = text; *p; p++)
     {
         float u0;
@@ -281,7 +288,7 @@ void Renderer::drawText(const char *text, float py, int scale, int winW, int win
     glBindVertexArray(0);
 }
 
-void Renderer::renderDebug(int winW, int winH, int fps, int chunkUpdates)
+void Renderer::renderDebug(int winW, int winH, int fps, int chunkUpdates, bool placeMode)
 {
     txtShader.use();
     txtShader.setInt("uFont", 1);
@@ -292,11 +299,15 @@ void Renderer::renderDebug(int winW, int winH, int fps, int chunkUpdates)
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     txtShader.setVec3("uColor", 1.f, 1.f, 1.f);
     constexpr int verScale = 3;
-    drawText(version, 4.f, verScale, winW, winH);
+    drawText(version, 4.f, 4.f, verScale, winW, winH);
     char buf[64];
     std::snprintf(buf, sizeof(buf), "FPS: %d  CHUNKS: %d", fps, chunkUpdates);
     float statsY = 4.f + (Font::CHAR_H * verScale) + 4.f;
-    drawText(buf, statsY, 1, winW, winH);
+    drawText(buf, 4.f, statsY, 1, winW, winH);
+    constexpr int modeScale = 2;
+    const char *modeLabel = placeMode ? "PLACE" : "DIG";
+    float modeW = std::strlen(modeLabel) * Font::CHAR_W * modeScale;
+    drawText(modeLabel, (float)winW - modeW - 4.f, 4.f, modeScale, winW, winH);
     glEnable(GL_DEPTH_TEST);
     glDisable(GL_BLEND);
 }
@@ -322,7 +333,7 @@ void Renderer::rebuildDirty(const World &world)
     }
 }
 
-void Renderer::renderFrame(const World &world, const Camera &cam, int winW, int winH, const Renderer::HighlightFace &hl, float time, BlockType selectedBlock, int fps, int chunkUpdates)
+void Renderer::renderFrame(const World &world, const Camera &cam, int winW, int winH, const Renderer::HighlightBlock &hl, float time, BlockType selectedBlock, int fps, int chunkUpdates, bool placeMode)
 {
     rebuildDirty(world);
     glViewport(0, 0, winW, winH);
@@ -345,5 +356,5 @@ void Renderer::renderFrame(const World &world, const Camera &cam, int winW, int 
     renderHighlight(hl, glm::value_ptr(vp), time);
     renderCrosshair(winW, winH);
     renderHUD(winW, winH, selectedBlock);
-    renderDebug(winW, winH, fps, chunkUpdates);
+    renderDebug(winW, winH, fps, chunkUpdates, placeMode);
 }

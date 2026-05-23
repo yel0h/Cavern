@@ -137,16 +137,16 @@ void Game::tick()
 
 void Game::render()
 {
-    Renderer::HighlightFace hl;
+    Renderer::HighlightBlock hl;
     if (player.hitBlock.valid)
     {
-        hl = {true, player.hitBlock.bx, player.hitBlock.by, player.hitBlock.bz, player.hitBlock.face};
+        hl = {true, player.hitBlock.bx, player.hitBlock.by, player.hitBlock.bz};
     }
 
     renderer.renderFrame(world, camera, winW, winH,
                            hl, (float)glfwGetTime(),
                            player.selectedBlock,
-                           fps, chunks);
+                           fps, chunks, player.placeMode);
     wandererRenderer.render(wanderers, camera, winW, winH, (float)glfwGetTime());
     float aspect = (winH > 0) ? (float)winW / (float)winH : 1.f;
     glm::mat4 vp = camera.viewProjection(aspect);

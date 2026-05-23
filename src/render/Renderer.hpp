@@ -13,13 +13,12 @@ class World;
 class Renderer
 {
 public:
-    struct HighlightFace
+    struct HighlightBlock
     {
         bool valid = false;
         int bx = 0;
         int by = 0;
         int bz = 0;
-        int face = 0;
     };
 
     static constexpr const char *version = "0.2.1";
@@ -30,8 +29,8 @@ public:
     void shutdown();
 
     void renderFrame(const World &world, const Camera &cam, int winW, int winH,
-                     const HighlightFace &hl, float time,
-                     BlockType selectedBlock, int fps, int chunkUpdates);
+                     const HighlightBlock &hl, float time,
+                     BlockType selectedBlock, int fps, int chunkUpdates, bool placeMode);
 
 private:
     Shader shader;
@@ -209,7 +208,7 @@ void main()
 
     void initHighlight();
 
-    void renderHighlight(const HighlightFace& hl, const float* vp, float time);
+    void renderHighlight(const HighlightBlock &hl, const float *vp, float time);
 
     void initCrosshair();
 
@@ -221,8 +220,8 @@ void main()
 
     void initText();
 
-    void drawText(const char *text, float py, int scale, int winW, int winH);
+    void drawText(const char *text, float px, float py, int scale, int winW, int winH);
 
-    void renderDebug(int winW, int winH, int fps, int chunkUpdates);
+    void renderDebug(int winW, int winH, int fps, int chunkUpdates, bool placeMode);
 };
 #endif//CAVERN_RENDERER_HPP
