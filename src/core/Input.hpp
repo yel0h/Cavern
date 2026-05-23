@@ -9,8 +9,8 @@ private:
     double lastY = 0.0;
     bool firstMouse = true;
     static Input *inst;
-    bool placeBlock = false;
-    bool destroyBlock = false;
+    bool primaryAction = false;
+    bool switchMode = false;
     bool save = false;
     bool spawnMob = false;
     bool slot[6] = {};
@@ -37,9 +37,9 @@ public:
 
     void beginFrame();
 
-    bool getPlaceBlock();
+    bool getPrimaryAction();
 
-    bool getDestroyBlock();
+    bool getSwitchMode();
 
     bool getSave();
 

@@ -169,28 +169,28 @@ void Input::mouseBtnCB(GLFWwindow *, int btn, int action, int)
         return;
     }
 
-    if (btn == GLFW_MOUSE_BUTTON_RIGHT)
-    {
-        inst->placeBlock = true;
-    }
-
     if (btn == GLFW_MOUSE_BUTTON_LEFT)
     {
-        inst->destroyBlock = true;
+        inst->primaryAction = true;
+    }
+
+    if (btn == GLFW_MOUSE_BUTTON_RIGHT)
+    {
+        inst->switchMode = true;
     }
 }
 
-bool Input::getPlaceBlock()
+bool Input::getPrimaryAction()
 {
-    bool temp = placeBlock;
-    placeBlock = false;
+    bool temp = primaryAction;
+    primaryAction = false;
     return temp;
 }
 
-bool Input::getDestroyBlock()
+bool Input::getSwitchMode()
 {
-    bool temp = destroyBlock;
-    destroyBlock = false;
+    bool temp = switchMode;
+    switchMode = false;
     return temp;
 }
 

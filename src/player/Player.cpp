@@ -5,6 +5,15 @@
 #include <algorithm>
 #include <random>
 
+bool Player::overlapsPlayer(int bx, int by, int bz) const
+{
+    constexpr float halfW = Physics::width * 0.5f;
+    float fx = position.x;
+    float fy = position.y;
+    float fz = position.z;
+    return (fx - halfW < bx + 1 && fx + halfW > bx && fy < by + 1 && fy + Physics::height > by && fz - halfW < bz + 1 && fz + halfW > bz);
+}
+
 bool Player::isBlockSolid(const World &world, int wx, int wy, int wz)
 {
     if (wy < 0)
@@ -268,26 +277,32 @@ void Player::tick(float dt, World &world, Input &input)
 
     hitBlock = castRay(world);
     lastBroken = {};
-    if (input.getDestroyBlock() && hitBlock.valid)
+    if (input.getSwitchMode())
     {
-        lastBroken = {true, hitBlock.bx, hitBlock.by, hitBlock.bz,
-                      world.getBlock(hitBlock.bx, hitBlock.by, hitBlock.bz)};
-        world.setBlock(hitBlock.bx, hitBlock.by, hitBlock.bz, BlockType::Air);
-        Lighting::propagateColumn(world, hitBlock.bx, hitBlock.bz);
+        placeMode = !placeMode;
     }
 
-    if (input.getPlaceBlock() && hitBlock.valid)
+    if (input.getPrimaryAction() && hitBlock.valid)
     {
-        int px = hitBlock.px;
-        int py = hitBlock.py;
-        int pz = hitBlock.pz;
-        BlockType toPlace = (selectedBlock == BlockType::Turf) ? BlockType::Soil : selectedBlock;
-        if (World::inBounds(px, py, pz) && world.getBlock(px, py, pz) == BlockType::Air)
+        if (placeMode)
         {
-            world.setBlock(px, py, pz, toPlace);
+            int px = hitBlock.px;
+            int py = hitBlock.py;
+            int pz = hitBlock.pz;
+            BlockType toPlace = (selectedBlock == BlockType::Turf) ? BlockType::Soil : selectedBlock;
+            if (world.inBounds(px, py, pz) && world.getBlock(px, py, pz) == BlockType::Air && !overlapsPlayer(px, py, pz))
+            {
+                world.setBlock(px, py, pz, toPlace);
+                Lighting::propagateColumn(world, px, pz);
+            }
         }
-
-        Lighting::propagateColumn(world, hitBlock.px, hitBlock.pz);
+        else
+        {
+            lastBroken = {true, hitBlock.bx, hitBlock.by, hitBlock.bz,
+                          world.getBlock(hitBlock.bx, hitBlock.by, hitBlock.bz)};
+            world.setBlock(hitBlock.bx, hitBlock.by, hitBlock.bz, BlockType::Air);
+            Lighting::propagateColumn(world, hitBlock.bx, hitBlock.bz);
+        }
     }
 
     if (input.respawn)

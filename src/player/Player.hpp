@@ -40,6 +40,7 @@ public:
     RayHit hitBlock;
     BrokenEvent lastBroken;
     BlockType selectedBlock = BlockType::Stone;
+    bool placeMode = true;
 
     [[nodiscard]] glm::vec3 eyePos() const { return position + glm::vec3(0.f, Physics::eye, 0.f); }
 
@@ -53,5 +54,7 @@ private:
     [[nodiscard]] static bool isBlockSolid(const World &world, int wx, int wy, int wz) ;
 
     [[nodiscard]] RayHit castRay(const World &world) const;
+
+    bool overlapsPlayer(int bx, int by, int bz) const;
 };
 #endif//CAVERN_PLAYER_HPP
