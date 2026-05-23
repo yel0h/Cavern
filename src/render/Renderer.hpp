@@ -21,6 +21,12 @@ public:
         int face = 0;
     };
 
+    static constexpr const char *version = "0.2.1";
+
+    void init();
+
+    void shutdown();
+
 private:
     Shader shader;
     Shader hlShader;
@@ -173,14 +179,5 @@ void main()
     void initHUD();
 
     void renderHUD(int winW, int winH, BlockType selectedBlock);
-
-public:
-    void init();
-
-    void shutdown();
-
-    void renderFrame(const World &world, const Camera &cam, int winW, int winH,
-                     const HighlightFace &hl, float time,
-                     BlockType selectedBlock);
 };
 #endif//CAVERN_RENDERER_HPP
