@@ -74,6 +74,7 @@ void Game::init()
     wanderers.spawn(world);
     player.respawn();
     timer.start();
+    lastFrameTime = glfwGetTime();
 }
 
 void Game::tick()
@@ -142,7 +143,10 @@ void Game::render()
         hl = {true, player.hitBlock.bx, player.hitBlock.by, player.hitBlock.bz, player.hitBlock.face};
     }
 
-    renderer.renderFrame(world, camera, winW, winH, hl, (float)glfwGetTime(), player.selectedBlock);
+    renderer.renderFrame(world, camera, winW, winH,
+                           hl, (float)glfwGetTime(),
+                           player.selectedBlock,
+                           fps, chunks);
     wandererRenderer.render(wanderers, camera, winW, winH, (float)glfwGetTime());
     float aspect = (winH > 0) ? (float)winW / (float)winH : 1.f;
     glm::mat4 vp = camera.viewProjection(aspect);
@@ -155,6 +159,19 @@ void Game::run()
     init();
     while (!glfwWindowShouldClose(window))
     {
+        double now = glfwGetTime();
+        fpsTimer += now - lastFrameTime;
+        lastFrameTime = now;
+        frameCount++;
+        if (fpsTimer >= 1.0)
+        {
+            fps = frameCount;
+            frameCount = 0;
+            chunks = renderer.lastChunkUpdates;
+            renderer.lastChunkUpdates = 0;
+            fpsTimer -= 1.0;
+        }
+
         input.beginFrame();
         glfwPollEvents();
         player.applyMouseLook(input);

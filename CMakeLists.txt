@@ -55,6 +55,8 @@ add_executable(Cavern src/main.cpp
         src/entity/ParticleManager.hpp
         src/render/ParticleRenderer.cpp
         src/render/ParticleRenderer.hpp
+        src/render/Font.cpp
+        src/render/Font.hpp
 )
 target_include_directories(Cavern PRIVATE ${CMAKE_SOURCE_DIR})
 target_compile_definitions(Cavern PRIVATE GLFW_INCLUDE_NONE)

@@ -27,6 +27,7 @@ void Renderer::init()
     initHighlight();
     initCrosshair();
     initHUD();
+    initText();
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
@@ -74,6 +75,20 @@ void Renderer::shutdown()
         glDeleteBuffers(1, &hudVbo);
         hudVbo = 0;
     }
+
+    if (txtVao)
+    {
+        glDeleteVertexArrays(1, &txtVao);
+        txtVao = 0;
+    }
+
+    if (txtVbo)
+    {
+        glDeleteBuffers(1, &txtVbo);
+        txtVbo = 0;
+    }
+
+    font.shutdown();
 }
 
 void Renderer::initHighlight()
@@ -213,6 +228,79 @@ void Renderer::renderHUD(int winW, int winH, BlockType selectedBlock)
     glDisable(GL_BLEND);
 }
 
+void Renderer::initText()
+{
+    txtShader.build(txtVertSrc, txtFragSrc);
+    font.init();
+    glGenVertexArrays(1, &txtVao);
+    glGenBuffers(1, &txtVbo);
+    glBindVertexArray(txtVao);
+    glBindBuffer(GL_ARRAY_BUFFER, txtVbo);
+    glBufferData(GL_ARRAY_BUFFER, 128 * 6 * 4 * sizeof(float), nullptr, GL_DYNAMIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)0);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)(2 * sizeof(float)));
+    glBindVertexArray(0);
+}
+
+void Renderer::drawText(const char *text, float py, int scale, int winW, int winH)
+{
+    float fw = winW;
+    float fh = winH;
+    float cw = Font::CHAR_W * scale;
+    float ch = Font::CHAR_H * scale;
+    std::vector<float> verts;
+    verts.reserve(64 * 6 * 4);
+    float cx = 4.0;
+    for (const char *p = text; *p; p++)
+    {
+        float u0;
+        float v0;
+        float u1;
+        float v1;
+        font.uvForChar(*p, u0, v0, u1, v1);
+        float x0 = (cx / fw * 2.f) - 1.f;
+        float x1 = ((cx + cw) / fw * 2.f) - 1.f;
+        float y1 = 1.f - (py / fh * 2.f);
+        float y0 = 1.f - ((py + ch) / fh * 2.f);
+        verts.insert(verts.end(), {x0, y0, u0, v0, x1, y0, u1, v0, x1, y1, u1, v1});
+        verts.insert(verts.end(), {x0, y0, u0, v0, x1, y1, u1, v1, x0, y1, u0, v1});
+        cx += cw;
+    }
+
+    if (verts.empty())
+    {
+        return;
+    }
+
+    glBindBuffer(GL_ARRAY_BUFFER, txtVbo);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, verts.size() * sizeof(float), verts.data());
+    glBindVertexArray(txtVao);
+    glDrawArrays(GL_TRIANGLES, 0, verts.size() / 4);
+    glBindVertexArray(0);
+}
+
+void Renderer::renderDebug(int winW, int winH, int fps, int chunkUpdates)
+{
+    txtShader.use();
+    txtShader.setInt("uFont", 1);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, font.texId);
+    glDisable(GL_DEPTH_TEST);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    txtShader.setVec3("uColor", 1.f, 1.f, 1.f);
+    constexpr int verScale = 3;
+    drawText(version, 4.f, verScale, winW, winH);
+    char buf[64];
+    std::snprintf(buf, sizeof(buf), "FPS: %d  CHUNKS: %d", fps, chunkUpdates);
+    float statsY = 4.f + (Font::CHAR_H * verScale) + 4.f;
+    drawText(buf, statsY, 1, winW, winH);
+    glEnable(GL_DEPTH_TEST);
+    glDisable(GL_BLEND);
+}
+
 void Renderer::rebuildDirty(const World &world)
 {
     for (int cz = 0; cz < World::CHUNKS_Z; cz++)
@@ -229,11 +317,12 @@ void Renderer::rebuildDirty(const World &world)
             meshes[idx].build(*chunk, world, atlas);
             meshes[idx].upload();
             chunk->dirty = false;
+            lastChunkUpdates++;
         }
     }
 }
 
-void Renderer::renderFrame(const World &world, const Camera &cam, int winW, int winH, const Renderer::HighlightFace &hl, float time, BlockType selectedBlock)
+void Renderer::renderFrame(const World &world, const Camera &cam, int winW, int winH, const Renderer::HighlightFace &hl, float time, BlockType selectedBlock, int fps, int chunkUpdates)
 {
     rebuildDirty(world);
     glViewport(0, 0, winW, winH);
@@ -256,4 +345,5 @@ void Renderer::renderFrame(const World &world, const Camera &cam, int winW, int 
     renderHighlight(hl, glm::value_ptr(vp), time);
     renderCrosshair(winW, winH);
     renderHUD(winW, winH, selectedBlock);
+    renderDebug(winW, winH, fps, chunkUpdates);
 }

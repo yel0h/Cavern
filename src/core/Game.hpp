@@ -32,6 +32,11 @@ private:
     int storedY = 0;
     int storedW = 800;
     int storedH = 600;
+    int fps = 0;
+    int frameCount = 0;
+    int chunks = 0;
+    double fpsTimer = 0.0;
+    double lastFrameTime = 0.0;
     static Game *inst;
 
     void init();

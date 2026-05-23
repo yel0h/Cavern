@@ -2,6 +2,7 @@
 #define CAVERN_RENDERER_HPP
 #include "Camera.hpp"
 #include "ChunkMesh.hpp"
+#include "Font.hpp"
 #include "Shader.hpp"
 #include "TextureAtlas.hpp"
 #include "src/world/Block.hpp"
@@ -22,17 +23,24 @@ public:
     };
 
     static constexpr const char *version = "0.2.1";
+    int lastChunkUpdates = 0;
 
     void init();
 
     void shutdown();
+
+    void renderFrame(const World &world, const Camera &cam, int winW, int winH,
+                     const HighlightFace &hl, float time,
+                     BlockType selectedBlock, int fps, int chunkUpdates);
 
 private:
     Shader shader;
     Shader hlShader;
     Shader _2dShader;
     Shader hudShader;
+    Shader txtShader;
     TextureAtlas atlas;
+    Font font;
     std::array<ChunkMesh, 256> meshes;
     unsigned int hlVao = 0;
     unsigned int hlVbo = 0;
@@ -40,6 +48,8 @@ private:
     unsigned int xhVbo = 0;
     unsigned int hudVao = 0;
     unsigned int hudVbo = 0;
+    unsigned int txtVao = 0;
+    unsigned int txtVbo = 0;
     static constexpr const char *vertSrc = R"(
 #version 330 core
 layout(location=0) in vec3 aPos;
@@ -165,6 +175,35 @@ void main()
     fragColor = texture(uAtlas, vUV);
 }
 )";
+    static constexpr const char *txtVertSrc = R"(
+#version 330 core
+layout(location=0) in vec2 aPos;
+layout(location=1) in vec2 aUV;
+
+out vec2 vUV;
+
+void main()
+{
+    gl_Position = vec4(aPos, 0.0, 1.0);
+    vUV = aUV;
+}
+)";
+
+    static constexpr const char *txtFragSrc = R"(
+#version 330 core
+in vec2 vUV;
+
+uniform sampler2D uFont;
+uniform vec3 uColor;
+
+out vec4 fragColor;
+
+void main()
+{
+    float a = texture(uFont, vUV).a;
+    fragColor = vec4(uColor, a);
+}
+)";
 
     void rebuildDirty(const World &world);
 
@@ -179,5 +218,11 @@ void main()
     void initHUD();
 
     void renderHUD(int winW, int winH, BlockType selectedBlock);
+
+    void initText();
+
+    void drawText(const char *text, float py, int scale, int winW, int winH);
+
+    void renderDebug(int winW, int winH, int fps, int chunkUpdates);
 };
 #endif//CAVERN_RENDERER_HPP
