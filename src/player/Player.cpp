@@ -247,6 +247,15 @@ Player::RayHit Player::castRay(const World &world) const
     return {};
 }
 
+void Player::applyMouseLook(const Input &input)
+{
+    constexpr float sensitivity = 0.12f;
+    yaw += input.mouseDX * sensitivity;
+    float pitchDelta = input.mouseDY * sensitivity;
+    pitch += input.invertY ? pitchDelta : -pitchDelta;
+    pitch = std::clamp(pitch, -89.f, 89.f);
+}
+
 void Player::tick(float dt, World &world, Input &input)
 {
     int fx = (int)std::floor(position.x);

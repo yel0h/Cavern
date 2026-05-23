@@ -45,6 +45,8 @@ public:
 
     void tick(float dt, World &world, Input &input);
 
+    void applyMouseLook(const Input &input);
+
     void respawn();
 
 private:

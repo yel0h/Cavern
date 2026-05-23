@@ -132,10 +132,6 @@ void Game::tick()
         world.save("world.dat");
         std::cout << "World saved." << std::endl;
     }
-
-    camera.position = player.eyePos();
-    camera.yaw = player.yaw;
-    camera.pitch = player.pitch;
 }
 
 void Game::render()
@@ -161,6 +157,10 @@ void Game::run()
     {
         input.beginFrame();
         glfwPollEvents();
+        player.applyMouseLook(input);
+        camera.position = player.eyePos();
+        camera.yaw = player.yaw;
+        camera.pitch = player.pitch;
         int ticks = timer.advance();
         for (int i = 0; i < ticks; ++i)
         {
