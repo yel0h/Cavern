@@ -94,6 +94,7 @@ void Input::keyCB(GLFWwindow *, int key, int, int action, int)
             }
 
             break;
+
         case GLFW_KEY_4:
             if (action == GLFW_PRESS)
             {
@@ -101,6 +102,23 @@ void Input::keyCB(GLFWwindow *, int key, int, int action, int)
             }
 
             break;
+
+        case GLFW_KEY_5:
+            if (action == GLFW_PRESS)
+            {
+                inst->slot[4] = true;
+            }
+
+            break;
+
+        case GLFW_KEY_6:
+            if (action == GLFW_PRESS)
+            {
+                inst->slot[5] = true;
+            }
+
+            break;
+
         case GLFW_KEY_F11:
             if (action == GLFW_PRESS)
             {

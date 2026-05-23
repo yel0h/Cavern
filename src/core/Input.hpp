@@ -13,7 +13,7 @@ private:
     bool destroyBlock = false;
     bool save = false;
     bool spawnMob = false;
-    bool slot[4] = {};
+    bool slot[6] = {};
     bool toggleFullscreen = false;
 
     static void keyCB(GLFWwindow *, int key, int, int action, int);

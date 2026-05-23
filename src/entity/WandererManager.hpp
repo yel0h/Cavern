@@ -10,7 +10,7 @@ class WandererManager
 {
 private:
     std::mt19937 mt{std::random_device()()};
-    std::uniform_real_distribution<float> angleDist{0, 3.14f};
+    std::uniform_real_distribution<float> angleDist{0, 6.28f};
 
     void pickDirection(Wanderer &w);
 

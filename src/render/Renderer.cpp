@@ -131,7 +131,7 @@ void Renderer::initCrosshair()
     glBindBuffer(GL_ARRAY_BUFFER, xhVbo);
     glBufferData(GL_ARRAY_BUFFER, 24 * sizeof(float), nullptr, GL_DYNAMIC_DRAW);
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void *)0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), nullptr);
     glBindVertexArray(0);
 }
 
@@ -139,8 +139,8 @@ void Renderer::renderCrosshair(int winW, int winH)
 {
     float nx = 10.f / (float)winW;
     float ny = 10.f / (float)winH;
-    float tx = 1.f / (float)winW;
-    float ty = 1.f / (float)winH;
+    float tx = 2.f / (float)winW;
+    float ty = 2.f / (float)winH;
     float verts[24] = {
             -nx, -ty, nx, -ty, nx, ty,
             -nx, -ty, nx, ty, -nx, ty,
@@ -169,7 +169,7 @@ void Renderer::initHUD()
     glBindBuffer(GL_ARRAY_BUFFER, hudVbo);
     glBufferData(GL_ARRAY_BUFFER, 6 * 4 * sizeof(float), nullptr, GL_DYNAMIC_DRAW);
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), nullptr);
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)(2 * sizeof(float)));
     glBindVertexArray(0);
@@ -189,14 +189,14 @@ void Renderer::renderHUD(int winW, int winH, BlockType selectedBlock)
     float v0;
     float u1;
     float v1;
-    atlas.uvRect(tileIdx, u0, v0, u1, v1);
+    TextureAtlas::uvRect(tileIdx, u0, v0, u1, v1);
     float verts[6 * 4] = {
-            x0, y0, u0, v1,
-            x1, y0, u1, v1,
-            x1, y1, u1, v0,
-            x0, y0, u0, v1,
-            x1, y1, u1, v0,
-            x0, y1, u0, v0,
+            x0, y0, u1, v1,
+            x1, y0, u0, v1,
+            x1, y1, u0, v0,
+            x0, y0, u1, v1,
+            x1, y1, u0, v0,
+            x0, y1, u1, v0,
     };
     glBindBuffer(GL_ARRAY_BUFFER, hudVbo);
     glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(verts), verts);

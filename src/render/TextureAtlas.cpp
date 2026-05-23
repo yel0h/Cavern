@@ -149,6 +149,54 @@ void TextureAtlas::paintTile(unsigned int *pixels, int tile)
                     break;
                 }
 
+                case 7:
+                {
+                    bool onCrossX = (x >= 7 && x <= 8);
+                    bool onCrossZ = (y >= 7 && y <= 8);
+                    if (!onCrossX && !onCrossZ)
+                    {
+                        px = 0x00000000u;
+                    }
+                    else
+                    {
+                        int r = 50 + (int)((ph(x, y, 71) & 0x1F) - 15);
+                        int g = 140 + (int)((ph(x, y, 72) & 0x1F) - 15);
+                        int b = 30 + (int)((ph(x, y, 73) & 0x1F) - 15);
+                        if (ph(x, y, 74) % 8 == 0)
+                        {
+                            r = 30;
+                            g = 180;
+                            b = 50;
+                        }
+
+                        px = makePixel(r, g, b) | 0xFF000000u;
+                    }
+
+                    break;
+                }
+
+                case 8:
+                {
+                    int r = 200 + (int)((ph(x, y, 81) & 0x0F) - 8);
+                    int g = 165 + (int)((ph(x, y, 82) & 0x0F) - 8);
+                    int b = 95 + (int)((ph(x, y, 83) & 0x0F) - 8);
+                    int row = y % 4;
+                    if (row == 0)
+                    {
+                        r = r * 6 / 10;
+                        g = g * 6 / 10;
+                        b = b * 6 / 10;
+                    }
+                    else if (row == 3)
+                    {
+                        r = std::min(255, r + 18);
+                        g = std::min(255, g + 14);
+                    }
+
+                    px = makePixel(r, g, b);
+                    break;
+                }
+
                 default:
                     px = 0xFF808080u;
             }

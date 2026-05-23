@@ -107,6 +107,16 @@ void Game::tick()
         player.selectedBlock = BlockType::Timber;
     }
 
+    if (input.getSlot(4))
+    {
+        player.selectedBlock = BlockType::Boards;
+    }
+
+    if (input.getSlot(5))
+    {
+        player.selectedBlock = BlockType::Sapling;
+    }
+
     if (input.getSpawnMob())
     {
         wanderers.spawnOne(world, player.position.x, player.position.z);

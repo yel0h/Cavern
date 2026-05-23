@@ -51,10 +51,11 @@ out float vEyeDist;
 
 void main()
 {
-    gl_Position = uMVP * vec4(aPos, 1.0);
+    vec4 clipPos = uMVP * vec4(aPos, 1.0);
+    gl_Position = clipPos;
     vUV = aUV;
     vLight = aLight;
-    float eyeDist = length((uMVP * vec4(aPos, 1.0)).xyz);
+    float eyeDist = clipPos.w;
     vEyeDist = eyeDist;
     float fogNear = mix(4.0, uFogNear, aLight);
     float fogFar = mix(12.0, uFogFar, aLight);
@@ -83,7 +84,8 @@ void main()
         discard;
     }
 
-    vec3 lit = tex.rgb * mix(0.45, 1.0, vLight);
+    float distDarken = mix(0.88, 1.0, vFogFactor);
+    vec3 lit = tex.rgb * mix(0.45, 1.0, vLight) * distDarken;
     vec3 first = mix(mix(vec3(0.1), uFogColor, vLight), lit, vFogFactor);
     float secondFactor = clamp((uFogFar - vEyeDist) / (uFogFar - uFogNear), 0.0, 1.0);
     vec3 final = mix(uFogColor, first, mix(secondFactor, 1.0, vLight));

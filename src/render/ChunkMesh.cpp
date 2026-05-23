@@ -75,7 +75,7 @@ void ChunkMesh::build(const Chunk &chunk, const World &world, const TextureAtlas
                     int ny = wy + faceNormals[f][1];
                     int nz = wz + faceNormals[f][2];
                     BlockType nb = world.getBlock(nx, ny, nz);
-                    if (nb != BlockType::Air)
+                    if (blockDef(nb).opaque)
                     {
                         continue;
                     }
@@ -95,7 +95,7 @@ void ChunkMesh::build(const Chunk &chunk, const World &world, const TextureAtlas
                     }
 
                     float u0, v0, u1, v1;
-                    atlas.uvRect(tileIdx, u0, v0, u1, v1);
+                    TextureAtlas::uvRect(tileIdx, u0, v0, u1, v1);
                     addFace((float)wx, (float)wy, (float)wz, f, u0, v0, u1, v1, light);
                 }
             }
