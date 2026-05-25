@@ -2,16 +2,17 @@
 
 Input *Input::inst = nullptr;
 
-void Input::init(GLFWwindow *window)
+void Input::init(GLFWwindow *iWindow)
 {
     inst = this;
-    glfwSetKeyCallback(window, keyCB);
-    glfwSetCursorPosCallback(window, cursorCB);
-    glfwSetMouseButtonCallback(window, mouseBtnCB);
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    window = iWindow;
+    glfwSetKeyCallback(iWindow, keyCB);
+    glfwSetCursorPosCallback(iWindow, cursorCB);
+    glfwSetMouseButtonCallback(iWindow, mouseBtnCB);
+    glfwSetInputMode(iWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     if (glfwRawMouseMotionSupported())
     {
-        glfwSetInputMode(window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+        glfwSetInputMode(iWindow, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
     }
 }
 
@@ -136,6 +137,18 @@ void Input::keyCB(GLFWwindow *, int key, int, int action, int)
             break;
 
         case GLFW_KEY_ESCAPE:
+            if (action == GLFW_PRESS)
+            {
+                inst->mouseCaptured = !inst->mouseCaptured;
+                glfwSetInputMode(inst->window, GLFW_CURSOR, inst->mouseCaptured ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
+                if (inst->mouseCaptured)
+                {
+                    inst->firstMouse = true;
+                }
+            }
+
+            break;
+
         default:
             break;
     }
@@ -156,6 +169,13 @@ void Input::cursorCB(GLFWwindow *, double x, double y)
         return;
     }
 
+    if (!inst->mouseCaptured)
+    {
+        inst->lastX = x;
+        inst->lastY = y;
+        return;
+    }
+
     inst->mouseDX += (float)(x - inst->lastX);
     inst->mouseDY += (float)(y - inst->lastY);
     inst->lastX = x;
@@ -166,6 +186,14 @@ void Input::mouseBtnCB(GLFWwindow *, int btn, int action, int)
 {
     if (!inst || action != GLFW_PRESS)
     {
+        return;
+    }
+
+    if (!inst->mouseCaptured)
+    {
+        inst->mouseCaptured = true;
+        glfwSetInputMode(inst->window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        inst->firstMouse = true;
         return;
     }
 

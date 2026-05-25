@@ -5,6 +5,7 @@
 class Input
 {
 private:
+    GLFWwindow *window = nullptr;
     double lastX = 0.0;
     double lastY = 0.0;
     bool firstMouse = true;
@@ -31,9 +32,10 @@ public:
     bool respawn = false;
     float mouseDX = 0.f;
     float mouseDY = 0.f;
+    bool mouseCaptured = true;
     bool invertY = false;
 
-    void init(GLFWwindow *window);
+    void init(GLFWwindow *iWindow);
 
     void beginFrame();
 
