@@ -38,6 +38,7 @@ void Game::init()
         throw std::runtime_error("glfwInit failed");
     }
 
+    glfwInitialized = true;
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -156,7 +157,16 @@ void Game::render()
 
 void Game::run()
 {
-    init();
+    try
+    {
+        init();
+    }
+    catch (...)
+    {
+        shutdown();
+        throw;
+    }
+
     while (!glfwWindowShouldClose(window))
     {
         double now = glfwGetTime();
@@ -196,6 +206,17 @@ void Game::shutdown()
     renderer.shutdown();
     wandererRenderer.shutdown();
     particleRenderer.shutdown();
-    glfwDestroyWindow(window);
-    glfwTerminate();
+    if (window)
+    {
+        glfwDestroyWindow(window);
+        window = nullptr;
+    }
+
+    if (glfwInitialized)
+    {
+        glfwTerminate();
+        glfwInitialized = false;
+    }
+
+    inst = nullptr;
 }

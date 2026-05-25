@@ -17,7 +17,7 @@ private:
     static int surfaceY(const World &world, int wx, int wz) ;
 
 public:
-    static constexpr int count = 100;
+    static constexpr int count = 10;
     std::vector<Wanderer> wanderers;
 
     void spawn(const World &world);

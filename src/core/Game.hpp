@@ -27,6 +27,7 @@ private:
     ParticleRenderer particleRenderer;
     int winW = 640;
     int winH = 480;
+    bool glfwInitialized = false;
     bool isFullscreen = false;
     int storedX = 0;
     int storedY = 0;
