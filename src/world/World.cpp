@@ -260,20 +260,6 @@ bool World::load(const char *path)
         f.read(reinterpret_cast<char *>(c->blocks.data()), c->blocks.size());
     }
 
-    if (fVersion == 1)
-    {
-        for (int wx = 0; wx < BLOCK_W; wx++)
-        {
-            for (int wz = 0; wz < BLOCK_D; wz++)
-            {
-                for (int wy = 0; wy < BLOCK_H; wy++)
-                {
-                    setBlock(wx, wy, wz, BlockType::Stone);
-                }
-            }
-        }
-    }
-
     Lighting::propagate(*this);
     for (auto &c : chunks)
     {
