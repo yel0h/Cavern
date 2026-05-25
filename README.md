@@ -1,6 +1,8 @@
 # Cavern
 Cavern is a simple voxel sandbox game written in C++ using OpenGL shaders.
 
+<img width="802" height="632" alt="image" src="https://github.com/user-attachments/assets/29e08ca1-e16b-4d1f-9d79-c5e7283a1318" />
+
 ## Controls
 - WASD to move around
 - Space to jump
