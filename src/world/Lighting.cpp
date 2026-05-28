@@ -12,7 +12,8 @@ namespace Lighting
                 bool lit = true;
                 for (int wy = World::BLOCK_H - 1; wy >= 0; wy--)
                 {
-                    world.setLight(wx, wy, wz, lit ? 1u : 0u);
+                    unsigned char lv = (wy <= 1) ? 0u : (lit ? 1u : 0u);
+                    world.setLight(wx, wy, wz, lv);
                     if (blockDef(world.getBlock(wx, wy, wz)).opaque)
                     {
                         lit = false;
@@ -27,7 +28,8 @@ namespace Lighting
         bool lit = true;
         for (int wy = World::BLOCK_H - 1; wy >= 0; wy--)
         {
-            world.setLight(wx, wy, wz, lit ? 1u : 0u);
+            unsigned char lv = (wy <= 1) ? 0u : (lit ? 1u : 0u);
+            world.setLight(wx, wy, wz, lv);
             if (blockDef(world.getBlock(wx, wy, wz)).opaque)
             {
                 lit = false;
