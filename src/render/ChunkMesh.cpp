@@ -46,7 +46,7 @@ void ChunkMesh::addFace(float x, float y, float z, int face, float u0, float v0,
     indices.push_back(base + 3);
 }
 
-void ChunkMesh::build(const Chunk &chunk, const World &world, const TextureAtlas &atlas)
+void ChunkMesh::build(const Chunk &chunk, const World &world)
 {
     verts.clear();
     indices.clear();
@@ -75,7 +75,8 @@ void ChunkMesh::build(const Chunk &chunk, const World &world, const TextureAtlas
                     int ny = wy + faceNormals[f][1];
                     int nz = wz + faceNormals[f][2];
                     BlockType nb = world.getBlock(nx, ny, nz);
-                    if (blockDef(nb).opaque)
+                    bool sameFluid = (bt == BlockType::Water || bt == BlockType::Lava) && nb == bt;
+                    if (blockDef(nb).opaque || sameFluid)
                     {
                         continue;
                     }

@@ -325,7 +325,7 @@ void Renderer::rebuildDirty(const World &world)
             }
 
             int idx = (cz * World::CHUNKS_X) + cx;
-            meshes[idx].build(*chunk, world, atlas);
+            meshes[idx].build(*chunk, world);
             meshes[idx].upload();
             chunk->dirty = false;
             lastChunkUpdates++;

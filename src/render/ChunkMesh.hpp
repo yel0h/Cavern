@@ -32,7 +32,7 @@ private:
 public:
     ~ChunkMesh() { free(); }
 
-    void build(const Chunk &chunk, const World &world, const TextureAtlas &atlas);
+    void build(const Chunk &chunk, const World &world);
 
     void upload();
 
