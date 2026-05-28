@@ -149,17 +149,15 @@ void Renderer::renderHighlight(const Renderer::HighlightBlock &hl, const float *
         return;
     }
 
-    constexpr float kNudge = 0.003f;
     float verts[6][4][3];
     for (int f = 0; f < 6; f++)
     {
         const auto &corners = faceCorners[f];
-        const float *norm = faceNormals[f];
         for (int i = 0; i < 4; i++)
         {
-            verts[f][i][0] = (float)hl.bx + corners[i][0] + (norm[0] * kNudge);
-            verts[f][i][1] = (float)hl.by + corners[i][1] + (norm[1] * kNudge);
-            verts[f][i][2] = (float)hl.bz + corners[i][2] + (norm[2] * kNudge);
+            verts[f][i][0] = (float)hl.bx + corners[i][0];
+            verts[f][i][1] = (float)hl.by + corners[i][1];
+            verts[f][i][2] = (float)hl.bz + corners[i][2];
         }
     }
 
@@ -170,7 +168,8 @@ void Renderer::renderHighlight(const Renderer::HighlightBlock &hl, const float *
     hlShader.setFloat("uTime", time);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glDepthFunc(GL_LEQUAL);
+    glEnable(GL_POLYGON_OFFSET_FILL);
+    glPolygonOffset(-1.0f, -1.0f);
     glBindVertexArray(hlVao);
     for (int f = 0; f < 6; f++)
     {
@@ -178,7 +177,7 @@ void Renderer::renderHighlight(const Renderer::HighlightBlock &hl, const float *
     }
 
     glBindVertexArray(0);
-    glDepthFunc(GL_LESS);
+    glDisable(GL_POLYGON_OFFSET_FILL);
     glDisable(GL_BLEND);
 }
 

@@ -21,7 +21,7 @@ public:
         int bz = 0;
     };
 
-    static constexpr const char *version = "0.2.1";
+    static constexpr const char *version = "0.3";
     int lastChunkUpdates = 0;
 
     void init();
