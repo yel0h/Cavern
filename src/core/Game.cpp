@@ -173,6 +173,7 @@ void Game::generateNewLevel()
     std::cout << "World generated in " << glfwGetTime() - t0 << " s" << std::endl;
     renderer.markAllDirty();
     player.respawn();
+    wanderers.reset(world);
 }
 
 void Game::render()

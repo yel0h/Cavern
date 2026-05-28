@@ -24,6 +24,8 @@ public:
 
     void spawnOne(const World &world, float x, float z);
 
+    void reset(const World &world) { spawn(world); }
+
     void tick(float dt, const World &world);
 };
 #endif//CAVERN_WANDERERMANAGER_HPP

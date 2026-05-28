@@ -7,9 +7,9 @@ void WandererManager::pickDirection(Wanderer &w)
     float angle = angleDist(mt);
     w.dirX = std::cos(angle);
     w.dirZ = std::sin(angle);
-    w.yaw = glm::degrees(std::atan2(w.dirX, w.dirZ));
+    w.yaw = glm::degrees(std::atan2(-w.dirX, -w.dirZ));
     static std::uniform_int_distribution<int> dist(40, 120);
-    w.ticksLeft  = dist(mt);
+    w.ticksLeft = dist(mt);
 }
 
 int WandererManager::surfaceY(const World &world, int wx, int wz)
@@ -40,8 +40,8 @@ void WandererManager::spawn(const World &world)
         w.position.x = (float)bx + 0.5f;
         w.position.y = (float)sy;
         w.position.z = (float)bz + 0.5f;
-        w.leftArmPhase = angleDist(mt);
-        w.rightArmPhase = angleDist(mt);
+        w.frontLegPhase = angleDist(mt);
+        w.rearLegPhase = angleDist(mt);
         w.light = (float)world.getLight(bx, sy, bz);
         pickDirection(w);
         wanderers.push_back(w);
@@ -60,8 +60,8 @@ void WandererManager::spawnOne(const World &world, float x, float z)
     w.position.x = (float)bx + 0.5f;
     w.position.y = (float)sy;
     w.position.z = (float)bz + 0.5f;
-    w.leftArmPhase = angleDist(mt);
-    w.rightArmPhase = angleDist(mt);
+    w.frontLegPhase = angleDist(mt);
+    w.rearLegPhase = angleDist(mt);
     w.light = (float)world.getLight(bx, sy, bz);
     pickDirection(w);
     wanderers.push_back(w);

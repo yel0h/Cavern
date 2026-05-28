@@ -36,7 +36,7 @@ void WandererRenderer::shutdown()
     }
 }
 
-void WandererRenderer::addBox(float x0, float y0, float z0, float x1, float y1, float z1, float br, float bg, float bb, float light, float yawDeg, float wx, float wy, float wz, float pvtX, float pvtY, float rotAngle)
+void WandererRenderer::addBox(float x0, float y0, float z0, float x1, float y1, float z1, float br, float bg, float bb, float light, float yawDeg, float wx, float wy, float wz, float pvtX, float pvtY, float pvtZ, float rotAngle)
 {
     struct Face
     {
@@ -61,13 +61,13 @@ void WandererRenderer::addBox(float x0, float y0, float z0, float x1, float y1, 
     {
         float dx = lx - pvtX;
         float dy = ly - pvtY;
-        float dz = lz - 0.0;
+        float dz = lz - pvtZ;
         float ry = (dy * cr) - (dz * sr);
         float rz = (dy * sr) + (dz * cr);
         float rx = dx;
         lx = rx + pvtX;
         ly = ry + pvtY;
-        lz = rz + 0.0;
+        lz = rz + pvtZ;
         float fx = (lx * cy) + (lz * sy);
         float fz = (-lx * sy) + (lz * cy);
         v.x = fx + wx;
@@ -94,22 +94,26 @@ void WandererRenderer::addBox(float x0, float y0, float z0, float x1, float y1, 
     }
 }
 
-void WandererRenderer::buildMobMesh(float wx, float wy, float wz, float yawDeg, float leftArmAngle, float rightArmAngle, float light)
+void WandererRenderer::buildMobMesh(float wx, float wy, float wz, float yawDeg, float frontLegAngle, float rearLegAngle, float light)
 {
-    constexpr float limbR = 0.314f, limbG = 0.392f, limbB = 0.627f;
-    constexpr float headR = 0.863f, headG = 0.706f, headB = 0.549f;
-    addBox(-0.2f, 0.0f, -0.1f, 0.0f, 0.6f, 0.1f,
-           limbR, limbG, limbB, light, yawDeg, wx, wy, wz, 0, 0, 0.f);
-    addBox(0.0f, 0.0f, -0.1f, 0.2f, 0.6f, 0.1f,
-           limbR, limbG, limbB, light, yawDeg, wx, wy, wz, 0, 0, 0.f);
-    addBox(-0.2f, 0.6f, -0.1f, 0.2f, 1.3f, 0.1f,
-           limbR, limbG, limbB, light, yawDeg, wx, wy, wz, 0, 0, 0.f);
-    addBox(-0.4f, 0.7f, -0.1f, -0.2f, 1.3f, 0.1f,
-           limbR, limbG, limbB, light, yawDeg, wx, wy, wz, -0.3f, 1.3f, leftArmAngle);
-    addBox(0.2f, 0.7f, -0.1f, 0.4f, 1.3f, 0.1f,
-           limbR, limbG, limbB, light, yawDeg, wx, wy, wz, 0.3f, 1.3f, rightArmAngle);
-    addBox(-0.2f, 1.3f, -0.2f, 0.2f, 1.7f, 0.2f,
-           headR, headG, headB, light, yawDeg, wx, wy, wz, 0, 0, 0.f);
+    constexpr float bodyR = 0.18f;
+    constexpr float bodyG = 0.38f;
+    constexpr float bodyB = 0.22f;
+    constexpr float headR = 0.25f;
+    constexpr float headG = 0.50f;
+    constexpr float headB = 0.28f;
+    addBox(-0.25f, 0.0f, -0.25f, -0.15f, 0.2f, -0.15f,
+           bodyR, bodyG, bodyB, light, yawDeg, wx, wy, wz, -0.2f, 0.2f, -0.2f, frontLegAngle);
+    addBox(0.15f, 0.0f, -0.25f, 0.25f, 0.2f, -0.15f,
+           bodyR, bodyG, bodyB, light, yawDeg, wx, wy, wz, 0.2f, 0.2f, -0.2f, -frontLegAngle);
+    addBox(-0.25f, 0.2f, -0.3f, 0.25f, 0.45f, 0.3f,
+           bodyR, bodyG, bodyB, light, yawDeg, wx, wy, wz, 0, 0, 0, 0.f);
+    addBox(-0.25f, 0.0f, 0.15f, -0.15f, 0.2f, 0.25f,
+           bodyR, bodyG, bodyB, light, yawDeg, wx, wy, wz, -0.2f, 0.2f, 0.2f, rearLegAngle);
+    addBox(0.15f, 0.0f, 0.15f, 0.25f, 0.2f, 0.25f,
+           bodyR, bodyG, bodyB, light, yawDeg, wx, wy, wz, 0.2f, 0.2f, 0.2f, -rearLegAngle);
+    addBox(-0.2f, 0.15f, -0.55f, 0.2f, 0.4f, -0.3f,
+           headR, headG,headB, light, yawDeg, wx, wy, wz, 0, 0, 0, 0.f);
 }
 
 void WandererRenderer::render(const WandererManager &mgr, const Camera &cam, int winW, int winH, float time)
@@ -117,10 +121,10 @@ void WandererRenderer::render(const WandererManager &mgr, const Camera &cam, int
     verts.clear();
     for (const auto &w : mgr.wanderers)
     {
-        float leftAngle = std::sin((time * 2.0f) + w.leftArmPhase) * glm::radians(40.0f);
-        float rightAngle = std::sin((time * 2.0f) + w.rightArmPhase) * glm::radians(40.0f);
+        float frontAngle = std::sin((time * 2.0f) + w.frontLegPhase) * glm::radians(25.0f);
+        float rearAngle = std::sin((time * 2.0f) + w.rearLegPhase) * glm::radians(25.0f);
         buildMobMesh(w.position.x, w.position.y, w.position.z,
-                     w.yaw, leftAngle, rightAngle, w.light);
+                     w.yaw, frontAngle, rearAngle, w.light);
     }
 
     if (verts.empty())

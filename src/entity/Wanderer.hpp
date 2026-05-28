@@ -9,8 +9,8 @@ struct Wanderer
     float dirX = 0.f;
     float dirZ = 0.f;
     int ticksLeft = 0;
-    float leftArmPhase = 0.f;
-    float rightArmPhase = 0.f;
+    float frontLegPhase = 0.f;
+    float rearLegPhase = 0.f;
     float light = 1.f;
 };
 #endif//CAVERN_WANDERER_HPP

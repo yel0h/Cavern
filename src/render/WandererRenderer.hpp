@@ -82,8 +82,13 @@ void main()
 }
 )";
 
-    void buildMobMesh(float wx, float wy, float wz, float yawDeg, float leftArmAngle, float rightArmAngle, float light);
+    void buildMobMesh(float wx, float wy, float wz, float yawDeg, float frontLegAngle, float rearLegAngle, float light);
 
-    void addBox(float x0, float y0, float z0, float x1, float y1, float z1, float br, float bg, float bb, float light, float yawDeg, float wx, float wy, float wz, float pvtX, float pvtY, float rotAngle);
+    void addBox(float x0, float y0, float z0,
+                float x1, float y1, float z1,
+                float br, float bg, float bb,
+                float light,
+                float yawDeg, float wx, float wy, float wz,
+                float pvtX, float pvtY, float pvtZ, float rotAngle);
 };
 #endif//CAVERN_WANDERERRENDERER_HPP
