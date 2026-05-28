@@ -5,7 +5,7 @@
 #include <random>
 
 static constexpr unsigned int magic = 0x4341564E;
-static constexpr unsigned int version = 2;
+static constexpr unsigned int version = 3;
 
 World::World()
 {
