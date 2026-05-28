@@ -6,7 +6,7 @@ namespace Physics
     inline constexpr float eye = 1.78f;
     inline constexpr float width = 0.5f;
     inline constexpr float gravity = -32.f;
-    inline constexpr float jump = 11.f;
+    inline constexpr float jump = 12.4f;
     inline constexpr float walk = 10.f;
     inline constexpr float airControl = 0.2f;
 }
