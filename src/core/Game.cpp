@@ -58,11 +58,12 @@ void Game::init()
     glfwSetFramebufferSizeCallback(window, framebufferSizeCB);
     input.init(window);
     renderer.init();
+    seed = (unsigned int)std::time(nullptr);
     if (!world.load("world.dat"))
     {
         std::cout << "Generating world..." << std::endl;
         auto t0 = glfwGetTime();
-        world.generate(0u);
+        world.generate(seed);
         std::cout << "World generated in " << glfwGetTime() - t0 << " s" << std::endl;
     }
     else
@@ -124,6 +125,16 @@ void Game::tick()
         wanderers.spawnOne(world, player.position.x, player.position.z);
     }
 
+    if (input.getCycleFog())
+    {
+        renderer.cycleFog();
+    }
+
+    if (input.getNewLevel())
+    {
+        generateNewLevel();
+    }
+
     if (input.getToggleFullscreen())
     {
         toggleFullscreen();
@@ -134,6 +145,34 @@ void Game::tick()
         world.save("world.dat");
         std::cout << "World saved." << std::endl;
     }
+}
+
+void Game::generateNewLevel()
+{
+    renderer.renderGenerating(winW, winH);
+    glfwSwapBuffers(window);
+    seed++;
+    for (int cz = 0; cz < World::CHUNKS_Z; cz++)
+    {
+        for (int cx = 0; cx < World::CHUNKS_X; cx++)
+        {
+            Chunk *c = world.getChunk(cx, cz);
+            if (!c)
+            {
+                continue;
+            }
+
+            c->blocks.fill(BlockType::Air);
+            c->dirty = true;
+        }
+    }
+
+    std::cout << "Generating new world (seed "<< seed <<")..." << std::endl;
+    auto t0 = glfwGetTime();
+    world.generate(seed);
+    std::cout << "World generated in " << glfwGetTime() - t0 << " s" << std::endl;
+    renderer.markAllDirty();
+    player.respawn();
 }
 
 void Game::render()
@@ -147,7 +186,8 @@ void Game::render()
     renderer.renderFrame(world, camera, winW, winH,
                            hl, (float)glfwGetTime(),
                            player.selectedBlock,
-                           fps, chunks, player.placeMode);
+                           fps, chunks, player.placeMode,
+                           player.underLava);
     wandererRenderer.render(wanderers, camera, winW, winH, (float)glfwGetTime());
     float aspect = (winH > 0) ? (float)winW / (float)winH : 1.f;
     glm::mat4 vp = camera.viewProjection(aspect);

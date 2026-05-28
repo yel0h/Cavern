@@ -301,7 +301,7 @@ void Renderer::renderDebug(int winW, int winH, int fps, int chunkUpdates, bool p
     constexpr int verScale = 3;
     drawText(version, 4.f, 4.f, verScale, winW, winH);
     char buf[64];
-    std::snprintf(buf, sizeof(buf), "FPS: %d  CHUNKS: %d", fps, chunkUpdates);
+    std::snprintf(buf, sizeof(buf), "FPS: %d  CHUNKS: %d  View: %d", fps, chunkUpdates, fogLevel);
     float statsY = 4.f + (Font::CHAR_H * verScale) + 4.f;
     drawText(buf, 4.f, statsY, 1, winW, winH);
     constexpr int modeScale = 2;
@@ -333,20 +333,67 @@ void Renderer::rebuildDirty(const World &world)
     }
 }
 
-void Renderer::renderFrame(const World &world, const Camera &cam, int winW, int winH, const Renderer::HighlightBlock &hl, float time, BlockType selectedBlock, int fps, int chunkUpdates, bool placeMode)
+static constexpr float fogNear[4] = { 8.f, 24.f, 48.f, 96.f};
+static constexpr float fogFar[4] = {16.f, 40.f, 64.f, 128.f};
+
+void Renderer::renderGenerating(int winW, int winH)
+{
+    glViewport(0, 0, winW, winH);
+    glClearColor(0.05f, 0.05f, 0.05f, 1.f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    txtShader.use();
+    txtShader.setInt("uFont", 1);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, font.texId);
+    glDisable(GL_DEPTH_TEST);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    txtShader.setVec3("uColor", 1.f, 1.f, 1.f);
+    const char *msg = "Generating...";
+    int scale = 3;
+    float tw = std::strlen(msg) * Font::CHAR_W * scale;
+    float th = Font::CHAR_H * scale;
+    drawText(msg, ((float)winW * 0.5f) - (tw * 0.5f), ((float)winH * 0.5f) - (th * 0.5f), scale, winW, winH);
+    glEnable(GL_DEPTH_TEST);
+    glDisable(GL_BLEND);
+}
+
+void Renderer::renderFrame(const World &world, const Camera &cam, int winW, int winH, const Renderer::HighlightBlock &hl, float time, BlockType selectedBlock, int fps, int chunkUpdates, bool placeMode, bool underLava)
 {
     rebuildDirty(world);
+    float cFogNear;
+    float cFogFar;
+    float fogR;
+    float fogG;
+    float fogB;
+    if (underLava)
+    {
+        cFogNear = 2.f;
+        cFogFar = 8.f;
+        fogR = 0.8f;
+        fogG = 0.4f;
+        fogB = 0.1f;
+    }
+    else
+    {
+        cFogNear = fogNear[fogLevel];
+        cFogFar = fogFar[fogLevel];
+        fogR = 0.53f;
+        fogG = 0.81f;
+        fogB = 0.98f;
+    }
+
     glViewport(0, 0, winW, winH);
-    glClearColor(0.53f, 0.81f, 0.98f, 1.f);
+    glClearColor(fogR, fogG, fogB, 1.f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     float aspect = (winH > 0) ? (float)winW / (float)winH : 1.f;
     glm::mat4 vp = cam.viewProjection(aspect);
     shader.use();
     shader.setMat4("uMVP", glm::value_ptr(vp));
     shader.setInt("uAtlas", 0);
-    shader.setFloat("uFogNear", 48.f);
-    shader.setFloat("uFogFar", 64.f);
-    shader.setVec3("uFogColor", 0.53f, 0.81f, 0.98f);
+    shader.setFloat("uFogNear", cFogNear);
+    shader.setFloat("uFogFar", cFogFar);
+    shader.setVec3("uFogColor", fogR, fogG, fogB);
     atlas.bind(0);
     for (int i = 0; i < 256; i++)
     {

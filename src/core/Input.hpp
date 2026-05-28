@@ -16,6 +16,8 @@ private:
     bool spawnMob = false;
     bool slot[6] = {};
     bool toggleFullscreen = false;
+    bool cycleFog = false;
+    bool newLevel = false;
 
     static void keyCB(GLFWwindow *, int key, int, int action, int);
 
@@ -50,5 +52,9 @@ public:
     bool getSlot(unsigned char index);
 
     bool getToggleFullscreen();
+
+    bool getCycleFog();
+
+    bool getNewLevel();
 };
 #endif//CAVERN_INPUT_HPP

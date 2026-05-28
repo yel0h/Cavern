@@ -23,6 +23,7 @@ public:
 
     static constexpr const char *version = "0.2.1";
     int lastChunkUpdates = 0;
+    int fogLevel = 2;
 
     void init();
 
@@ -30,7 +31,14 @@ public:
 
     void renderFrame(const World &world, const Camera &cam, int winW, int winH,
                      const HighlightBlock &hl, float time,
-                     BlockType selectedBlock, int fps, int chunkUpdates, bool placeMode);
+                     BlockType selectedBlock, int fps, int chunkUpdates, bool placeMode,
+                     bool underLava);
+
+    void renderGenerating(int winW, int winH);
+
+    void markAllDirty() { for (auto &m : meshes) m.free(); }
+
+    void cycleFog() { fogLevel = (fogLevel + 1) % 4; }
 
 private:
     Shader shader;

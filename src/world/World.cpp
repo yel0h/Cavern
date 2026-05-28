@@ -228,7 +228,7 @@ void World::tickDynamic()
         }
     }
 
-    for (int i = 0; i < 30; i++)
+    for (int i = 0; i < 30000; i++)
     {
         int wx = wDist(mt);
         int wy = hDist(mt);

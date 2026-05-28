@@ -38,6 +38,7 @@ private:
     int chunks = 0;
     double fpsTimer = 0.0;
     double lastFrameTime = 0.0;
+    unsigned int seed = 0;
     static Game *inst;
 
     void init();
@@ -49,6 +50,8 @@ private:
     void shutdown();
 
     void toggleFullscreen();
+
+    void generateNewLevel();
 
     static void framebufferSizeCB(GLFWwindow *w, int width, int height);
 

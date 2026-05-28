@@ -140,7 +140,7 @@ namespace WorldGen
                     BlockType t;
                     if (wy > surfaceY)
                     {
-                        t = (wy <= oceanLevel) ? BlockType::Water : BlockType::Air;
+                        t = (wy <= oceanLevel + 1) ? BlockType::Water : BlockType::Air;
                     }
                     else if (wy == surfaceY)
                     {

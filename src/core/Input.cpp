@@ -120,6 +120,22 @@ void Input::keyCB(GLFWwindow *, int key, int, int action, int)
 
             break;
 
+        case GLFW_KEY_F:
+            if (action == GLFW_PRESS)
+            {
+                inst->cycleFog = true;
+            }
+
+            break;
+
+        case GLFW_KEY_N:
+            if (action == GLFW_PRESS)
+            {
+                inst->newLevel = true;
+            }
+
+            break;
+
         case GLFW_KEY_F11:
             if (action == GLFW_PRESS)
             {
@@ -247,5 +263,19 @@ bool Input::getToggleFullscreen()
 {
     bool temp = toggleFullscreen;
     toggleFullscreen = false;
+    return temp;
+}
+
+bool Input::getCycleFog()
+{
+    bool temp = cycleFog;
+    cycleFog = false;
+    return temp;
+}
+
+bool Input::getNewLevel()
+{
+    bool temp = newLevel;
+    newLevel = false;
     return temp;
 }
