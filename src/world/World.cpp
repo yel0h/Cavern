@@ -165,15 +165,34 @@ void World::tickDynamic()
     static std::uniform_int_distribution<int> wDist(0, BLOCK_W - 1);
     static std::uniform_int_distribution<int> hDist(0, BLOCK_H - 1);
     static std::uniform_int_distribution<int> dDist(0, BLOCK_D - 1);
+    static std::uniform_int_distribution<int> dirDist(0, 3);
     static const int dx[4] = {1, -1, 0,  0};
     static const int dz[4] = {0,  0, 1, -1};
+    static unsigned int waterTick = 0;
+    static unsigned int lavaTick = 0;
+    waterTick++;
+    lavaTick++;
     for (int i = 0; i < 200; i++)
     {
         int wx = wDist(mt);
         int wy = hDist(mt);
         int wz = dDist(mt);
         BlockType bt = getBlock(wx, wy, wz);
-        if (bt == BlockType::Turf)
+        if (bt == BlockType::Sapling)
+        {
+            int below = wy - 1;
+            if (below >= 0)
+            {
+                BlockType blw = getBlock(wx, below, wz);
+                if (blw == BlockType::Water || blw == BlockType::Lava)
+                {
+                    setBlock(wx, wy, wz, BlockType::Air);
+                    Lighting::propagateColumn(*this, wx, wz);
+                    continue;
+                }
+            }
+        }
+        else if (bt == BlockType::Turf)
         {
             int above = wy + 1;
             bool blocked = (above < BLOCK_H && blockDef(getBlock(wx, above, wz)).opaque) || (getLight(wx, wy, wz) == 0);
@@ -204,6 +223,143 @@ void World::tickDynamic()
                         Lighting::propagateColumn(*this, wx, wz);
                         break;
                     }
+                }
+            }
+        }
+    }
+
+    for (int i = 0; i < 30; i++)
+    {
+        int wx = wDist(mt);
+        int wy = hDist(mt);
+        int wz = dDist(mt);
+        BlockType bt = getBlock(wx, wy, wz);
+        if (bt == BlockType::Water && (waterTick % 3) == 0)
+        {
+            if (wy > 1)
+            {
+                BlockType below = getBlock(wx, wy - 1, wz);
+                if (below == BlockType::Air)
+                {
+                    setBlock(wx, wy - 1, wz, BlockType::Water);
+                    Lighting::propagateColumn(*this, wx, wz);
+                    continue;
+                }
+                else if (below == BlockType::Lava)
+                {
+                    setBlock(wx, wy - 1, wz, BlockType::Stone);
+                    Lighting::propagateColumn(*this, wx, wz);
+                    continue;
+                }
+                else if (below == BlockType::Sapling)
+                {
+                    setBlock(wx, wy - 1, wz, BlockType::Air);
+                    Lighting::propagateColumn(*this, wx, wz);
+                    continue;
+                }
+            }
+
+            int startDir = dirDist(mt);
+            for (int d = 0; d < 4; d++)
+            {
+                int nd = (startDir + d) % 4;
+                int nx = wx + dx[nd];
+                int nz = wz + dz[nd];
+                if (!inBounds(nx, wy, nz))
+                {
+                    continue;
+                }
+
+                if (nx == 0 || nx == BLOCK_W - 1 || nz == 0 || nz == BLOCK_D - 1)
+                {
+                    continue;
+                }
+
+                BlockType nb = getBlock(nx, wy, nz);
+                if (nb == BlockType::Air)
+                {
+                    setBlock(nx, wy, nz, BlockType::Water);
+                    Lighting::propagateColumn(*this, nx, nz);
+                    break;
+                }
+                else if (nb == BlockType::Lava)
+                {
+                    setBlock(nx, wy, nz, BlockType::Stone);
+                    Lighting::propagateColumn(*this, nx, nz);
+                    break;
+                }
+                else if (nb == BlockType::Sapling)
+                {
+                    setBlock(nx, wy, nz, BlockType::Air);
+                    Lighting::propagateColumn(*this, nx, nz);
+                    break;
+                }
+            }
+        }
+        else if (bt == BlockType::Lava && (lavaTick % 7) == 0)
+        {
+            if (wx == 0 || wx == BLOCK_W - 1 || wz == 0 || wz == BLOCK_D - 1)
+            {
+                continue;
+            }
+
+            if (wy > 1)
+            {
+                BlockType below = getBlock(wx, wy - 1, wz);
+                if (below == BlockType::Air)
+                {
+                    setBlock(wx, wy - 1, wz, BlockType::Lava);
+                    Lighting::propagateColumn(*this, wx, wz);
+                    continue;
+                }
+                else if (below == BlockType::Water)
+                {
+                    setBlock(wx, wy - 1, wz, BlockType::Stone);
+                    Lighting::propagateColumn(*this, wx, wz);
+                    continue;
+                }
+                else if (below == BlockType::Sapling)
+                {
+                    setBlock(wx, wy - 1, wz, BlockType::Air);
+                    Lighting::propagateColumn(*this, wx, wz);
+                    continue;
+                }
+            }
+
+            int startDir = dirDist(mt);
+            for (int d = 0; d < 4; d++)
+            {
+                int nd = (startDir + d) % 4;
+                int nx = wx + dx[nd];
+                int nz = wz + dz[nd];
+                if (!inBounds(nx, wy, nz))
+                {
+                    continue;
+                }
+
+                if (nx == 0 || nx == BLOCK_W - 1 || nz == 0 || nz == BLOCK_D - 1)
+                {
+                    continue;
+                }
+
+                BlockType nb = getBlock(nx, wy, nz);
+                if (nb == BlockType::Air)
+                {
+                    setBlock(nx, wy, nz, BlockType::Lava);
+                    Lighting::propagateColumn(*this, nx, nz);
+                    break;
+                }
+                else if (nb == BlockType::Water)
+                {
+                    setBlock(nx, wy, nz, BlockType::Stone);
+                    Lighting::propagateColumn(*this, nx, nz);
+                    break;
+                }
+                else if (nb == BlockType::Sapling)
+                {
+                    setBlock(nx, wy, nz, BlockType::Air);
+                    Lighting::propagateColumn(*this, nx, nz);
+                    break;
                 }
             }
         }
@@ -245,7 +401,7 @@ bool World::load(const char *path)
     unsigned int fVersion = 0;
     f.read(reinterpret_cast<char *>(&fMagic), sizeof(fMagic));
     f.read(reinterpret_cast<char *>(&fVersion), sizeof(fVersion));
-    if (fMagic != magic || (fVersion != version && fVersion != 1))
+    if (fMagic != magic || (fVersion < 1 || fVersion > version))
     {
         return false;
     }
@@ -258,6 +414,24 @@ bool World::load(const char *path)
         }
 
         f.read(reinterpret_cast<char *>(c->blocks.data()), c->blocks.size());
+    }
+
+    if (fVersion < 3)
+    {
+        for (int wx = 0; wx < BLOCK_W; wx++)
+        {
+            for (int wz = 0; wz < BLOCK_D; wz++)
+            {
+                setBlock(wx, 0, wz, BlockType::Bedrock);
+                if (wx == 0 || wx == BLOCK_W - 1 || wz == 0 || wz == BLOCK_D - 1)
+                {
+                    for (int wy = 0; wy < BLOCK_H; wy++)
+                    {
+                        setBlock(wx, wy, wz, BlockType::Bedrock);
+                    }
+                }
+            }
+        }
     }
 
     Lighting::propagate(*this);
