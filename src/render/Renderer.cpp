@@ -2,6 +2,44 @@
 #include "../world/World.hpp"
 #include <glm/gtc/type_ptr.hpp>
 
+static std::array<glm::vec4, 6> extractFrustumPlanes(const glm::mat4 &vp)
+{
+    auto row = [&](int r)
+    {
+        return glm::vec4(vp[0][r], vp[1][r], vp[2][r], vp[3][r]);
+    };
+    return {
+            row(3) + row(0),
+            row(3) - row(0),
+            row(3) + row(1),
+            row(3) - row(1),
+            row(3) + row(2),
+            row(3) - row(2),
+    };
+}
+
+static bool chunkInFrustum(int cx, int cz, const std::array<glm::vec4, 6> &planes)
+{
+    float x0 = (float)(cx * 16);
+    float x1 = x0 + 16.f;
+    float y0 = 0.f;
+    float y1 = 64.f;
+    float z0 = (float)(cz * 16);
+    float z1 = z0 + 16.f;
+    for (const auto &p : planes)
+    {
+        float px = (p.x >= 0.f) ? x1 : x0;
+        float py = (p.y >= 0.f) ? y1 : y0;
+        float pz = (p.z >= 0.f) ? z1 : z0;
+        if ((p.x * px) + (p.y * py) + (p.z * pz) + p.w < 0.f)
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 static const int faceCorners[6][4][3] = {
         {{0, 1, 0}, {0, 1, 1}, {1, 1, 1}, {1, 1, 0}},
         {{0, 0, 1}, {0, 0, 0}, {1, 0, 0}, {1, 0, 1}},
@@ -312,8 +350,16 @@ void Renderer::renderDebug(int winW, int winH, int fps, int chunkUpdates, bool p
     glDisable(GL_BLEND);
 }
 
-void Renderer::rebuildDirty(const World &world)
+void Renderer::rebuildDirty(const World &world, const glm::vec3 &playerPos)
 {
+    struct DirtyEntry
+    {
+        int cx;
+        int cz;
+        float dist2;
+    };
+
+    std::vector<DirtyEntry> dirty;
     for (int cz = 0; cz < World::CHUNKS_Z; cz++)
     {
         for (int cx = 0; cx < World::CHUNKS_X; cx++)
@@ -324,12 +370,27 @@ void Renderer::rebuildDirty(const World &world)
                 continue;
             }
 
-            int idx = (cz * World::CHUNKS_X) + cx;
-            meshes[idx].build(*chunk, world);
-            meshes[idx].upload();
-            chunk->dirty = false;
-            lastChunkUpdates++;
+            float dx = (float)((cx * 16) + 8) - playerPos.x;
+            float dz = (float)((cz * 16) + 8) - playerPos.z;
+            dirty.push_back({cx, cz, (dx * dx) + (dz * dz)});
         }
+    }
+
+    std::sort(dirty.begin(), dirty.end(),
+              [](const DirtyEntry &a, const DirtyEntry &b) { return a.dist2 < b.dist2; });
+    for (const auto &e : dirty)
+    {
+        if (lastChunkUpdates >= maxRebuildsPerFrame)
+        {
+            break;
+        }
+
+        Chunk *chunk = const_cast<Chunk *>(world.getChunk(e.cx, e.cz));
+        int idx = (e.cz * World::CHUNKS_X) + e.cx;
+        meshes[idx].build(*chunk, world);
+        meshes[idx].upload();
+        chunk->dirty = false;
+        lastChunkUpdates++;
     }
 }
 
@@ -360,7 +421,7 @@ void Renderer::renderGenerating(int winW, int winH)
 
 void Renderer::renderFrame(const World &world, const Camera &cam, int winW, int winH, const Renderer::HighlightBlock &hl, float time, BlockType selectedBlock, int fps, int chunkUpdates, bool placeMode, bool underLava)
 {
-    rebuildDirty(world);
+    rebuildDirty(world, cam.position);
     float cFogNear;
     float cFogFar;
     float fogR;
@@ -395,9 +456,28 @@ void Renderer::renderFrame(const World &world, const Camera &cam, int winW, int 
     shader.setFloat("uFogFar", cFogFar);
     shader.setVec3("uFogColor", fogR, fogG, fogB);
     atlas.bind(0);
-    for (int i = 0; i < 256; i++)
+    int pCx = (int)(cam.position.x / 16.f);
+    int pCz = (int)(cam.position.z / 16.f);
+    float maxChunkDist = fogFar[fogLevel] / 16.f;
+    auto planes = extractFrustumPlanes(vp);
+    for (int cz = 0; cz < 16; cz++)
     {
-        meshes[i].draw();
+        for (int cx = 0; cx < 16; cx++)
+        {
+            float dx = (float)(cx - pCx);
+            float dz = (float)(cz - pCz);
+            if (std::max(std::abs(dx), std::abs(dz)) > maxChunkDist)
+            {
+                continue;
+            }
+
+            if (!chunkInFrustum(cx, cz, planes))
+            {
+                continue;
+            }
+
+            meshes[(cz * 16) + cx].draw();
+        }
     }
 
     renderHighlight(hl, glm::value_ptr(vp), time);

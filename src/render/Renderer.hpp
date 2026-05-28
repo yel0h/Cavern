@@ -23,7 +23,6 @@ public:
 
     static constexpr const char *version = "0.2.1";
     int lastChunkUpdates = 0;
-    int fogLevel = 2;
 
     void init();
 
@@ -57,6 +56,8 @@ private:
     unsigned int hudVbo = 0;
     unsigned int txtVao = 0;
     unsigned int txtVbo = 0;
+    int fogLevel = 2;
+    static constexpr int maxRebuildsPerFrame = 4;
     static constexpr const char *vertSrc = R"(
 #version 330 core
 layout(location=0) in vec3 aPos;
@@ -212,7 +213,7 @@ void main()
 }
 )";
 
-    void rebuildDirty(const World &world);
+    void rebuildDirty(const World &world, const glm::vec3 &playerPos);
 
     void initHighlight();
 
