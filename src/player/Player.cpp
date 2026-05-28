@@ -272,6 +272,13 @@ void Player::tick(float dt, World &world, Input &input)
     int fx = (int)std::floor(position.x);
     int fy = (int)std::floor(position.y);
     int fz = (int)std::floor(position.z);
+    int ex = (int)std::floor(position.x);
+    int ey = (int)std::floor(position.y + Physics::eye);
+    int ez = (int)std::floor(position.z);
+    BlockType feetBlock = World::inBounds(fx, fy, fz) ? world.getBlock(fx, fy, fz) : BlockType::Air;
+    BlockType eyeBlock = World::inBounds(ex, ey, ez) ? world.getBlock(ex, ey, ez) : BlockType::Air;
+    underLava = (eyeBlock == BlockType::Lava);
+    bool inLiquid = (feetBlock == BlockType::Water || feetBlock == BlockType::Lava);
     if (isBlockSolid(world, fx, fy, fz))
     {
         position.y += 5.0f;
@@ -292,7 +299,8 @@ void Player::tick(float dt, World &world, Input &input)
             int py = hitBlock.py;
             int pz = hitBlock.pz;
             BlockType toPlace = (selectedBlock == BlockType::Turf) ? BlockType::Soil : selectedBlock;
-            if (world.inBounds(px, py, pz) && world.getBlock(px, py, pz) == BlockType::Air && !overlapsPlayer(px, py, pz))
+            if (World::inBounds(px, py, pz) && world.getBlock(px, py, pz) == BlockType::Air
+                && !overlapsPlayer(px, py, pz))
             {
                 world.setBlock(px, py, pz, toPlace);
                 Lighting::propagateColumn(world, px, pz);
@@ -343,24 +351,38 @@ void Player::tick(float dt, World &world, Input &input)
         move = glm::normalize(move) * Physics::walk;
     }
 
-    if (onGround)
+    if (inLiquid)
     {
         velocity.x = move.x;
         velocity.z = move.z;
+        velocity.y += Physics::gravity * 0.25f * dt;
+        if (input.jump)
+        {
+            velocity.y = 4.f;
+        }
     }
     else
     {
-        velocity.x += (move.x - velocity.x) * Physics::airControl;
-        velocity.z += (move.z - velocity.z) * Physics::airControl;
+        if (onGround)
+        {
+            velocity.x = move.x;
+            velocity.z = move.z;
+        }
+        else
+        {
+            velocity.x += (move.x - velocity.x) * Physics::airControl;
+            velocity.z += (move.z - velocity.z) * Physics::airControl;
+        }
+
+        if (input.jump && onGround)
+        {
+            velocity.y = Physics::jump;
+            onGround = false;
+        }
+
+        velocity.y += Physics::gravity * dt;
     }
 
-    if (input.jump && onGround)
-    {
-        velocity.y = Physics::jump;
-        onGround = false;
-    }
-
-    velocity.y += Physics::gravity * dt;
     onGround = false;
     resolveAABB(position, velocity * dt, world, onGround);
     if (onGround)

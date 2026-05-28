@@ -41,6 +41,7 @@ public:
     BrokenEvent lastBroken;
     BlockType selectedBlock = BlockType::Stone;
     bool placeMode = true;
+    bool underLava = false;
 
     [[nodiscard]] glm::vec3 eyePos() const { return position + glm::vec3(0.f, Physics::eye, 0.f); }
 
