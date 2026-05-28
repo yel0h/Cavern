@@ -210,7 +210,9 @@ Player::RayHit Player::castRay(const World &world) const
     constexpr float maxReach = 4.5f;
     for (int i = 0; i < 50; i++)
     {
-        if (i > 0 && World::inBounds(ix, iy, iz) && blockDef(world.getBlock(ix, iy, iz)).opaque)
+        if (i > 0 && World::inBounds(ix, iy, iz) &&
+            blockDef(world.getBlock(ix, iy, iz)).opaque &&
+            world.getBlock(ix, iy, iz) != BlockType::Bedrock)
         {
             return {true, ix, iy, iz, face, prevX, prevY, prevZ};
         }
