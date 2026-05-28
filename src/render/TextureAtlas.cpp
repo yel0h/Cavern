@@ -197,6 +197,62 @@ void TextureAtlas::paintTile(unsigned int *pixels, int tile)
                     break;
                 }
 
+                case 9:
+                {
+                    int base = 38 + (int)((h & 0x1F) - 16);
+                    int r = base;
+                    int g = base;
+                    int b = base;
+                    if (ph(x, y, 91) % 7 == 0)
+                    {
+                        r += 22;
+                        g += 22;
+                        b += 22;
+                    }
+
+                    if (ph(x, y, 92) % 13 == 0)
+                    {
+                        r -= 10;
+                        g -= 10;
+                        b -= 10;
+                    }
+
+                    px = makePixel(r, g, b);
+                    break;
+                }
+
+                case 10:
+                {
+                    int r = 230 + (int)((ph(x, y, 101) & 0x1F) - 20);
+                    int g = 80 + (int)((ph(x, y, 102) & 0x1F) - 20);
+                    int b = 10 + (int)((ph(x, y, 103) & 0x0F) - 8);
+                    if (ph(x, y, 104) % 6 == 0)
+                    {
+                        r = 255;
+                        g = 140;
+                        b = 20;
+                    }
+
+                    px = makePixel(r, g, b);
+                    break;
+                }
+
+                case 11:
+                {
+                    int r = 30 + (int)((ph(x, y, 111) & 0x1F) - 15);
+                    int g = 60 + (int)((ph(x, y, 112) & 0x1F) - 15);
+                    int b = 200 + (int)((ph(x, y, 113) & 0x1F) - 15);
+                    if (ph(x, y, 114) % 10 == 0)
+                    {
+                        r = 50;
+                        g = 100;
+                        b = 220;
+                    }
+
+                    px = makePixel(r, g, b);
+                    break;
+                }
+
                 default:
                     px = 0xFF808080u;
             }

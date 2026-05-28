@@ -10,6 +10,9 @@ enum class BlockType : unsigned char
     Timber = 5,
     Sapling = 6,
     Boards = 7,
+    Bedrock = 8,
+    Lava = 9,
+    Water = 10,
 };
 
 struct BlockDef
@@ -21,15 +24,18 @@ struct BlockDef
     unsigned char texBottom;
 };
 
-inline constexpr BlockDef blockDefs[8] = {
-        {false, true,  0, 0, 0},
+inline constexpr BlockDef blockDefs[11] = {
+        {false, true, 0, 0, 0},
         {true, false, 1, 2, 3},
         {true, false, 4, 4, 4},
         {true, false, 5, 5, 5},
         {true, false, 3, 3, 3},
         {true, false, 6, 6, 6},
-        {false, true,  7, 7, 7},
+        {false, true, 7, 7, 7},
         {true, false, 8, 8, 8},
+        {true, false, 9, 9, 9},
+        {false, true, 10, 10, 10},
+        {false, true, 11, 11, 11},
 };
 
 inline constexpr const BlockDef &blockDef(BlockType t)

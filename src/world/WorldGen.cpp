@@ -5,6 +5,8 @@
 
 namespace WorldGen
 {
+    static constexpr int oceanLevel = 34;
+
     static float hashNoise(int ix, int iz, unsigned int seed)
     {
         unsigned int h = (unsigned int)((ix * 2654435761u) + (iz * 805459861u)) ^ seed;
@@ -96,10 +98,25 @@ namespace WorldGen
         return value;
     }
 
+    static float islandFalloff(float wx, float wz)
+    {
+        float cx = World::BLOCK_W * 0.5f;
+        float cz = World::BLOCK_D * 0.5f;
+        float dx = (wx - cx) / cx;
+        float dz = (wz - cz) / cz;
+        float d = std::min(1.f, std::sqrt((dx * dx) + (dz * dz)));
+        float f = 1.f - (d * d);
+        return std::max(0.f, f);
+    }
+
     static int computeSurfaceY(float wx, float wz, unsigned int seed)
     {
         float n = fbm(wx, wz, seed);
-        return std::clamp(36 + (int)((n + 0.5f) * 22.f), 36, 58);
+        float falloff = islandFalloff(wx, wz);
+        int base = 36 + (int)((n + 0.5f) * 22.f);
+        base = std::clamp(base, 36, 58);
+        float blended = ((float)(base - oceanLevel) * falloff) + (float)oceanLevel;
+        return std::clamp((int)blended, oceanLevel - 1, 58);
     }
 
     void generate(World &world, unsigned int seed)
@@ -108,19 +125,26 @@ namespace WorldGen
         {
             for (int wz = 0; wz < World::BLOCK_D; wz++)
             {
+                bool isBorder = (wx == 0 || wx == World::BLOCK_W - 1 || wz == 0 || wz == World::BLOCK_D - 1);
                 int surfaceY = computeSurfaceY((float)wx, (float)wz, seed);
                 auto soilH = (unsigned int)(wx * 73856093 ^ wz * 19349663 ^ seed);
                 int soilDepth  = 1 + (int)(soilH % 3);
                 for (int wy = 0; wy < World::BLOCK_H; wy++)
                 {
+                    if (isBorder || wy == 0)
+                    {
+                        world.setBlock(wx, wy, wz, BlockType::Bedrock);
+                        continue;
+                    }
+
                     BlockType t;
                     if (wy > surfaceY)
                     {
-                        t = BlockType::Air;
+                        t = (wy <= oceanLevel) ? BlockType::Water : BlockType::Air;
                     }
                     else if (wy == surfaceY)
                     {
-                        t = BlockType::Turf;
+                        t = (surfaceY > oceanLevel) ? BlockType::Turf : BlockType::Soil;
                     }
                     else if (wy >= surfaceY - soilDepth)
                     {
@@ -136,20 +160,41 @@ namespace WorldGen
             }
         }
 
-        for (int wx = 0; wx < World::BLOCK_W; wx++)
+        for (int wx = 1; wx < World::BLOCK_W - 1; wx++)
         {
-            for (int wz = 0; wz < World::BLOCK_D; wz++)
+            for (int wz = 1; wz < World::BLOCK_D - 1; wz++)
             {
                 int sy = computeSurfaceY((float)wx, (float)wz, seed);
-                for (int wy = 1; wy <= sy - 4; wy++)
+                for (int wy = 2; wy <= sy - 4; wy++)
                 {
-                    float depth = (float)(sy - wy);
+                    auto depth = (float)(sy - wy);
                     float bias = std::clamp(depth / 32.f, 0.f, 1.f);
                     float threshold = 0.18f - (bias * 0.10f);
                     float n = fbm3((float)wx, (float)wy, (float)wz, seed + 0x9E3779B9u);
                     if (std::abs(n) < threshold)
                     {
                         world.setBlock(wx, wy, wz, BlockType::Air);
+                    }
+                }
+            }
+        }
+
+        unsigned int lavaSeed = seed + 0xDEADBEEFu;
+        for (int wx = 1; wx < World::BLOCK_W - 1; wx++)
+        {
+            for (int wz = 1; wz < World::BLOCK_D - 1; wz++)
+            {
+                for (int wy = 2; wy < oceanLevel - 4; wy++)
+                {
+                    if (world.getBlock(wx, wy, wz) != BlockType::Air)
+                    {
+                        continue;
+                    }
+
+                    float lava = fbm3((float)wx, (float)wy, (float)wz, lavaSeed);
+                    if (lava > 0.30f)
+                    {
+                        world.setBlock(wx, wy, wz, BlockType::Lava);
                     }
                 }
             }
