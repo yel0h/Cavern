@@ -352,6 +352,8 @@ void Renderer::renderDebug(int winW, int winH, int fps, int chunkUpdates, bool p
 
 void Renderer::rebuildDirty(const World &world, const glm::vec3 &playerPos)
 {
+    int currentChunkUpdates = 0;
+
     struct DirtyEntry
     {
         int cx;
@@ -380,7 +382,7 @@ void Renderer::rebuildDirty(const World &world, const glm::vec3 &playerPos)
               [](const DirtyEntry &a, const DirtyEntry &b) { return a.dist2 < b.dist2; });
     for (const auto &e : dirty)
     {
-        if (lastChunkUpdates >= maxRebuildsPerFrame)
+        if (currentChunkUpdates >= maxRebuildsPerFrame)
         {
             break;
         }
@@ -390,8 +392,10 @@ void Renderer::rebuildDirty(const World &world, const glm::vec3 &playerPos)
         meshes[idx].build(*chunk, world);
         meshes[idx].upload();
         chunk->dirty = false;
-        lastChunkUpdates++;
+        currentChunkUpdates++;
     }
+
+    lastChunkUpdates += currentChunkUpdates;
 }
 
 static constexpr float fogNear[4] = { 8.f, 24.f, 48.f, 96.f};
