@@ -300,3 +300,17 @@ bool Input::getNewLevel()
     newLevel = false;
     return temp;
 }
+
+bool Input::getJumpPressed()
+{
+    bool temp = jumpPressed;
+    jumpPressed = false;
+    return temp;
+}
+
+bool Input::getRespawn()
+{
+    bool temp = respawn;
+    respawn = false;
+    return temp;
+}

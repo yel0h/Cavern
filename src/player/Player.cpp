@@ -315,7 +315,7 @@ void Player::tick(float dt, World &world, Input &input)
         }
     }
 
-    if (input.respawn)
+    if (input.getRespawn())
     {
         respawn();
         return;
@@ -355,10 +355,10 @@ void Player::tick(float dt, World &world, Input &input)
     {
         velocity.x = move.x;
         velocity.z = move.z;
-        velocity.y += Physics::gravity * 0.25f * dt;
+        velocity.y += Physics::gravity * 0.5f * dt;
         if (input.jump)
         {
-            velocity.y = 4.f;
+            velocity.y = 8.f;
         }
     }
     else
@@ -374,7 +374,7 @@ void Player::tick(float dt, World &world, Input &input)
             velocity.z += (move.z - velocity.z) * Physics::airControl;
         }
 
-        if (input.jump && onGround)
+        if (input.getJumpPressed() && onGround)
         {
             velocity.y = Physics::jump;
             onGround = false;

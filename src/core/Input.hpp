@@ -18,7 +18,9 @@ private:
     bool toggleFullscreen = false;
     bool cycleFog = false;
     bool newLevel = false;
+    bool jumpPressed = false;
     bool pauseToggle = false;
+    bool respawn = false;
     bool funcKey[10] = {};
 
     static void keyCB(GLFWwindow *, int key, int, int action, int);
@@ -33,8 +35,6 @@ public:
     bool left = false;
     bool right = false;
     bool jump = false;
-    bool jumpPressed = false;
-    bool respawn = false;
     float mouseDX = 0.f;
     float mouseDY = 0.f;
     bool mouseCaptured = true;
@@ -59,5 +59,9 @@ public:
     bool getCycleFog();
 
     bool getNewLevel();
+
+    bool getJumpPressed();
+
+    bool getRespawn();
 };
 #endif//CAVERN_INPUT_HPP
