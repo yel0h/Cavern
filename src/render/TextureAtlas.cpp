@@ -151,22 +151,23 @@ void TextureAtlas::paintTile(unsigned int *pixels, int tile)
 
                 case 7:
                 {
-                    bool onCrossX = (x >= 7 && x <= 8);
-                    bool onCrossZ = (y >= 7 && y <= 8);
-                    if (!onCrossX && !onCrossZ)
+                    bool onStem = (x >= 7 && x <= 8);
+                    bool onLeafL = (y >= 4 && y <= 6) && (x >= 3 && x <= 6);
+                    bool onLeafR = (y >= 4 && y <= 6) && (x >= 9 && x <= 12);
+                    if (!onStem && !onLeafL && !onLeafR)
                     {
                         px = 0x00000000u;
                     }
                     else
                     {
-                        int r = 50 + (int)((ph(x, y, 71) & 0x1F) - 15);
-                        int g = 140 + (int)((ph(x, y, 72) & 0x1F) - 15);
-                        int b = 30 + (int)((ph(x, y, 73) & 0x1F) - 15);
-                        if (ph(x, y, 74) % 8 == 0)
+                        int r = 45 + (int)((ph(x, y, 71) & 0x1F) - 15);
+                        int g = 130 + (int)((ph(x, y, 72) & 0x1F) - 15);
+                        int b = 25 + (int)((ph(x, y, 73) & 0x1F) - 15);
+                        if (ph(x, y, 74) % 7 == 0)
                         {
-                            r = 30;
-                            g = 180;
-                            b = 50;
+                            r = 25;
+                            g = 165;
+                            b = 40;
                         }
 
                         px = makePixel(r, g, b) | 0xFF000000u;
@@ -223,14 +224,14 @@ void TextureAtlas::paintTile(unsigned int *pixels, int tile)
 
                 case 10:
                 {
-                    int r = 230 + (int)((ph(x, y, 101) & 0x1F) - 20);
-                    int g = 80 + (int)((ph(x, y, 102) & 0x1F) - 20);
+                    int r = 220 + (int)((ph(x, y, 101) & 0x1F) - 20);
+                    int g = 50 + (int)((ph(x, y, 102) & 0x1F) - 20);
                     int b = 10 + (int)((ph(x, y, 103) & 0x0F) - 8);
                     if (ph(x, y, 104) % 6 == 0)
                     {
                         r = 255;
-                        g = 140;
-                        b = 20;
+                        g = 100;
+                        b = 15;
                     }
 
                     px = makePixel(r, g, b);
@@ -239,14 +240,14 @@ void TextureAtlas::paintTile(unsigned int *pixels, int tile)
 
                 case 11:
                 {
-                    int r = 30 + (int)((ph(x, y, 111) & 0x1F) - 15);
-                    int g = 60 + (int)((ph(x, y, 112) & 0x1F) - 15);
-                    int b = 200 + (int)((ph(x, y, 113) & 0x1F) - 15);
-                    if (ph(x, y, 114) % 10 == 0)
+                    int r = 40 + (int)((ph(x,y,111) & 0x1F) - 15);
+                    int g = 120 + (int)((ph(x,y,112) & 0x1F) - 15);
+                    int b = 180 + (int)((ph(x,y,113) & 0x1F) - 15);
+                    if (ph(x, y, 114) % 8 == 0)
                     {
-                        r = 50;
-                        g = 100;
-                        b = 220;
+                        r = 80;
+                        g = 160;
+                        b = 210;
                     }
 
                     px = makePixel(r, g, b);
