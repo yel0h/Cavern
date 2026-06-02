@@ -116,7 +116,7 @@ namespace WorldGen
         int base = 36 + (int)((n + 0.5f) * 22.f);
         base = std::clamp(base, 36, 58);
         float blended = ((float)(base - oceanLevel) * falloff) + (float)oceanLevel;
-        return std::clamp((int)blended, oceanLevel - 1, 58);
+        return std::clamp((int)blended, oceanLevel - 3, 58);
     }
 
     void generate(World &world, unsigned int seed)
@@ -128,7 +128,7 @@ namespace WorldGen
                 bool isBorder = (wx == 0 || wx == World::BLOCK_W - 1 || wz == 0 || wz == World::BLOCK_D - 1);
                 int surfaceY = computeSurfaceY((float)wx, (float)wz, seed);
                 auto soilH = (unsigned int)(wx * 73856093 ^ wz * 19349663 ^ seed);
-                int soilDepth  = 1 + (int)(soilH % 3);
+                int soilDepth = 2 + (int)(soilH % 2);
                 for (int wy = 0; wy < World::BLOCK_H; wy++)
                 {
                     if (isBorder || wy == 0)
