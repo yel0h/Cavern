@@ -20,11 +20,9 @@ public:
     static constexpr int count = 10;
     std::vector<Wanderer> wanderers;
 
-    void spawn(const World &world);
-
     void spawnOne(const World &world, float x, float z);
 
-    void reset(const World &world) { spawn(world); }
+    void reset() { wanderers.clear(); }
 
     void tick(float dt, const World &world);
 };

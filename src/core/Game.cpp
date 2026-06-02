@@ -73,7 +73,6 @@ void Game::init()
 
     wandererRenderer.init();
     particleRenderer.init();
-    wanderers.spawn(world);
     player.respawn();
     timer.start();
     lastFrameTime = glfwGetTime();
@@ -173,7 +172,7 @@ void Game::generateNewLevel()
     std::cout << "World generated in " << glfwGetTime() - t0 << " s" << std::endl;
     renderer.markAllDirty();
     player.respawn();
-    wanderers.reset(world);
+    wanderers.reset();
 }
 
 void Game::render()

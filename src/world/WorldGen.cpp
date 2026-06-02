@@ -184,7 +184,7 @@ namespace WorldGen
         {
             for (int wz = 1; wz < World::BLOCK_D - 1; wz++)
             {
-                for (int wy = 2; wy < oceanLevel - 4; wy++)
+                for (int wy = 2; wy < oceanLevel; wy++)
                 {
                     if (world.getBlock(wx, wy, wz) != BlockType::Air)
                     {
