@@ -35,6 +35,8 @@ public:
 
     void renderGenerating(int winW, int winH);
 
+    void renderPauseMenu(int winW, int winH);
+
     void markAllDirty() { for (auto &m : meshes) m.free(); }
 
     void cycleFog() { fogLevel = (fogLevel + 1) % 4; }

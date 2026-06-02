@@ -488,6 +488,47 @@ void Renderer::renderGenerating(int winW, int winH)
     glDisable(GL_BLEND);
 }
 
+void Renderer::renderPauseMenu(int winW, int winH)
+{
+    float overlayVerts[12] = {
+            -1.f, -1.f, 1.f, -1.f, 1.f, 1.f,
+            -1.f, -1.f, 1.f, 1.f, -1.f, 1.f,
+    };
+    glBindBuffer(GL_ARRAY_BUFFER, xhVbo);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(overlayVerts), overlayVerts);
+    _2dShader.use();
+    glDisable(GL_DEPTH_TEST);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    txtShader.use();
+    txtShader.setInt("uFont", 1);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, font.texId);
+    glBindVertexArray(xhVao);
+    _2dShader.use();
+    glBindVertexArray(0);
+    txtShader.use();
+    txtShader.setInt("uFont", 1);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, font.texId);
+    constexpr int s = 3;
+    float lineH  = Font::CHAR_H * s + 6.f;
+    float startY = (float)winH * 0.35f;
+    auto drawLine = [&](const char *text, float y, float r, float g, float b)
+    {
+        float w = std::strlen(text) * Font::CHAR_W * s;
+        txtShader.setVec3("uColor", r, g, b);
+        drawText(text, ((float)winW * 0.5f) - (w * 0.5f), y, s, winW, winH);
+    };
+    drawLine("PAUSED", startY, 1.f, 1.f, 0.3f);
+    drawLine("Esc      Resume", startY + (lineH * 2), 1.f, 1.f, 1.f);
+    drawLine("N        New World", startY + (lineH * 3), 1.f, 1.f, 1.f);
+    drawLine("F1-F5    Save slot", startY + (lineH * 4), 1.f, 1.f, 1.f);
+    drawLine("F6-F10   Load slot", startY + (lineH * 5), 1.f, 1.f, 1.f);
+    glEnable(GL_DEPTH_TEST);
+    glDisable(GL_BLEND);
+}
+
 void Renderer::renderFrame(const World &world, const Camera &cam, int winW, int winH, const Renderer::HighlightBlock &hl, float time, BlockType selectedBlock, int fps, int chunkUpdates, bool placeMode, bool underLava)
 {
     rebuildDirty(world, cam.position);

@@ -193,6 +193,11 @@ void Game::render()
     float aspect = (winH > 0) ? (float)winW / (float)winH : 1.f;
     glm::mat4 vp = camera.viewProjection(aspect);
     particleRenderer.render(particles.particles, vp);
+    if (paused)
+    {
+        renderer.renderPauseMenu(winW, winH);
+    }
+
     glfwSwapBuffers(window);
 }
 
