@@ -50,10 +50,19 @@ void Input::keyCB(GLFWwindow *, int key, int, int action, int)
 
         case GLFW_KEY_SPACE:
             inst->jump = pressed;
+            if (action == GLFW_PRESS)
+            {
+                inst->jumpPressed = true;
+            }
+
             break;
 
         case GLFW_KEY_R:
-            inst->respawn = pressed;
+            if (action == GLFW_PRESS)
+            {
+                inst->respawn = true;
+            }
+
             break;
 
         case GLFW_KEY_ENTER:
@@ -155,12 +164,24 @@ void Input::keyCB(GLFWwindow *, int key, int, int action, int)
         case GLFW_KEY_ESCAPE:
             if (action == GLFW_PRESS)
             {
-                inst->mouseCaptured = !inst->mouseCaptured;
-                glfwSetInputMode(inst->window, GLFW_CURSOR, inst->mouseCaptured ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
-                if (inst->mouseCaptured)
-                {
-                    inst->firstMouse = true;
-                }
+                inst->pauseToggle = true;
+            }
+
+            break;
+
+        case GLFW_KEY_F1:
+        case GLFW_KEY_F2:
+        case GLFW_KEY_F3:
+        case GLFW_KEY_F4:
+        case GLFW_KEY_F5:
+        case GLFW_KEY_F6:
+        case GLFW_KEY_F7:
+        case GLFW_KEY_F8:
+        case GLFW_KEY_F9:
+        case GLFW_KEY_F10:
+            if (action == GLFW_PRESS)
+            {
+                inst->funcKey[key - GLFW_KEY_F1] = true;
             }
 
             break;
