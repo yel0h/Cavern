@@ -498,11 +498,11 @@ void Renderer::renderFrame(const World &world, const Camera &cam, int winW, int 
     float fogB;
     if (underLava)
     {
-        cFogNear = 2.f;
-        cFogFar = 8.f;
-        fogR = 0.8f;
-        fogG = 0.4f;
-        fogB = 0.1f;
+        cFogNear = 1.f;
+        cFogFar = 4.f;
+        fogR = 0.9f;
+        fogG = 0.08f;
+        fogB = 0.05f;
     }
     else
     {
