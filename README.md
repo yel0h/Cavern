@@ -1,7 +1,7 @@
 # Cavern
 Cavern is a simple voxel sandbox game written in C++ using OpenGL shaders.
 
-<img width="642" height="512" alt="image" src="https://github.com/user-attachments/assets/84b55a39-9adc-48a6-bcd0-b7a10fa3c379" />
+<img width="856" height="512" alt="image" src="https://github.com/user-attachments/assets/dee9739f-437b-4f93-8b1a-2cadc1c87a94" />
 
 ## Controls
 - WASD to move around
@@ -17,7 +17,8 @@ Cavern is a simple voxel sandbox game written in C++ using OpenGL shaders.
 - F to cycle fog distance
 - N to generate a new level
 - Y to invert mouse Y axis
-- ESC to unlock mouse
+- ESC to pause
+- F1-F10 to save and load world slots
 
 ## Technical Details
-The world is saved in the world.dat file, either manually (see Controls) or automatically upon exiting the game.
+The current world is saved in the world.dat file, either manually (see Controls) or automatically upon exiting the game. Additional world saves can be created in 5 slots, each of which exists as a save_\<id\>.dat file.
