@@ -225,14 +225,54 @@ void Game::run()
 
         input.beginFrame();
         glfwPollEvents();
-        player.applyMouseLook(input);
-        camera.position = player.eyePos();
-        camera.yaw = player.yaw;
-        camera.pitch = player.pitch;
-        int ticks = timer.advance();
-        for (int i = 0; i < ticks; ++i)
+        if (input.getPauseToggle())
         {
-            tick();
+            paused = !paused;
+            glfwSetInputMode(window, GLFW_CURSOR, paused ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
+            input.resetMouseState();
+        }
+
+        if (paused)
+        {
+            for (int i = 0; i < 5; i++)
+            {
+                char path[32];
+                if (input.getFuncKey(i))
+                {
+                    std::snprintf(path, sizeof(path), "save_%d.dat", i);
+                    world.save(path);
+                    std::cout << "Saved to slot " << i + 1 << '.' << std::endl;
+                }
+
+                if (input.getFuncKey(i + 5))
+                {
+                    std::snprintf(path, sizeof(path), "save_%d.dat", i);
+                    if (world.load(path))
+                    {
+                        renderer.markAllDirty();
+                        player.respawn();
+                        std::cout << "Loaded slot " << i + 1 << '.' << std::endl;
+                    }
+                }
+            }
+
+            if (input.getNewLevel())
+            {
+                generateNewLevel();
+                paused = false;
+            }
+        }
+        else
+        {
+            player.applyMouseLook(input);
+            camera.position = player.eyePos();
+            camera.yaw = player.yaw;
+            camera.pitch = player.pitch;
+            int ticks = timer.advance();
+            for (int i = 0; i < ticks; ++i)
+            {
+                tick();
+            }
         }
 
         render();

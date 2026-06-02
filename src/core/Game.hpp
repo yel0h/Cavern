@@ -29,6 +29,7 @@ private:
     int winH = 480;
     bool glfwInitialized = false;
     bool isFullscreen = false;
+    bool paused = false;
     int storedX = 0;
     int storedY = 0;
     int storedW = 854;

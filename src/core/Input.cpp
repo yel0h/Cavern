@@ -308,9 +308,23 @@ bool Input::getJumpPressed()
     return temp;
 }
 
+bool Input::getPauseToggle()
+{
+    bool temp = pauseToggle;
+    pauseToggle = false;
+    return temp;
+}
+
 bool Input::getRespawn()
 {
     bool temp = respawn;
     respawn = false;
+    return temp;
+}
+
+bool Input::getFuncKey(unsigned char index)
+{
+    bool temp = funcKey[index];
+    funcKey[index] = false;
     return temp;
 }

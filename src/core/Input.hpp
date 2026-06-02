@@ -44,6 +44,8 @@ public:
 
     void beginFrame();
 
+    void resetMouseState() { firstMouse = true; }
+
     bool getPrimaryAction();
 
     bool getSwitchMode();
@@ -62,6 +64,10 @@ public:
 
     bool getJumpPressed();
 
+    bool getPauseToggle();
+
     bool getRespawn();
+
+    bool getFuncKey(unsigned char index);
 };
 #endif//CAVERN_INPUT_HPP
