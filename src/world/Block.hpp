@@ -34,7 +34,7 @@ inline constexpr BlockDef blockDefs[11] = {
         {false, true, 7, 7, 7},
         {true, false, 8, 8, 8},
         {true, false, 9, 9, 9},
-        {false, true, 10, 10, 10},
+        {true, false,  10, 10, 10},
         {false, true, 11, 11, 11},
 };
 
