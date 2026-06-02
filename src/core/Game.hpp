@@ -25,13 +25,13 @@ private:
     WandererRenderer wandererRenderer;
     ParticleManager particles;
     ParticleRenderer particleRenderer;
-    int winW = 640;
+    int winW = 854;
     int winH = 480;
     bool glfwInitialized = false;
     bool isFullscreen = false;
     int storedX = 0;
     int storedY = 0;
-    int storedW = 640;
+    int storedW = 854;
     int storedH = 480;
     int fps = 0;
     int frameCount = 0;
