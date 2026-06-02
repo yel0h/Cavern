@@ -469,7 +469,7 @@ static constexpr float fogFar[4] = {16.f, 40.f, 64.f, 128.f};
 void Renderer::renderGenerating(int winW, int winH)
 {
     glViewport(0, 0, winW, winH);
-    glClearColor(0.05f, 0.05f, 0.05f, 1.f);
+    glClearColor(0.18f, 0.10f, 0.03f, 1.f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     txtShader.use();
     txtShader.setInt("uFont", 1);
