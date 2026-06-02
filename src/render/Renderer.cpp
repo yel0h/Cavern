@@ -63,6 +63,7 @@ void Renderer::init()
     shader.build(vertSrc, fragSrc);
     atlas.build();
     initHighlight();
+    initOutline();
     initCrosshair();
     initHUD();
     initText();
@@ -88,6 +89,18 @@ void Renderer::shutdown()
     {
         glDeleteBuffers(1, &hlVbo);
         hlVbo = 0;
+    }
+
+    if (olVao)
+    {
+        glDeleteVertexArrays(1, &olVao);
+        olVao = 0;
+    }
+
+    if (olVbo)
+    {
+        glDeleteBuffers(1, &olVbo);
+        olVbo = 0;
     }
 
     if (xhVao)
@@ -179,6 +192,59 @@ void Renderer::renderHighlight(const Renderer::HighlightBlock &hl, const float *
     glBindVertexArray(0);
     glDisable(GL_POLYGON_OFFSET_FILL);
     glDisable(GL_BLEND);
+}
+
+void Renderer::initOutline()
+{
+    olShader.build(hlVertSrc, olFragSrc);
+    glGenVertexArrays(1, &olVao);
+    glGenBuffers(1, &olVbo);
+    glBindVertexArray(olVao);
+    glBindBuffer(GL_ARRAY_BUFFER, olVbo);
+    glBufferData(GL_ARRAY_BUFFER, 24 * 3 * sizeof(float), nullptr, GL_DYNAMIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr);
+    glBindVertexArray(0);
+}
+
+void Renderer::renderOutline(const Renderer::HighlightBlock &hl, const float *vp)
+{
+    if (!hl.valid)
+    {
+        return;
+    }
+
+    auto x0 = (float)hl.bx;
+    auto y0 = (float)hl.by;
+    auto z0 = (float)hl.bz;
+    float x1 = (float)hl.bx + 1.f;
+    float y1 = (float)hl.by + 1.f;
+    float z1 = (float)hl.bz + 1.f;
+    float verts[24][3] = {
+            {x0, y0, z0}, {x1, y0, z0},
+            {x1, y0, z0}, {x1, y0, z1},
+            {x1, y0, z1}, {x0, y0, z1},
+            {x0, y0, z1}, {x0, y0, z0},
+            {x0, y1, z0}, {x1, y1, z0},
+            {x1, y1, z0}, {x1, y1, z1},
+            {x1, y1, z1}, {x0, y1, z1},
+            {x0, y1, z1}, {x0, y1, z0},
+            {x0, y0, z0}, {x0, y1, z0},
+            {x1, y0, z0}, {x1, y1, z0},
+            {x1, y0, z1}, {x1, y1, z1},
+            {x0, y0, z1}, {x0, y1, z1},
+    };
+
+    glBindBuffer(GL_ARRAY_BUFFER, olVbo);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(verts), verts);
+    olShader.use();
+    olShader.setMat4("uMVP", vp);
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LEQUAL);
+    glBindVertexArray(olVao);
+    glDrawArrays(GL_LINES, 0, 24);
+    glBindVertexArray(0);
+    glDepthFunc(GL_LESS);
 }
 
 void Renderer::initCrosshair()
@@ -484,6 +550,7 @@ void Renderer::renderFrame(const World &world, const Camera &cam, int winW, int 
     }
 
     renderHighlight(hl, glm::value_ptr(vp), time);
+    renderOutline(hl, glm::value_ptr(vp));
     renderCrosshair(winW, winH);
     renderHUD(winW, winH, selectedBlock);
     renderDebug(winW, winH, fps, chunkUpdates, placeMode);

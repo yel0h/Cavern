@@ -42,6 +42,7 @@ public:
 private:
     Shader shader;
     Shader hlShader;
+    Shader olShader;
     Shader _2dShader;
     Shader hudShader;
     Shader txtShader;
@@ -50,6 +51,8 @@ private:
     std::array<ChunkMesh, 256> meshes;
     unsigned int hlVao = 0;
     unsigned int hlVbo = 0;
+    unsigned int olVao = 0;
+    unsigned int olVbo = 0;
     unsigned int xhVao = 0;
     unsigned int xhVbo = 0;
     unsigned int hudVao = 0;
@@ -139,6 +142,15 @@ void main()
     fragColor = vec4(1.0, 1.0, 1.0, a);
 }
 )";
+    static constexpr const char *olFragSrc = R"(
+#version 330 core
+out vec4 fragColor;
+
+void main()
+{
+    fragColor = vec4(0.0, 0.0, 0.0, 1.0);
+}
+)";
     static constexpr const char *crosshairVertSrc = R"(
 #version 330 core
 layout(location=0) in vec2 aPos;
@@ -218,6 +230,10 @@ void main()
     void initHighlight();
 
     void renderHighlight(const HighlightBlock &hl, const float *vp, float time);
+
+    void initOutline();
+
+    void renderOutline(const HighlightBlock &hl, const float *vp);
 
     void initCrosshair();
 
