@@ -149,6 +149,11 @@ bool WandererManager::load(const char *path)
 
     unsigned int lCount = 0;
     f.read(reinterpret_cast<char *>(&lCount), sizeof(lCount));
+    if (lCount > count * 4u)
+    {
+        return false;
+    }
+
     wanderers.clear();
     std::uniform_int_distribution<int> dist(40, 119);
     for (unsigned int i = 0; i < lCount; i++)
