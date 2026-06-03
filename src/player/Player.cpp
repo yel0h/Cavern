@@ -317,7 +317,7 @@ void Player::tick(float dt, World &world, Input &input)
 
     if (input.getRespawn())
     {
-        respawn();
+        respawn(world);
         return;
     }
 
@@ -391,13 +391,30 @@ void Player::tick(float dt, World &world, Input &input)
     }
 }
 
-void Player::respawn()
+void Player::respawn(const World &world)
 {
     static std::mt19937 mt{std::random_device()()};
-    static std::uniform_real_distribution<float> dist(0.5f, World::BLOCK_W - 0.5f);
-    float rx = dist(mt);
-    float rz = dist(mt);
-    position = {rx, 45.f, rz};
+    static std::uniform_real_distribution<float> wDist(0.5f, World::BLOCK_W - 0.5f);
+    static std::uniform_real_distribution<float> dDist(0.5f, World::BLOCK_D - 0.5f);
+    if (!spawnSet)
+    {
+        spawnX = wDist(mt);
+        spawnZ = dDist(mt);
+        spawnSet = true;
+    }
+
+    float sx = spawnX;
+    float sz = spawnZ;
+    BlockType at = world.getBlock((int)sx, 45, (int)sz);
+    if (blockDef(at).liquid)
+    {
+        spawnX = wDist(mt);
+        spawnZ = dDist(mt);
+        sx = spawnX;
+        sz = spawnZ;
+    }
+
+    position = {sx, 45.f, sz};
     velocity = {0.f, 0.f, 0.f};
     onGround = false;
 }

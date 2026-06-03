@@ -10,11 +10,9 @@ private:
     double lastY = 0.0;
     bool firstMouse = true;
     static Input *inst;
-    bool primaryAction = false;
-    bool switchMode = false;
     bool save = false;
     bool spawnMob = false;
-    bool slot[6] = {};
+    bool slot[8] = {};
     bool toggleFullscreen = false;
     bool cycleFog = false;
     bool newLevel = false;
@@ -22,12 +20,15 @@ private:
     bool pauseToggle = false;
     bool respawn = false;
     bool funcKey[10] = {};
+    int scrollDelta = 0;
 
     static void keyCB(GLFWwindow *, int key, int, int action, int);
 
     static void cursorCB(GLFWwindow *, double x, double y);
 
     static void mouseBtnCB(GLFWwindow *, int btn, int action, int);
+
+    static void scrollCB(GLFWwindow *, double dx, double dy);
 
 public:
     bool forward = false;
@@ -39,6 +40,10 @@ public:
     float mouseDY = 0.f;
     bool mouseCaptured = true;
     bool invertY = false;
+    bool primaryAction = false;
+    bool primaryHeld = false;
+    bool switchMode = false;
+    bool switchHeld = false;
 
     void init(GLFWwindow *iWindow);
 
@@ -69,5 +74,7 @@ public:
     bool getRespawn();
 
     bool getFuncKey(unsigned char index);
+
+    int getScrollDelta();
 };
 #endif//CAVERN_INPUT_HPP

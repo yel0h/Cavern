@@ -67,6 +67,7 @@ void Renderer::init()
     initCrosshair();
     initHUD();
     initText();
+    initClouds();
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
@@ -139,7 +140,86 @@ void Renderer::shutdown()
         txtVbo = 0;
     }
 
+    if (cloudVao)
+    {
+        glDeleteVertexArrays(1, &cloudVao);
+        cloudVao = 0;
+    }
+
+    if (cloudVbo)
+    {
+        glDeleteBuffers(1, &cloudVbo);
+        cloudVbo = 0;
+    }
+
     font.shutdown();
+}
+
+static unsigned int cloudHash(int gx, int gz)
+{
+    unsigned int h = (unsigned)(gx * 2654435761u) ^ (unsigned)(gz * 805459861u) ^ 0xC10CD5u;
+    h ^= h >> 16;
+    h *= 0x45d9f3bu;
+    h ^= h >> 16;
+    return h;
+}
+
+void Renderer::initClouds()
+{
+    cloudShader.build(cloudVertSrc, cloudFragSrc);
+    static constexpr int cells = 16;
+    static constexpr float cell = 16.f;
+    static constexpr float y = 66.f;
+    std::vector<float> verts;
+    verts.reserve(cells * cells * 6 * 3);
+    for (int gz = 0; gz < cells; gz++)
+    {
+        for (int gx = 0; gx < cells; gx++)
+        {
+            if ((cloudHash(gx, gz) & 0xFFFF) < 0x8000)
+            {
+                continue;
+            }
+
+            float x0 = (float)gx * cell;
+            float x1 = x0 + cell;
+            float z0 = (float)gz * cell;
+            float z1 = z0 + cell;
+            verts.insert(verts.end(), {x0, y, z0, x1, y, z0, x1, y, z1});
+            verts.insert(verts.end(), {x0, y, z0, x1, y, z1, x0, y, z1});
+        }
+    }
+
+    cloudVertCount = (int)verts.size() / 3;
+    glGenVertexArrays(1, &cloudVao);
+    glGenBuffers(1, &cloudVbo);
+    glBindVertexArray(cloudVao);
+    glBindBuffer(GL_ARRAY_BUFFER, cloudVbo);
+    glBufferData(GL_ARRAY_BUFFER, (GLsizeiptr)(verts.size() * sizeof(float)), verts.data(), GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr);
+    glEnableVertexAttribArray(0);
+    glBindVertexArray(0);
+}
+
+void Renderer::renderClouds(const float *vp, float time)
+{
+    if (cloudVertCount == 0)
+    {
+        return;
+    }
+
+    float drift = std::fmod(time * 1.5f, 256.f);
+    cloudShader.use();
+    glUniformMatrix4fv(glGetUniformLocation(cloudShader.id, "uVP"), 1, GL_FALSE, vp);
+    glUniform1f(glGetUniformLocation(cloudShader.id, "uDrift"), drift);
+    glDisable(GL_CULL_FACE);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glBindVertexArray(cloudVao);
+    glDrawArrays(GL_TRIANGLES, 0, cloudVertCount);
+    glBindVertexArray(0);
+    glDisable(GL_BLEND);
+    glEnable(GL_CULL_FACE);
 }
 
 void Renderer::initHighlight()
@@ -590,6 +670,7 @@ void Renderer::renderFrame(const World &world, const Camera &cam, int winW, int 
         }
     }
 
+    renderClouds(glm::value_ptr(vp), time);
     renderHighlight(hl, glm::value_ptr(vp), time);
     renderOutline(hl, glm::value_ptr(vp));
     renderCrosshair(winW, winH);

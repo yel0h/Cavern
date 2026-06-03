@@ -16,7 +16,7 @@ private:
 
 public:
     static constexpr int TILE_SIZE = 16;
-    static constexpr int TILE_COUNT = 12;
+    static constexpr int TILE_COUNT = 17;
     static constexpr int WIDTH = TILE_SIZE * TILE_COUNT;
     static constexpr int HEIGHT = TILE_SIZE;
     unsigned int texId = 0;

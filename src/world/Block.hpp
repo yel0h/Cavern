@@ -13,29 +13,40 @@ enum class BlockType : unsigned char
     Bedrock = 8,
     Lava = 9,
     Water = 10,
+    Silt = 11,
+    Grit = 12,
+    CharVein = 13,
+    IronVein = 14,
+    GoldVein = 15,
 };
 
 struct BlockDef
 {
     bool opaque;
     bool transparent;
+    bool liquid;
     unsigned char texTop;
     unsigned char texSide;
     unsigned char texBottom;
 };
 
-inline constexpr BlockDef blockDefs[11] = {
-        {false, true, 0, 0, 0},
-        {true, false, 1, 2, 3},
-        {true, false, 4, 4, 4},
-        {true, false, 5, 5, 5},
-        {true, false, 3, 3, 3},
-        {true, false, 6, 6, 6},
-        {false, true, 7, 7, 7},
-        {true, false, 8, 8, 8},
-        {true, false, 9, 9, 9},
-        {false, false,  10, 10, 10},
-        {false, true, 11, 11, 11},
+inline constexpr BlockDef blockDefs[16] = {
+        {false, true, false, 0, 0, 0},
+        {true, false, false, 1, 2, 3},
+        {true, false, false, 4, 4, 4},
+        {true, false, false, 5, 5, 5},
+        {true, false, false, 3, 3, 3},
+        {true, false, false, 6, 6, 6},
+        {false, true, false, 7, 7, 7},
+        {true, false, false, 8, 8, 8},
+        {true, false, false, 9, 9, 9},
+        {false, false,  true, 10, 10, 10},
+        {false, true, true, 11, 11, 11},
+        {true, false, false, 12, 12, 12},
+        {true, false, false, 13, 13, 13},
+        {true, false, false, 14, 14, 14},
+        {true, false, false, 15, 15, 15},
+        {true, false, false, 16, 16, 16},
 };
 
 inline constexpr const BlockDef &blockDef(BlockType t)

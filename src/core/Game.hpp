@@ -40,6 +40,9 @@ private:
     double fpsTimer = 0.0;
     double lastFrameTime = 0.0;
     unsigned int seed = 0;
+    int hotbarIdx = 0;
+    int primaryHoldTimer = 0;
+    int switchHoldTimer = 0;
     static Game *inst;
 
     void init();

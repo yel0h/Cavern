@@ -254,6 +254,96 @@ void TextureAtlas::paintTile(unsigned int *pixels, int tile)
                     break;
                 }
 
+                case 12:
+                {
+                    int r = 195 + (int)((ph(x, y, 121) & 0x1F) - 15);
+                    int g = 168 + (int)((ph(x, y, 122) & 0x1F) - 15);
+                    int b = 105 + (int)((ph(x, y, 123) & 0x17) - 12);
+                    if (ph(x, y, 124) % 11 == 0)
+                    {
+                        r -= 18;
+                        g -= 14;
+                        b -= 8;
+                    }
+
+                    px = makePixel(r, g, b);
+                    break;
+                }
+
+                case 13:
+                {
+                    int base = 130 + (int)((ph(x, y, 131) & 0x1F) - 15);
+                    int r = base - 4;
+                    int g = base - 8;
+                    int b = base - 18;
+                    if (ph(x, y, 132) % 6 == 0)
+                    {
+                        r -= 30;
+                        g -= 28;
+                        b -= 25;
+                    }
+                    else if (ph(x, y, 133) % 9 == 0)
+                    {
+                        r += 22;
+                        g += 20;
+                        b += 16;
+                    }
+
+                    px = makePixel(r, g, b);
+                    break;
+                }
+
+                case 14:
+                {
+                    int base = 120 + (int)((ph(x, y, 141) & 0x27) - 20);
+                    int r = base - 8;
+                    int g = base - 4;
+                    int b = base + 14;
+                    if (ph(x, y, 14) % 7 == 0)
+                    {
+                        r = 22;
+                        g = 22;
+                        b = 24;
+                    }
+
+                    px = makePixel(r, g, b);
+                    break;
+                }
+
+                case 15:
+                {
+                    int base = 120 + (int)((ph(x, y, 151) & 0x27) - 20);
+                    int r = base - 8;
+                    int g = base - 4;
+                    int b = base + 14;
+                    if (ph(x, y, 15) % 8 == 0)
+                    {
+                        r = 185;
+                        g = 110;
+                        b = 55;
+                    }
+
+                    px = makePixel(r, g, b);
+                    break;
+                }
+
+                case 16:
+                {
+                    int base = 120 + (int)((ph(x, y, 161) & 0x27) - 20);
+                    int r = base - 8;
+                    int g = base - 4;
+                    int b = base + 14;
+                    if (ph(x, y, 16) % 9 == 0)
+                    {
+                        r = 230;
+                        g = 195;
+                        b = 30;
+                    }
+
+                    px = makePixel(r, g, b);
+                    break;
+                }
+
                 default:
                     px = 0xFF808080u;
             }

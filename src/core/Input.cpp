@@ -9,6 +9,7 @@ void Input::init(GLFWwindow *iWindow)
     glfwSetKeyCallback(iWindow, keyCB);
     glfwSetCursorPosCallback(iWindow, cursorCB);
     glfwSetMouseButtonCallback(iWindow, mouseBtnCB);
+    glfwSetScrollCallback(iWindow, scrollCB);
     glfwSetInputMode(iWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     if (glfwRawMouseMotionSupported())
     {
@@ -129,6 +130,22 @@ void Input::keyCB(GLFWwindow *, int key, int, int action, int)
 
             break;
 
+        case GLFW_KEY_7:
+            if (action == GLFW_PRESS)
+            {
+                inst->slot[6] = true;
+            }
+
+            break;
+
+        case GLFW_KEY_8:
+            if (action == GLFW_PRESS)
+            {
+                inst->slot[7] = true;
+            }
+
+            break;
+
         case GLFW_KEY_F:
             if (action == GLFW_PRESS)
             {
@@ -221,28 +238,60 @@ void Input::cursorCB(GLFWwindow *, double x, double y)
 
 void Input::mouseBtnCB(GLFWwindow *, int btn, int action, int)
 {
-    if (!inst || action != GLFW_PRESS)
+    if (!inst)
     {
         return;
     }
 
     if (!inst->mouseCaptured)
     {
-        inst->mouseCaptured = true;
-        glfwSetInputMode(inst->window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-        inst->firstMouse = true;
+        if (action == GLFW_PRESS)
+        {
+            inst->mouseCaptured = true;
+            glfwSetInputMode(inst->window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+            inst->firstMouse = true;
+        }
+
         return;
     }
 
     if (btn == GLFW_MOUSE_BUTTON_LEFT)
     {
-        inst->primaryAction = true;
+        if (action == GLFW_PRESS)
+        {
+            inst->primaryAction = true;
+            inst->primaryHeld = true;
+        }
+
+        if (action == GLFW_RELEASE)
+        {
+            inst->primaryHeld = false;
+        }
     }
 
     if (btn == GLFW_MOUSE_BUTTON_RIGHT)
     {
-        inst->switchMode = true;
+        if (action == GLFW_PRESS)
+        {
+            inst->switchMode = true;
+            inst->switchHeld = true;
+        }
+
+        if (action == GLFW_RELEASE)
+        {
+            inst->switchHeld = false;
+        }
     }
+}
+
+void Input::scrollCB(GLFWwindow *, double dx, double dy)
+{
+    if (!inst || !inst->mouseCaptured)
+    {
+        return;
+    }
+
+    inst->scrollDelta += (dy > 0.0) ? -1 : 1;
 }
 
 bool Input::getPrimaryAction()
@@ -326,5 +375,12 @@ bool Input::getFuncKey(unsigned char index)
 {
     bool temp = funcKey[index];
     funcKey[index] = false;
+    return temp;
+}
+
+int Input::getScrollDelta()
+{
+    int temp = scrollDelta;
+    scrollDelta = 0;
     return temp;
 }

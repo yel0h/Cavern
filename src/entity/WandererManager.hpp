@@ -17,13 +17,19 @@ private:
     static int surfaceY(const World &world, int wx, int wz) ;
 
 public:
-    static constexpr int count = 10;
+    static constexpr int count = 64;
     std::vector<Wanderer> wanderers;
+
+    void spawn(const World &world);
 
     void spawnOne(const World &world, float x, float z);
 
     void reset() { wanderers.clear(); }
 
     void tick(float dt, const World &world);
+
+    bool save(const char *path) const;
+
+    bool load(const char *path);
 };
 #endif//CAVERN_WANDERERMANAGER_HPP

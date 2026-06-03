@@ -73,13 +73,47 @@ void Game::init()
 
     wandererRenderer.init();
     particleRenderer.init();
-    player.respawn();
+    if (!wanderers.load("wanderers.dat"))
+    {
+        wanderers.spawn(world);
+    }
+
+    player.respawn(world);
     timer.start();
     lastFrameTime = glfwGetTime();
 }
 
+static constexpr BlockType hotbar[] = {
+        BlockType::Stone, BlockType::Rubble, BlockType::Soil, BlockType::Timber,
+        BlockType::Boards, BlockType::Sapling, BlockType::Silt, BlockType::Grit
+};
+
+static constexpr int hotbarSize = 8;
+
 void Game::tick()
 {
+    auto holdRepeat = [](bool held, bool &action, int &timer)
+    {
+        if (!held)
+        {
+            timer = 0;
+            return;
+        }
+
+        if (action)
+        {
+            timer = 0;
+            return;
+        }
+
+        if (++timer >= 15)
+        {
+            action = true;
+            timer = 0;
+        }
+    };
+    holdRepeat(input.primaryHeld, input.primaryAction, primaryHoldTimer);
+    holdRepeat(input.switchHeld, input.switchMode, switchHoldTimer);
     player.tick(0.01666667, world, input);
     if (player.lastBroken.valid)
     {
@@ -89,36 +123,21 @@ void Game::tick()
     particles.tick(0.01666667, world);
     wanderers.tick((float)Timer::dt, world);
     world.tickDynamic();
-    if (input.getSlot(0))
+    for (int i = 0; i < hotbarSize; i++)
     {
-        player.selectedBlock = BlockType::Stone;
+        if (input.getSlot(i))
+        {
+            hotbarIdx = i;
+        }
     }
 
-    if (input.getSlot(1))
+    int scrollDelta = input.getScrollDelta();
+    if (scrollDelta != 0)
     {
-        player.selectedBlock = BlockType::Rubble;
+        hotbarIdx = (((hotbarIdx + scrollDelta) % hotbarSize) + hotbarSize) % hotbarSize;
     }
 
-    if (input.getSlot(2))
-    {
-        player.selectedBlock = BlockType::Soil;
-    }
-
-    if (input.getSlot(3))
-    {
-        player.selectedBlock = BlockType::Timber;
-    }
-
-    if (input.getSlot(4))
-    {
-        player.selectedBlock = BlockType::Boards;
-    }
-
-    if (input.getSlot(5))
-    {
-        player.selectedBlock = BlockType::Sapling;
-    }
-
+    player.selectedBlock = hotbar[hotbarIdx];
     if (input.getSpawnMob())
     {
         wanderers.spawnOne(world, player.position.x, player.position.z);
@@ -171,8 +190,10 @@ void Game::generateNewLevel()
     world.generate(seed);
     std::cout << "World generated in " << glfwGetTime() - t0 << " s" << std::endl;
     renderer.markAllDirty();
-    player.respawn();
+    player.resetSpawn();
+    player.respawn(world);
     wanderers.reset();
+    std::remove("wanderers.dat");
 }
 
 void Game::render()
@@ -254,7 +275,7 @@ void Game::run()
                     if (world.load(path))
                     {
                         renderer.markAllDirty();
-                        player.respawn();
+                        player.respawn(world);
                         std::cout << "Loaded slot " << i + 1 << '.' << std::endl;
                     }
                 }
@@ -288,6 +309,7 @@ void Game::run()
 void Game::shutdown()
 {
     world.save("world.dat");
+    wanderers.save("wanderers.dat");
     renderer.shutdown();
     wandererRenderer.shutdown();
     particleRenderer.shutdown();

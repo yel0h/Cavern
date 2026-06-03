@@ -61,6 +61,10 @@ private:
     unsigned int hudVbo = 0;
     unsigned int txtVao = 0;
     unsigned int txtVbo = 0;
+    unsigned int cloudVao = 0;
+    unsigned int cloudVbo = 0;
+    Shader cloudShader;
+    int cloudVertCount = 0;
     int fogLevel = 2;
     static constexpr int maxRebuildsPerFrame = 4;
     static constexpr const char *vertSrc = R"(
@@ -210,7 +214,6 @@ void main()
     vUV = aUV;
 }
 )";
-
     static constexpr const char *txtFragSrc = R"(
 #version 330 core
 in vec2 vUV;
@@ -226,8 +229,33 @@ void main()
     fragColor = vec4(uColor, a);
 }
 )";
+    static constexpr const char *cloudVertSrc = R"(
+#version 330 core
+layout(location=0) in vec3 aPos;
+
+uniform mat4 uVP;
+uniform float uDrift;
+
+void main()
+{
+    gl_Position = uVP * vec4(aPos.x + uDrift, aPos.y, aPos.z, 1.0);
+}
+)";
+    static constexpr const char *cloudFragSrc = R"(
+#version 330 core
+out vec4 fragColor;
+
+void main()
+{
+    fragColor = vec4(1.0, 1.0, 1.0, 0.72);
+}
+)";
 
     void rebuildDirty(const World &world, const glm::vec3 &playerPos);
+
+    void initClouds();
+
+    void renderClouds(const float *vp, float time);
 
     void initHighlight();
 

@@ -119,6 +119,85 @@ namespace WorldGen
         return std::clamp((int)blended, oceanLevel - 3, 58);
     }
 
+    static void placeTree(World &world, int wx, int sy, int wz, int height)
+    {
+        for (int dy = 1; dy <= height; dy++)
+        {
+            int wy = sy + dy;
+            if (wy >= World::BLOCK_H)
+            {
+                break;
+            }
+
+            world.setBlock(wx, wy, wz, BlockType::Timber);
+        }
+
+        int top = sy + height;
+        for (int dy = -2; dy <= 1; dy++)
+        {
+            int cy = top + dy;
+            if (cy < 1 || cy >= World::BLOCK_H)
+            {
+                continue;
+            }
+
+            int radius = (dy == -2 || dy == 1) ? 1 : 2;
+            for (int dx = -radius; dx <= radius; dx++)
+            {
+                for (int dz = -radius; dz <= radius; dz++)
+                {
+                    if (dx == 0 && dz == 0 && dy <= 0)
+                    {
+                        continue;
+                    }
+
+                    int nx = wx + dx, nz = wz + dz;
+                    if (nx < 1 || nx >= World::BLOCK_W - 1 || nz < 1 || nz >= World::BLOCK_D - 1)
+                    {
+                        continue;
+                    }
+
+                    if (world.getBlock(nx, cy, nz) == BlockType::Air)
+                    {
+                        world.setBlock(nx, cy, nz, BlockType::Sapling);
+                    }
+                }
+            }
+        }
+    }
+
+    static void placeOreVein(World &world, int cx, int cy, int cz, BlockType ore, int blobSize, unsigned int seed)
+    {
+        int bx = cx;
+        int by = cy;
+        int bz = cz;
+        static const int ddx[] = {1, -1, 0, 0, 0, 0};
+        static const int ddy[] = {0, 0, 1, -1, 0, 0};
+        static const int ddz[] = {0, 0, 0, 0, 1, -1};
+        unsigned int rng = seed ^ (unsigned int)(cx * 73856093 ^ cy * 2097143 ^ cz * 19349663);
+        for (int k = 0; k < blobSize; k++)
+        {
+            rng = (rng * 1664525u) + 1013904223u;
+            int dir = (int)(rng % 6);
+            int nx = bx + ddx[dir];
+            int ny = by + ddy[dir];
+            int nz = bz + ddz[dir];
+            if (nx < 1 || nx >= World::BLOCK_W - 1 || ny < 1 || ny >= World::BLOCK_H - 1 || nz < 1 || nz >= World::BLOCK_D - 1)
+            {
+                continue;
+            }
+
+            if (world.getBlock(nx, ny, nz) == BlockType::Stone)
+            {
+                world.setBlock(nx, ny, nz, ore);
+            }
+
+            bx = nx;
+            by = ny;
+            bz = nz;
+        }
+    }
+
     void generate(World &world, unsigned int seed)
     {
         for (int wx = 0; wx < World::BLOCK_W; wx++)
@@ -127,7 +206,7 @@ namespace WorldGen
             {
                 bool isBorder = (wx == 0 || wx == World::BLOCK_W - 1 || wz == 0 || wz == World::BLOCK_D - 1);
                 int surfaceY = computeSurfaceY((float)wx, (float)wz, seed);
-                auto soilH = (unsigned int)(wx * 73856093 ^ wz * 19349663 ^ seed);
+                unsigned int soilH = (unsigned int)wx * 73856093 ^ (unsigned int)wz * 19349663 ^ (unsigned int)seed;
                 int soilDepth = 2 + (int)(soilH % 2);
                 for (int wy = 0; wy < World::BLOCK_H; wy++)
                 {
@@ -156,6 +235,68 @@ namespace WorldGen
                     }
 
                     world.setBlock(wx, wy, wz, t);
+                }
+            }
+        }
+
+        for (int wx = 1; wx < World::BLOCK_W - 1; wx++)
+        {
+            for (int wz = 1; wz < World::BLOCK_D - 1; wz++)
+            {
+                int sy = computeSurfaceY((float) wx, (float) wz, seed);
+                if (sy <= oceanLevel)
+                {
+                    continue;
+                }
+
+                float falloff = islandFalloff((float) wx, (float) wz);
+                if (falloff < 0.35f && sy <= oceanLevel + 4)
+                {
+                    float siltN = hashNoise(wx, wz, seed + 0x5E115u);
+                    if (siltN > 0.4f)
+                    {
+                        world.setBlock(wx, sy, wz, BlockType::Silt);
+                        if (sy - 1 >= 1)
+                        {
+                            world.setBlock(wx, sy - 1, wz, BlockType::Silt);
+                        }
+                    }
+                }
+
+                int syN = computeSurfaceY((float) (wx + 1), (float) wz, seed);
+                int syS = computeSurfaceY((float) wx, (float) (wz + 1), seed);
+                bool steep = (std::abs(sy - syN) >= 3 || std::abs(sy - syS) >= 3);
+                if (steep)
+                {
+                    float gritN = hashNoise(wx, wz, seed + 0x6B115u);
+                    if (gritN > 0.5f)
+                    {
+                        world.setBlock(wx, sy, wz, BlockType::Grit);
+                    }
+                }
+            }
+        }
+
+        for (int wx = 1; wx < World::BLOCK_W - 1; wx++)
+        {
+            for (int wz = 1; wz < World::BLOCK_D - 1; wz++)
+            {
+                int sy = computeSurfaceY((float)wx, (float)wz, seed);
+                for (int wy = 2; wy < sy - 2; wy++)
+                {
+                    if (world.getBlock(wx, wy, wz) != BlockType::Soil)
+                    {
+                        continue;
+                    }
+
+                    bool exposed = (world.getBlock(wx - 1, wy, wz) == BlockType::Air ||
+                                    world.getBlock(wx + 1, wy, wz) == BlockType::Air ||
+                                    world.getBlock(wx, wy, wz - 1) == BlockType::Air ||
+                                    world.getBlock(wx, wy, wz + 1) == BlockType::Air);
+                    if (exposed)
+                    {
+                        world.setBlock(wx, wy, wz, BlockType::Stone);
+                    }
                 }
             }
         }
@@ -197,6 +338,96 @@ namespace WorldGen
                         world.setBlock(wx, wy, wz, BlockType::Lava);
                     }
                 }
+            }
+        }
+
+        struct OreSpec
+        {
+            BlockType type;
+            int maxY;
+            int centres;
+            int blobSize;
+            unsigned int seedOff;
+        };
+
+        OreSpec ores[] = {
+                {BlockType::CharVein, 58, 200, 20, 0x0CA41u},
+                {BlockType::IronVein, 45, 120, 20, 0x1A04Fu},
+                {BlockType::GoldVein, 28,  60, 15, 0x60D6Eu},
+        };
+        for (auto &ore : ores)
+        {
+            unsigned int oreSeed = seed + ore.seedOff;
+            for (int n = 0; n < ore.centres; n++)
+            {
+                unsigned int h = oreSeed ^ (unsigned int)(n * 2654435761u);
+                h ^= h >> 16;
+                h *= 0x45d9f3bu;
+                h ^= h >> 16;
+                int cx = 1 + (int)(h % (unsigned int)(World::BLOCK_W - 2));
+                h ^= h >> 16;
+                h *= 0x45d9f3bu;
+                h ^= h >> 16;
+                int cz = 1 + (int)(h % (unsigned int)(World::BLOCK_D - 2));
+                h ^= h >> 16;
+                h *= 0x45d9f3bu;
+                h ^= h >> 16;
+                int cy = 2 + (int)(h % (unsigned int)(ore.maxY - 2));
+                if (world.getBlock(cx, cy, cz) != BlockType::Stone)
+                {
+                    continue;
+                }
+
+                int blobSize = (ore.blobSize / 2) + ((int)((h >> 8) % (unsigned int)((ore.blobSize / 2) + 1)));
+                placeOreVein(world, cx, cy, cz, ore.type, blobSize, oreSeed + (unsigned int)n);
+            }
+        }
+
+        unsigned int treeSeed = seed + 0xABCDEF01u;
+        for (int wx = 2; wx < World::BLOCK_W - 2; wx++)
+        {
+            for (int wz = 2; wz < World::BLOCK_D - 2; wz++)
+            {
+                float treeN = hashNoise(wx, wz, treeSeed);
+                if (treeN <= 0.96f)
+                {
+                    continue;
+                }
+
+                int sy = computeSurfaceY((float) wx, (float) wz, seed);
+                if (sy <= oceanLevel)
+                {
+                    continue;
+                }
+
+                if (world.getBlock(wx, sy, wz) != BlockType::Turf)
+                {
+                    continue;
+                }
+
+                unsigned int th = (unsigned int) (wx * 73856093 ^ wz * 19349663 ^ treeSeed);
+                int height = 4 + (int) (th % 3);
+                bool clear = true;
+                for (int dy = 1; dy <= height + 2 && clear; dy++)
+                {
+                    int wy = sy + dy;
+                    if (wy >= World::BLOCK_H)
+                    {
+                        break;
+                    }
+
+                    if (world.getBlock(wx, wy, wz) != BlockType::Air)
+                    {
+                        clear = false;
+                    }
+                }
+
+                if (!clear)
+                {
+                    continue;
+                }
+
+                placeTree(world, wx, sy, wz, height);
             }
         }
     }

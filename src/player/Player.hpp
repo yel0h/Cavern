@@ -49,9 +49,15 @@ public:
 
     void applyMouseLook(const Input &input);
 
-    void respawn();
+    void respawn(const World &world);
+
+    void resetSpawn() { spawnSet = false; }
 
 private:
+    float spawnX = 128.f;
+    float spawnZ = 128.f;
+    bool spawnSet = false;
+
     [[nodiscard]] static bool isBlockSolid(const World &world, int wx, int wy, int wz) ;
 
     [[nodiscard]] RayHit castRay(const World &world) const;

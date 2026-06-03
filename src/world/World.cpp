@@ -270,11 +270,6 @@ void World::tickDynamic()
                     continue;
                 }
 
-                if (nx == 0 || nx == BLOCK_W - 1 || nz == 0 || nz == BLOCK_D - 1)
-                {
-                    continue;
-                }
-
                 BlockType nb = getBlock(nx, wy, nz);
                 if (nb == BlockType::Air)
                 {
@@ -363,6 +358,33 @@ void World::tickDynamic()
                 }
             }
         }
+    }
+
+    for (int i = 0; i < 30000; i++)
+    {
+        int wx = wDist(mt);
+        int wy = hDist(mt);
+        int wz = dDist(mt);
+        BlockType bt = getBlock(wx, wy, wz);
+        if (bt != BlockType::Silt && bt != BlockType::Grit)
+        {
+            continue;
+        }
+
+        if (wy == 0 || getBlock(wx, wy - 1, wz) != BlockType::Air)
+        {
+            continue;
+        }
+
+        int dest = wy - 1;
+        while (dest > 0 && getBlock(wx, dest - 1, wz) == BlockType::Air)
+        {
+            dest--;
+        }
+
+        setBlock(wx, wy,   wz, BlockType::Air);
+        setBlock(wx, dest, wz, bt);
+        Lighting::propagateColumn(*this, wx, wz);
     }
 }
 
