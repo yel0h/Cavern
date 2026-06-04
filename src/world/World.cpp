@@ -436,6 +436,11 @@ bool World::load(const char *path)
         }
 
         f.read(reinterpret_cast<char *>(c->blocks.data()), c->blocks.size());
+        if (fVersion < 3)
+        {
+            std::array<unsigned char, Chunk::WIDTH * Chunk::HEIGHT * Chunk::DEPTH> dummy{};
+            f.read(reinterpret_cast<char *>(dummy.data()), dummy.size());
+        }
     }
 
     if (fVersion < 3)
