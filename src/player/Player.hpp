@@ -49,7 +49,7 @@ public:
 
     void applyMouseLook(const Input &input);
 
-    void respawn(const World &world);
+    void respawn();
 
     void resetSpawn() { spawnSet = false; }
 

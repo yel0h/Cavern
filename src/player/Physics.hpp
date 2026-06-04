@@ -9,5 +9,6 @@ namespace Physics
     inline constexpr float jump = 9.0f;
     inline constexpr float walk = 10.f;
     inline constexpr float airControl = 0.2f;
+    inline constexpr float terminalVelocity = -50.f;
 }
 #endif//CAVERN_PHYSICS_HPP

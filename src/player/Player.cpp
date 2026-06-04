@@ -220,7 +220,7 @@ Player::RayHit Player::castRay(const World &world) const
         prevX = ix;
         prevY = iy;
         prevZ = iz;
-        if (tMaxX < tMaxY && tMaxX < tMaxZ)
+        if (tMaxX <= tMaxY && tMaxX <= tMaxZ)
         {
             if (tMaxX > maxReach)
             {
@@ -231,7 +231,7 @@ Player::RayHit Player::castRay(const World &world) const
             face = (stepX > 0) ? 2 : 3;
             tMaxX += tDeltaX;
         }
-        else if (tMaxY < tMaxZ)
+        else if (tMaxY <= tMaxZ)
         {
             if (tMaxY > maxReach)
             {
@@ -299,7 +299,9 @@ void Player::tick(float dt, World &world, Input &input)
             int py = hitBlock.py;
             int pz = hitBlock.pz;
             BlockType toPlace = (selectedBlock == BlockType::Turf) ? BlockType::Soil : selectedBlock;
-            if (World::inBounds(px, py, pz) && world.getBlock(px, py, pz) == BlockType::Air
+            BlockType existing = world.getBlock(px, py, pz);
+            if (world.inBounds(px, py, pz)
+                && (existing == BlockType::Air || blockDef(existing).liquid)
                 && !overlapsPlayer(px, py, pz))
             {
                 world.setBlock(px, py, pz, toPlace);
@@ -317,7 +319,7 @@ void Player::tick(float dt, World &world, Input &input)
 
     if (input.getRespawn())
     {
-        respawn(world);
+        respawn();
         return;
     }
 
@@ -380,7 +382,7 @@ void Player::tick(float dt, World &world, Input &input)
             onGround = false;
         }
 
-        velocity.y += Physics::gravity * dt;
+        velocity.y = std::max(velocity.y + (Physics::gravity * dt), Physics::terminalVelocity);
     }
 
     onGround = false;
@@ -391,7 +393,7 @@ void Player::tick(float dt, World &world, Input &input)
     }
 }
 
-void Player::respawn(const World &world)
+void Player::respawn()
 {
     static std::mt19937 mt{std::random_device()()};
     static std::uniform_real_distribution<float> wDist(0.5f, World::BLOCK_W - 0.5f);
@@ -405,15 +407,6 @@ void Player::respawn(const World &world)
 
     float sx = spawnX;
     float sz = spawnZ;
-    BlockType at = world.getBlock((int)sx, 45, (int)sz);
-    if (blockDef(at).liquid)
-    {
-        spawnX = wDist(mt);
-        spawnZ = dDist(mt);
-        sx = spawnX;
-        sz = spawnZ;
-    }
-
     position = {sx, 45.f, sz};
     velocity = {0.f, 0.f, 0.f};
     onGround = false;

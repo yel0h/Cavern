@@ -78,7 +78,7 @@ void Game::init()
         wanderers.spawn(world);
     }
 
-    player.respawn(world);
+    player.respawn();
     timer.start();
     lastFrameTime = glfwGetTime();
 }
@@ -191,7 +191,7 @@ void Game::generateNewLevel()
     std::cout << "World generated in " << glfwGetTime() - t0 << " s" << std::endl;
     renderer.markAllDirty();
     player.resetSpawn();
-    player.respawn(world);
+    player.respawn();
     wanderers.reset();
     std::remove("wanderers.dat");
 }
@@ -275,7 +275,7 @@ void Game::run()
                     if (world.load(path))
                     {
                         renderer.markAllDirty();
-                        player.respawn(world);
+                        player.respawn();
                         std::cout << "Loaded slot " << i + 1 << '.' << std::endl;
                     }
                 }
