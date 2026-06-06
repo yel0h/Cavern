@@ -1,7 +1,32 @@
 #include "Game.hpp"
+#include <fstream>
 #include <iostream>
 
 Game *Game::inst = nullptr;
+
+static void saveSpawnFile(float x, float z)
+{
+    std::ofstream f("spawn.dat", std::ios::binary);
+    if (!f)
+    {
+        return;
+    }
+
+    f.write(reinterpret_cast<char const *>(&x), sizeof(x));
+    f.write(reinterpret_cast<char const *>(&z), sizeof(z));
+}
+
+static bool loadSpawnFile(float &x, float &z)
+{
+    std::ifstream f("spawn.dat", std::ios::binary);
+    if (!f)
+    {
+        return false;
+    }
+
+    bool ok = f.read(reinterpret_cast<char *>(&x), sizeof(x)) && f.read(reinterpret_cast<char *>(&z), sizeof(z));
+    return ok;
+}
 
 void Game::framebufferSizeCB(GLFWwindow *w, int width, int height)
 {
@@ -76,6 +101,12 @@ void Game::init()
     if (!wanderers.load("wanderers.dat"))
     {
         wanderers.spawn(world);
+    }
+
+    float sx, sz;
+    if (loadSpawnFile(sx, sz))
+    {
+        player.loadSpawn(sx, sz);
     }
 
     player.respawn();
@@ -160,8 +191,10 @@ void Game::tick()
 
     if (input.getSave())
     {
+        player.setSpawn();
+        saveSpawnFile(player.spawnX, player.spawnZ);
         world.save("world.dat");
-        std::cout << "World saved." << std::endl;
+        std::cout << "Spawn point set." << std::endl;
     }
 }
 

@@ -16,7 +16,6 @@ public:
         int bx = 0;
         int by = 0;
         int bz = 0;
-        int face = 0;
         int px = 0;
         int py = 0;
         int pz = 0;
@@ -42,6 +41,8 @@ public:
     BlockType selectedBlock = BlockType::Stone;
     bool placeMode = true;
     bool underLava = false;
+    float spawnX = 128.f;
+    float spawnZ = 128.f;
 
     [[nodiscard]] glm::vec3 eyePos() const { return position + glm::vec3(0.f, Physics::eye, 0.f); }
 
@@ -51,17 +52,17 @@ public:
 
     void respawn();
 
-    void resetSpawn() { spawnSet = false; }
+    void resetSpawn();
+
+    void setSpawn();
+
+    void loadSpawn(float x, float z);
 
 private:
-    float spawnX = 128.f;
-    float spawnZ = 128.f;
-    bool spawnSet = false;
-
     [[nodiscard]] static bool isBlockSolid(const World &world, int wx, int wy, int wz) ;
 
     [[nodiscard]] RayHit castRay(const World &world) const;
 
-    bool overlapsPlayer(int bx, int by, int bz) const;
+    [[nodiscard]] bool overlapsPlayer(int bx, int by, int bz) const;
 };
 #endif//CAVERN_PLAYER_HPP

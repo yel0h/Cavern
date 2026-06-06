@@ -203,7 +203,6 @@ Player::RayHit Player::castRay(const World &world) const
     float tMaxX = (dir.x != 0.f) ? std::abs(((stepX > 0 ? std::floor(eye.x) + 1.f : std::floor(eye.x)) - eye.x) / dir.x) : 1e30f;
     float tMaxY = (dir.y != 0.f) ? std::abs(((stepY > 0 ? std::floor(eye.y) + 1.f : std::floor(eye.y)) - eye.y) / dir.y) : 1e30f;
     float tMaxZ = (dir.z != 0.f) ? std::abs(((stepZ > 0 ? std::floor(eye.z) + 1.f : std::floor(eye.z)) - eye.z) / dir.z) : 1e30f;
-    int face = 0;
     int prevX = ix;
     int prevY = iy;
     int prevZ = iz;
@@ -214,7 +213,7 @@ Player::RayHit Player::castRay(const World &world) const
             blockDef(world.getBlock(ix, iy, iz)).opaque &&
             world.getBlock(ix, iy, iz) != BlockType::Bedrock)
         {
-            return {true, ix, iy, iz, face, prevX, prevY, prevZ};
+            return {true, ix, iy, iz, prevX, prevY, prevZ};
         }
 
         prevX = ix;
@@ -228,7 +227,6 @@ Player::RayHit Player::castRay(const World &world) const
             }
 
             ix += stepX;
-            face = (stepX > 0) ? 2 : 3;
             tMaxX += tDeltaX;
         }
         else if (tMaxY <= tMaxZ)
@@ -239,7 +237,6 @@ Player::RayHit Player::castRay(const World &world) const
             }
 
             iy += stepY;
-            face = (stepY > 0) ? 1 : 0;
             tMaxY += tDeltaY;
         }
         else
@@ -250,7 +247,6 @@ Player::RayHit Player::castRay(const World &world) const
             }
 
             iz += stepZ;
-            face = (stepZ > 0) ? 4 : 5;
             tMaxZ += tDeltaZ;
         }
     }
@@ -300,7 +296,7 @@ void Player::tick(float dt, World &world, Input &input)
             int pz = hitBlock.pz;
             BlockType toPlace = (selectedBlock == BlockType::Turf) ? BlockType::Soil : selectedBlock;
             BlockType existing = world.getBlock(px, py, pz);
-            if (world.inBounds(px, py, pz)
+            if (World::inBounds(px, py, pz)
                 && (existing == BlockType::Air || blockDef(existing).liquid)
                 && !overlapsPlayer(px, py, pz))
             {
@@ -395,19 +391,25 @@ void Player::tick(float dt, World &world, Input &input)
 
 void Player::respawn()
 {
-    static std::mt19937 mt{std::random_device()()};
-    static std::uniform_real_distribution<float> wDist(0.5f, World::BLOCK_W - 0.5f);
-    static std::uniform_real_distribution<float> dDist(0.5f, World::BLOCK_D - 0.5f);
-    if (!spawnSet)
-    {
-        spawnX = wDist(mt);
-        spawnZ = dDist(mt);
-        spawnSet = true;
-    }
-
-    float sx = spawnX;
-    float sz = spawnZ;
-    position = {sx, 45.f, sz};
+    position = {spawnX, 45.f, spawnZ};
     velocity = {0.f, 0.f, 0.f};
     onGround = false;
+}
+
+void Player::resetSpawn()
+{
+    spawnX = 128.f;
+    spawnZ = 128.f;
+}
+
+void Player::setSpawn()
+{
+    spawnX = position.x;
+    spawnZ = position.z;
+}
+
+void Player::loadSpawn(float x, float z)
+{
+    spawnX = x;
+    spawnZ = z;
 }
