@@ -20,24 +20,19 @@ static std::array<glm::vec4, 6> extractFrustumPlanes(const glm::mat4 &vp)
 
 static bool chunkInFrustum(int cx, int cz, const std::array<glm::vec4, 6> &planes)
 {
-    float x0 = (float)(cx * 16);
+    auto x0 = (float)(cx * 16);
     float x1 = x0 + 16.f;
     float y0 = 0.f;
     float y1 = 64.f;
-    float z0 = (float)(cz * 16);
+    auto z0 = (float)(cz * 16);
     float z1 = z0 + 16.f;
-    for (const auto &p : planes)
-    {
-        float px = (p.x >= 0.f) ? x1 : x0;
-        float py = (p.y >= 0.f) ? y1 : y0;
-        float pz = (p.z >= 0.f) ? z1 : z0;
-        if ((p.x * px) + (p.y * py) + (p.z * pz) + p.w < 0.f)
-        {
-            return false;
-        }
-    }
-
-    return true;
+    return std::ranges::all_of(planes, [x1, x0, y1, y0, z1, z0](const auto &p)
+                               {
+                                    float px = (p.x >= 0.f) ? x1 : x0;
+                                    float py = (p.y >= 0.f) ? y1 : y0;
+                                    float pz = (p.z >= 0.f) ? z1 : z0;
+                                    return (p.x * px) + (p.y * py) + (p.z * pz) + p.w >= 0.f;
+                                });
 }
 
 static const int faceCorners[6][4][3] = {
@@ -235,9 +230,15 @@ void Renderer::initHighlight()
     glBindVertexArray(0);
 }
 
-void Renderer::renderHighlight(const Renderer::HighlightBlock &hl, const float *vp, float time)
+void Renderer::renderHighlight(const Renderer::HighlightBlock &hl, const float *vp, float time, const World &world)
 {
     if (!hl.valid)
+    {
+        return;
+    }
+
+    BlockType hlBlock = world.getBlock(hl.bx, hl.by, hl.bz);
+    if (blockDef(hlBlock).transparent && !blockDef(hlBlock).liquid && world.getLight(hl.bx, hl.by, hl.bz) == 0)
     {
         return;
     }
@@ -449,7 +450,7 @@ void Renderer::drawText(const char *text, float px, float py, int scale, int win
         float v0;
         float u1;
         float v1;
-        font.uvForChar(*p, u0, v0, u1, v1);
+        Font::uvForChar(*p, u0, v0, u1, v1);
         float x0 = (cx / fw * 2.f) - 1.f;
         float x1 = ((cx + cw) / fw * 2.f) - 1.f;
         float y1 = 1.f - (py / fh * 2.f);
@@ -532,7 +533,7 @@ void Renderer::rebuildDirty(const World &world, const glm::vec3 &playerPos)
             break;
         }
 
-        Chunk *chunk = const_cast<Chunk *>(world.getChunk(e.cx, e.cz));
+        auto *chunk = const_cast<Chunk *>(world.getChunk(e.cx, e.cz));
         int idx = (e.cz * World::CHUNKS_X) + e.cx;
         meshes[idx].build(*chunk, world);
         meshes[idx].upload();
@@ -629,9 +630,9 @@ void Renderer::renderFrame(const World &world, const Camera &cam, int winW, int 
     {
         cFogNear = fogNear[fogLevel];
         cFogFar = fogFar[fogLevel];
-        fogR = 0.53f;
-        fogG = 0.81f;
-        fogB = 0.98f;
+        fogR = 1.0f;
+        fogG = 1.0f;
+        fogB = 1.0f;
     }
 
     glViewport(0, 0, winW, winH);
@@ -654,8 +655,8 @@ void Renderer::renderFrame(const World &world, const Camera &cam, int winW, int 
     {
         for (int cx = 0; cx < 16; cx++)
         {
-            float dx = (float)(cx - pCx);
-            float dz = (float)(cz - pCz);
+            auto dx = (float)(cx - pCx);
+            auto dz = (float)(cz - pCz);
             if (std::max(std::abs(dx), std::abs(dz)) > maxChunkDist)
             {
                 continue;
@@ -671,7 +672,7 @@ void Renderer::renderFrame(const World &world, const Camera &cam, int winW, int 
     }
 
     renderClouds(glm::value_ptr(vp), time);
-    renderHighlight(hl, glm::value_ptr(vp), time);
+    renderHighlight(hl, glm::value_ptr(vp), time, world);
     renderOutline(hl, glm::value_ptr(vp));
     renderCrosshair(winW, winH);
     renderHUD(winW, winH, selectedBlock);

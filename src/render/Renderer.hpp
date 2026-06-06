@@ -90,9 +90,7 @@ void main()
     vLight = aLight;
     float eyeDist = clipPos.w;
     vEyeDist = eyeDist;
-    float fogNear = mix(4.0, uFogNear, aLight);
-    float fogFar = mix(12.0, uFogFar, aLight);
-    vFogFactor = clamp((fogFar - eyeDist) / (fogFar - fogNear), 0.0, 1.0);
+    vFogFactor = clamp((uFogFar - eyeDist) / (uFogFar - uFogNear), 0.0, 1.0);
 }
 )";
     static constexpr const char *fragSrc = R"(
@@ -259,7 +257,7 @@ void main()
 
     void initHighlight();
 
-    void renderHighlight(const HighlightBlock &hl, const float *vp, float time);
+    void renderHighlight(const HighlightBlock &hl, const float *vp, float time, const World &world);
 
     void initOutline();
 
