@@ -151,7 +151,13 @@ namespace WorldGen
                         continue;
                     }
 
-                    int nx = wx + dx, nz = wz + dz;
+                    if (dy == 1 && dx != 0 && dz != 0)
+                    {
+                        continue;
+                    }
+
+                    int nx = wx + dx;
+                    int nz = wz + dz;
                     if (nx < 1 || nx >= World::BLOCK_W - 1 || nz < 1 || nz >= World::BLOCK_D - 1)
                     {
                         continue;
@@ -405,7 +411,7 @@ namespace WorldGen
                     continue;
                 }
 
-                unsigned int th = (unsigned int) (wx * 73856093 ^ wz * 19349663 ^ treeSeed);
+                auto th = (unsigned int)(wx * 73856093 ^ wz * 19349663 ^ treeSeed);
                 int height = 4 + (int) (th % 3);
                 bool clear = true;
                 for (int dy = 1; dy <= height + 2 && clear; dy++)

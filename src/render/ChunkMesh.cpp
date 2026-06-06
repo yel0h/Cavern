@@ -69,6 +69,11 @@ void ChunkMesh::build(const Chunk &chunk, const World &world)
                 int wy = y;
                 int wz = oz + z;
                 auto light = (float)world.getLight(wx, wy, wz);
+                if (blockDef(bt).transparent && !blockDef(bt).liquid)
+                {
+                    light = 1.0f;
+                }
+
                 for (int f = 0; f < 6; f++)
                 {
                     int nx = wx + faceNormals[f][0];
