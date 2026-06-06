@@ -16,6 +16,6 @@ public:
 
     void shutdown();
 
-    void uvForChar(char c, float &u0, float &v0, float &u1, float &v1) const;
+    static void uvForChar(char c, float &u0, float &v0, float &u1, float &v1) ;
 };
 #endif//CAVERN_FONT_HPP
