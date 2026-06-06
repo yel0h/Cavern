@@ -18,15 +18,17 @@ void Input::setCaptureMode(bool capture)
 {
     captureIntent = capture;
     mouseCaptured = capture;
-    glfwSetInputMode(window, GLFW_CURSOR, capture ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
     if (capture)
     {
-        if (glfwRawMouseMotionSupported())
-        {
-            glfwSetInputMode(window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
-        }
-
         firstMouse = true;
+        mouseDX = 0.f;
+        mouseDY = 0.f;
+    }
+
+    glfwSetInputMode(window, GLFW_CURSOR, capture ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
+    if (capture && glfwRawMouseMotionSupported())
+    {
+        glfwSetInputMode(window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
     }
 }
 
