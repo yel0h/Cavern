@@ -286,8 +286,7 @@ void Game::run()
         if (input.getPauseToggle())
         {
             paused = !paused;
-            glfwSetInputMode(window, GLFW_CURSOR, paused ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
-            input.resetMouseState();
+            input.setCaptureMode(!paused);
         }
 
         if (paused)
@@ -318,6 +317,7 @@ void Game::run()
             {
                 generateNewLevel();
                 paused = false;
+                input.setCaptureMode(true);
             }
         }
         else

@@ -30,7 +30,7 @@ void Input::setCaptureMode(bool capture)
     }
 }
 
-void Input::windowFocusCB(GLFWwindow *, int focused)
+void Input::windowFocusCB(GLFWwindow *window, int focused)
 {
     if (!inst)
     {
@@ -40,6 +40,7 @@ void Input::windowFocusCB(GLFWwindow *, int focused)
     if (!focused)
     {
         inst->mouseCaptured = false;
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
     }
     else if (inst->captureIntent)
     {
@@ -275,11 +276,6 @@ void Input::mouseBtnCB(GLFWwindow *, int btn, int action, int)
 
     if (!inst->mouseCaptured)
     {
-        if (action == GLFW_PRESS)
-        {
-            inst->setCaptureMode(true);
-        }
-
         return;
     }
 
