@@ -10,10 +10,40 @@ void Input::init(GLFWwindow *iWindow)
     glfwSetCursorPosCallback(iWindow, cursorCB);
     glfwSetMouseButtonCallback(iWindow, mouseBtnCB);
     glfwSetScrollCallback(iWindow, scrollCB);
-    glfwSetInputMode(iWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-    if (glfwRawMouseMotionSupported())
+    glfwSetWindowFocusCallback(window, windowFocusCB);
+    setCaptureMode(true);
+}
+
+void Input::setCaptureMode(bool capture)
+{
+    captureIntent = capture;
+    mouseCaptured = capture;
+    glfwSetInputMode(window, GLFW_CURSOR, capture ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
+    if (capture)
     {
-        glfwSetInputMode(iWindow, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+        if (glfwRawMouseMotionSupported())
+        {
+            glfwSetInputMode(window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+        }
+
+        firstMouse = true;
+    }
+}
+
+void Input::windowFocusCB(GLFWwindow *, int focused)
+{
+    if (!inst)
+    {
+        return;
+    }
+
+    if (!focused)
+    {
+        inst->mouseCaptured = false;
+    }
+    else if (inst->captureIntent)
+    {
+        inst->setCaptureMode(true);
     }
 }
 
@@ -247,9 +277,7 @@ void Input::mouseBtnCB(GLFWwindow *, int btn, int action, int)
     {
         if (action == GLFW_PRESS)
         {
-            inst->mouseCaptured = true;
-            glfwSetInputMode(inst->window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-            inst->firstMouse = true;
+            inst->setCaptureMode(true);
         }
 
         return;

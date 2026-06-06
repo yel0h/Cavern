@@ -9,6 +9,7 @@ private:
     double lastX = 0.0;
     double lastY = 0.0;
     bool firstMouse = true;
+    bool captureIntent = true;
     static Input *inst;
     bool save = false;
     bool spawnMob = false;
@@ -30,6 +31,8 @@ private:
 
     static void scrollCB(GLFWwindow *, double dx, double dy);
 
+    static void windowFocusCB(GLFWwindow *, int focused);
+
 public:
     bool forward = false;
     bool backward = false;
@@ -50,6 +53,8 @@ public:
     void beginFrame();
 
     void resetMouseState() { firstMouse = true; }
+
+    void setCaptureMode(bool capture);
 
     bool getPrimaryAction();
 
