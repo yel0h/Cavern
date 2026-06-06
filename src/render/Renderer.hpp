@@ -273,7 +273,7 @@ void main()
 
     void initText();
 
-    void drawText(const char *text, float px, float py, int scale, int winW, int winH);
+    void drawText(const char *text, float px, float py, int scale, int winW, int winH) const;
 
     void renderDebug(int winW, int winH, int fps, int chunkUpdates, bool placeMode);
 };

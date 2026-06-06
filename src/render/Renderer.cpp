@@ -435,7 +435,7 @@ void Renderer::initText()
     glBindVertexArray(0);
 }
 
-void Renderer::drawText(const char *text, float px, float py, int scale, int winW, int winH)
+void Renderer::drawText(const char *text, float px, float py, int scale, int winW, int winH) const
 {
     float fw = winW;
     float fh = winH;
@@ -496,9 +496,13 @@ void Renderer::renderDebug(int winW, int winH, int fps, int chunkUpdates, bool p
     glDisable(GL_BLEND);
 }
 
+static constexpr float fogNear[4] = {8.f, 24.f, 48.f, 96.f};
+static constexpr float fogFar[4] = {16.f, 40.f, 64.f, 128.f};
+
 void Renderer::rebuildDirty(const World &world, const glm::vec3 &playerPos)
 {
     int currentChunkUpdates = 0;
+    float maxDist2 = fogFar[fogLevel] * fogFar[fogLevel];
 
     struct DirtyEntry
     {
@@ -520,7 +524,13 @@ void Renderer::rebuildDirty(const World &world, const glm::vec3 &playerPos)
 
             float dx = (float)((cx * 16) + 8) - playerPos.x;
             float dz = (float)((cz * 16) + 8) - playerPos.z;
-            dirty.push_back({cx, cz, (dx * dx) + (dz * dz)});
+            float dist2 = (dx * dx) + (dz * dz);
+            if (dist2 > maxDist2)
+            {
+                continue;
+            }
+
+            dirty.push_back({cx, cz, dist2});
         }
     }
 
@@ -543,9 +553,6 @@ void Renderer::rebuildDirty(const World &world, const glm::vec3 &playerPos)
 
     lastChunkUpdates += currentChunkUpdates;
 }
-
-static constexpr float fogNear[4] = { 8.f, 24.f, 48.f, 96.f};
-static constexpr float fogFar[4] = {16.f, 40.f, 64.f, 128.f};
 
 void Renderer::renderGenerating(int winW, int winH)
 {
