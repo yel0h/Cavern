@@ -1,4 +1,5 @@
 #include "TextureAtlas.hpp"
+#include <cmath>
 #include <vector>
 
 unsigned int TextureAtlas::ph(int x, int y, int tile)
@@ -129,47 +130,37 @@ void TextureAtlas::paintTile(unsigned int *pixels, int tile)
 
                 case 6:
                 {
-                    int r = 168 + (int)((ph(x, y, 61) & 0x0F) - 8);
-                    int g = 112 + (int)((ph(x, y, 62) & 0x0F) - 8);
-                    int b = 48 + (int)((ph(x, y, 63) & 0x0F) - 8);
-                    int band = (y + (int)(ph(x, 0, 64) & 0x03)) % 4;
-                    if (band == 0)
-                    {
-                        r = r * 7 / 10;
-                        g = g * 7 / 10;
-                        b = b * 7 / 10;
-                    }
-                    else if (band == 3)
-                    {
-                        r = std::min(255, r + 12);
-                        g = std::min(255, g + 8);
-                    }
-
+                    float fdx = (float)x - 7.5f;
+                    float fdy = (float)y - 7.5f;
+                    int ringIdx = (int)(std::sqrt((fdx * fdx) + (fdy * fdy)) * 1.5f);
+                    int rm = ringIdx % 3;
+                    int r = (rm == 0) ? 155 : (rm == 1) ? 172 : 185;
+                    int g = (rm == 0) ? 100 : (rm == 1) ? 115 : 128;
+                    int b = (rm == 0) ? 42 : (rm == 1) ? 52 : 60;
+                    int noise = (int)((ph(x, y, 61) & 0x0F) - 8);
+                    r = std::clamp(r + noise, 0, 255);
+                    g = std::clamp(g + noise, 0, 255);
+                    b = std::clamp(b + (noise / 2), 0, 255);
                     px = makePixel(r, g, b);
                     break;
                 }
 
                 case 7:
                 {
-                    bool onStem = (x >= 7 && x <= 8);
-                    bool onLeafL = (y >= 4 && y <= 6) && (x >= 3 && x <= 6);
-                    bool onLeafR = (y >= 4 && y <= 6) && (x >= 9 && x <= 12);
-                    if (!onStem && !onLeafL && !onLeafR)
+                    if (ph(x, y, 70) % 4 == 0)
                     {
                         px = 0x00000000u;
                     }
                     else
                     {
-                        int r = 45 + (int)((ph(x, y, 71) & 0x1F) - 15);
-                        int g = 130 + (int)((ph(x, y, 72) & 0x1F) - 15);
-                        int b = 25 + (int)((ph(x, y, 73) & 0x1F) - 15);
-                        if (ph(x, y, 74) % 7 == 0)
-                        {
-                            r = 25;
-                            g = 165;
-                            b = 40;
-                        }
-
+                        int shade = (int)(ph(x, y, 71) % 3);
+                        int r = (shade == 0) ? 35 : (shade == 1) ? 55 : 75;
+                        int g = (shade == 0) ? 110 : (shade == 1) ? 145 : 170;
+                        int b = (shade == 0) ? 20 : (shade == 1) ? 30 : 45;
+                        int noise = (int)((ph(x, y, 72) & 0x0F) - 8);
+                        r = std::clamp(r + noise, 0, 255);
+                        g = std::clamp(g + (noise * 2), 0, 255);
+                        b = std::clamp(b + noise, 0, 255);
                         px = makePixel(r, g, b) | 0xFF000000u;
                     }
 
