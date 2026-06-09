@@ -81,7 +81,7 @@ void ChunkMesh::build(const Chunk &chunk, const World &world)
                     int nz = wz + faceNormals[f][2];
                     BlockType nb = world.getBlock(nx, ny, nz);
                     bool sameFluid = (bt == BlockType::Water || bt == BlockType::Lava) && nb == bt;
-                    if (!blockDef(nb).transparent || sameFluid)
+                    if (blockDef(nb).opaque || sameFluid)
                     {
                         continue;
                     }
