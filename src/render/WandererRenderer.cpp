@@ -121,8 +121,8 @@ void WandererRenderer::render(const WandererManager &mgr, const Camera &cam, int
     verts.clear();
     for (const auto &w : mgr.wanderers)
     {
-        float frontAngle = std::sin((time * 2.0f) + w.frontLegPhase) * glm::radians(25.0f);
-        float rearAngle = std::sin((time * 2.0f) + w.rearLegPhase) * glm::radians(25.0f);
+        float frontAngle = std::sin((time * 2.0f) + w.frontLegPhase) * glm::radians(12.0f);
+        float rearAngle = std::sin((time * 2.0f) + w.rearLegPhase) * glm::radians(12.0f);
         buildMobMesh(w.position.x, w.position.y, w.position.z,
                      w.yaw, frontAngle, rearAngle, w.light);
     }

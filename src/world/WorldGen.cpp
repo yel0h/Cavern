@@ -133,15 +133,17 @@ namespace WorldGen
         }
 
         int top = sy + height;
-        for (int dy = -2; dy <= 1; dy++)
+        static constexpr int radii[5] = {1, 2, 2, 1, 1};
+        for (int i = 0; i < 5; i++)
         {
+            int dy = i - 2;
             int cy = top + dy;
             if (cy < 1 || cy >= World::BLOCK_H)
             {
                 continue;
             }
 
-            int radius = (dy == -2 || dy == 1) ? 1 : 2;
+            int radius = radii[i];
             for (int dx = -radius; dx <= radius; dx++)
             {
                 for (int dz = -radius; dz <= radius; dz++)
@@ -151,7 +153,7 @@ namespace WorldGen
                         continue;
                     }
 
-                    if (dy == 1 && dx != 0 && dz != 0)
+                    if (radius == 2 && std::abs(dx) == 2 && std::abs(dz) == 2)
                     {
                         continue;
                     }
