@@ -254,6 +254,20 @@ namespace WorldGen
                 int sy = computeSurfaceY((float) wx, (float) wz, seed);
                 if (sy <= oceanLevel)
                 {
+                    float gritN = hashNoise(wx, wz, seed + 0x6B115u);
+                    if (gritN > 0.3f)
+                    {
+                        if (sy >= 1)
+                        {
+                            world.setBlock(wx, sy,     wz, BlockType::Grit);
+                        }
+
+                        if (sy - 1 >= 1)
+                        {
+                            world.setBlock(wx, sy - 1, wz, BlockType::Grit);
+                        }
+                    }
+
                     continue;
                 }
 
@@ -268,18 +282,6 @@ namespace WorldGen
                         {
                             world.setBlock(wx, sy - 1, wz, BlockType::Silt);
                         }
-                    }
-                }
-
-                int syN = computeSurfaceY((float) (wx + 1), (float) wz, seed);
-                int syS = computeSurfaceY((float) wx, (float) (wz + 1), seed);
-                bool steep = (std::abs(sy - syN) >= 3 || std::abs(sy - syS) >= 3);
-                if (steep)
-                {
-                    float gritN = hashNoise(wx, wz, seed + 0x6B115u);
-                    if (gritN > 0.5f)
-                    {
-                        world.setBlock(wx, sy, wz, BlockType::Grit);
                     }
                 }
             }
