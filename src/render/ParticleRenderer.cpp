@@ -56,6 +56,6 @@ void ParticleRenderer::render(const std::vector<BlockParticle> &particles, const
     shader.use();
     shader.setMat4("uMVP", glm::value_ptr(vp));
     glBindVertexArray(vao);
-    glDrawArrays(GL_POINTS, 0, (GLsizei)particles.size());
+    glDrawArrays(GL_POINTS, 0, (int)particles.size());
     glBindVertexArray(0);
 }

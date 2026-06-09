@@ -1,6 +1,7 @@
 #ifndef CAVERN_WANDERERRENDERER_HPP
 #define CAVERN_WANDERERRENDERER_HPP
 #include "Shader.hpp"
+#include "src/net/NetTypes.hpp"
 #include <vector>
 
 class WandererManager;
@@ -8,13 +9,6 @@ class Camera;
 
 class WandererRenderer
 {
-public:
-    void init();
-
-    void shutdown();
-
-    void render(const WandererManager &mgr, const Camera &cam, int winW, int winH, float time);
-
 private:
     Shader shader;
     unsigned int vao = 0;
@@ -90,5 +84,14 @@ void main()
                 float light,
                 float yawDeg, float wx, float wy, float wz,
                 float pvtX, float pvtY, float pvtZ, float rotAngle);
+
+public:
+    void init();
+
+    void shutdown();
+
+    void render(const WandererManager &mgr, const Camera &cam, int winW, int winH, float time);
+
+    void renderRemotePlayers(const std::vector<RemotePlayer> &players, const Camera &cam, int winW, int winH, float time);
 };
 #endif//CAVERN_WANDERERRENDERER_HPP

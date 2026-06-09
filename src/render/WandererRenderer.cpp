@@ -145,3 +145,48 @@ void WandererRenderer::render(const WandererManager &mgr, const Camera &cam, int
     glDrawArrays(GL_TRIANGLES, 0, (int)verts.size());
     glBindVertexArray(0);
 }
+
+void WandererRenderer::renderRemotePlayers(const std::vector<RemotePlayer> &players, const Camera &cam, int winW, int winH, float time)
+{
+    verts.clear();
+    constexpr float bodyR = 0.72f;
+    constexpr float bodyG = 0.55f;
+    constexpr float bodyB = 0.22f;
+    constexpr float headR = 0.80f;
+    constexpr float headG = 0.62f;
+    constexpr float headB = 0.28f;
+    for (const auto &p : players)
+    {
+        float fa = std::sin(time * 2.0f) * glm::radians(12.0f);
+        float ra = std::sin((time * 2.0f) + 3.14159f) * glm::radians(12.0f);
+        float wx = p.x;
+        float wy = p.y;
+        float wz = p.z;
+        float yd = -p.yaw;
+        float light = 1.0f;
+        addBox(-0.25f, 0.0f, -0.25f, -0.15f, 0.2f, -0.15f, bodyR, bodyG, bodyB, light, yd, wx, wy, wz, -0.2f, 0.2f, -0.2f, fa);
+        addBox( 0.15f, 0.0f, -0.25f, 0.25f, 0.2f, -0.15f, bodyR, bodyG, bodyB, light, yd, wx, wy, wz, 0.2f, 0.2f, -0.2f, -fa);
+        addBox(-0.25f, 0.2f, -0.3f, 0.25f, 0.45f, 0.3f, bodyR, bodyG, bodyB, light, yd, wx, wy, wz, 0.f, 0.f, 0.f, 0.f);
+        addBox(-0.25f, 0.0f, 0.15f, -0.15f, 0.2f, 0.25f, bodyR, bodyG, bodyB, light, yd, wx, wy, wz, -0.2f, 0.2f, 0.2f, ra);
+        addBox( 0.15f, 0.0f, 0.15f, 0.25f, 0.2f, 0.25f, bodyR, bodyG, bodyB, light, yd, wx, wy, wz, 0.2f, 0.2f, 0.2f, -ra);
+        addBox(-0.2f, 0.15f, -0.55f, 0.2f, 0.4f, -0.3f, headR, headG, headB, light, yd, wx, wy, wz, 0.f, 0.f, 0.f, 0.f);
+    }
+
+    if (verts.empty())
+    {
+        return;
+    }
+
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, (GLsizeiptr)(verts.size() * sizeof(MobVertex)), verts.data(), GL_STREAM_DRAW);
+    float aspect = (winH > 0) ? (float)winW / (float)winH : 1.f;
+    glm::mat4 vp = cam.viewProjection(aspect);
+    shader.use();
+    shader.setMat4 ("uMVP", glm::value_ptr(vp));
+    shader.setFloat("uFogNear", 48.f);
+    shader.setFloat("uFogFar", 64.f);
+    shader.setVec3 ("uFogColor", 0.53f, 0.81f, 0.98f);
+    glBindVertexArray(vao);
+    glDrawArrays(GL_TRIANGLES, 0, (int)verts.size());
+    glBindVertexArray(0);
+}

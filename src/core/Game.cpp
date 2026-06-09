@@ -1,8 +1,20 @@
 #include "Game.hpp"
+#include "../net/Server.hpp"
+#include "../net/Client.hpp"
 #include <fstream>
 #include <iostream>
 
 Game *Game::inst = nullptr;
+
+Game::Game() = default;
+
+Game::~Game() = default;
+
+void Game::setNetMode(bool host, const std::string &sJoinIp)
+{
+    isHost = host;
+    joinIp = sJoinIp;
+}
 
 static void saveSpawnFile(float x, float z)
 {
@@ -112,6 +124,31 @@ void Game::init()
     player.respawn();
     timer.start();
     lastFrameTime = glfwGetTime();
+    if (isHost)
+    {
+        server = std::make_unique<Server>();
+        if (!server->start(5565))
+        {
+            std::cerr << "Server: failed to bind port 5565" << std::endl;
+        }
+        else
+        {
+            std::cout << "Server listening on port 5565" << std::endl;
+        }
+    }
+
+    if (!joinIp.empty())
+    {
+        client = std::make_unique<Client>();
+        if (!client->connect(joinIp, 5565))
+        {
+            std::cerr << "Client: failed to connect to " << joinIp << ":5565" << std::endl;
+        }
+        else
+        {
+            std::cout << "Connected to " << joinIp << ":5565" << std::endl;
+        }
+    }
 }
 
 static constexpr BlockType hotbar[] = {
@@ -196,6 +233,20 @@ void Game::tick()
         world.save("world.dat");
         std::cout << "Spawn point set." << std::endl;
     }
+
+    if (server)
+    {
+        server->setHostPos(player.position.x, player.position.y, player.position.z, player.yaw);
+        server->tick();
+        remotePlayers = server->remote;
+    }
+
+    if (client)
+    {
+        client->tick();
+        client->sendPosition(player.position.x, player.position.y, player.position.z, player.yaw);
+        remotePlayers = client->remote;
+    }
 }
 
 void Game::generateNewLevel()
@@ -243,6 +294,11 @@ void Game::render()
                            fps, chunks, player.placeMode,
                            player.underLava);
     wandererRenderer.render(wanderers, camera, winW, winH, (float)glfwGetTime());
+    if (!remotePlayers.empty())
+    {
+        wandererRenderer.renderRemotePlayers(remotePlayers, camera, winW, winH, (float)glfwGetTime());
+    }
+
     float aspect = (winH > 0) ? (float)winW / (float)winH : 1.f;
     glm::mat4 vp = camera.viewProjection(aspect);
     particleRenderer.render(particles.particles, vp);
@@ -341,6 +397,18 @@ void Game::run()
 
 void Game::shutdown()
 {
+    if (server)
+    {
+        server->shutdown();
+        server.reset();
+    }
+
+    if (client)
+    {
+        client->disconnect();
+        client.reset();
+    }
+
     world.save("world.dat");
     wanderers.save("wanderers.dat");
     renderer.shutdown();

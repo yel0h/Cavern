@@ -57,10 +57,16 @@ add_executable(Cavern src/main.cpp
         src/render/ParticleRenderer.hpp
         src/render/Font.cpp
         src/render/Font.hpp
+        src/net/NetTypes.hpp
+        src/net/Packet.hpp
+        src/net/Server.cpp
+        src/net/Server.hpp
+        src/net/Client.cpp
+        src/net/Client.hpp
 )
 target_include_directories(Cavern PRIVATE ${CMAKE_SOURCE_DIR})
 target_compile_definitions(Cavern PRIVATE GLFW_INCLUDE_NONE)
-target_link_libraries(Cavern PRIVATE glfw glad glm::glm)
+target_link_libraries(Cavern PRIVATE glfw glad glm::glm ws2_32)
 
 if(WIN32)
     target_link_libraries(Cavern PRIVATE opengl32)

@@ -4,12 +4,16 @@
 #include "Timer.hpp"
 #include "src/entity/ParticleManager.hpp"
 #include "src/entity/WandererManager.hpp"
+#include "src/net/NetTypes.hpp"
 #include "src/player/Player.hpp"
 #include "src/render/ParticleRenderer.hpp"
 #include "src/render/Renderer.hpp"
 #include "src/render/WandererRenderer.hpp"
 #include "src/world/World.hpp"
 #include <GLFW/glfw3.h>
+
+class Server;
+class Client;
 
 class Game
 {
@@ -43,6 +47,11 @@ private:
     int hotbarIdx = 0;
     int primaryHoldTimer = 0;
     int switchHoldTimer = 0;
+    bool isHost = false;
+    std::string joinIp;
+    std::unique_ptr<Server> server;
+    std::unique_ptr<Client> client;
+    std::vector<RemotePlayer> remotePlayers;
     static Game *inst;
 
     void init();
@@ -60,6 +69,12 @@ private:
     static void framebufferSizeCB(GLFWwindow *w, int width, int height);
 
 public:
+    Game();
+
+    ~Game();
+
     void run();
+
+    void setNetMode(bool host, const std::string &sJoinIp);
 };
 #endif//CAVERN_GAME_HPP
