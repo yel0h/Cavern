@@ -40,6 +40,8 @@ public:
 
     void renderPlayerNames(const std::vector<RemotePlayer> &players, const Camera &cam, int winW, int winH);
 
+    void renderChat(const std::vector<std::string> &msgs, bool chatOpen, const std::string &buffer, int winW, int winH);
+
     void markAllDirty() { for (auto &m : meshes) m.free(); }
 
     void cycleFog() { fogLevel = (fogLevel + 1) % 4; }

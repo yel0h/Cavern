@@ -386,6 +386,7 @@ void Game::render()
         renderer.renderPauseMenu(winW, winH);
     }
 
+    renderer.renderChat(chatMessages, input.chatOpen, input.chatBuffer, winW, winH);
     glfwSwapBuffers(window);
 }
 

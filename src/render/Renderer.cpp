@@ -427,7 +427,7 @@ void Renderer::initText()
     glGenBuffers(1, &txtVbo);
     glBindVertexArray(txtVao);
     glBindBuffer(GL_ARRAY_BUFFER, txtVbo);
-    glBufferData(GL_ARRAY_BUFFER, 128 * 6 * 4 * sizeof(float), nullptr, GL_DYNAMIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, 512 * 6 * 4 * sizeof(float), nullptr, GL_DYNAMIC_DRAW);
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)0);
     glEnableVertexAttribArray(1);
@@ -613,6 +613,45 @@ void Renderer::renderPlayerNames(const std::vector<RemotePlayer> &players, const
         float nameW = (float)(std::strlen(p.name) * Font::CHAR_W * scale);
         sx -= nameW * 0.5f;
         drawText(p.name, sx, sy, scale, winW, winH);
+    }
+
+    glEnable(GL_DEPTH_TEST);
+    glDisable(GL_BLEND);
+}
+
+void Renderer::renderChat(const std::vector<std::string> &msgs, bool chatOpen, const std::string &buffer, int winW, int winH)
+{
+    if (msgs.empty() && !chatOpen)
+    {
+        return;
+    }
+
+    txtShader.use();
+    txtShader.setInt("uFont", 1);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, font.texId);
+    glDisable(GL_DEPTH_TEST);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    constexpr int s = 1;
+    constexpr float lineH = (Font::CHAR_H * s) + 2.f;
+    constexpr float botY = 20.f;
+    constexpr int maxClosed = 5;
+    int count = chatOpen ? (int)msgs.size() : std::min((int)msgs.size(), maxClosed);
+    int startIdx  = (int)msgs.size() - count;
+    float msgBotY = (float)winH - botY - (chatOpen ? lineH : 0.f);
+    txtShader.setVec3("uColor", 0.9f, 0.9f, 0.9f);
+    for (int i = 0; i < count; i++)
+    {
+        float py = msgBotY - ((float)(count - 1 - i) * lineH);
+        drawText(msgs[startIdx + i].c_str(), 4.f, py, s, winW, winH);
+    }
+
+    if (chatOpen)
+    {
+        std::string inputLine = "> " + buffer + "|";
+        txtShader.setVec3("uColor", 1.f, 1.f, 0.3f);
+        drawText(inputLine.c_str(), 4.f, (float)winH - botY, s, winW, winH);
     }
 
     glEnable(GL_DEPTH_TEST);
