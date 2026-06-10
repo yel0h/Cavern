@@ -46,5 +46,7 @@ public:
     void setHostName(const char *n);
 
     void broadcastBreak(int bx, int by, int bz, unsigned char bt);
+
+    void clearBreaks() { pendingBreaks.clear(); }
 };
 #endif//CAVERN_SERVER_HPP

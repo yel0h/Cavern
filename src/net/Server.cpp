@@ -207,10 +207,15 @@ void Server::drainClients()
                 {
                     if (r.id == cs.id)
                     {
+                        r.id = pp.id;
                         r.x = pp.x;
                         r.y = pp.y;
                         r.z = pp.z;
                         r.yaw = pp.yaw;
+                        r.vx = pp.x;
+                        r.vy = pp.y;
+                        r.vz = pp.z;
+                        r.vyaw = pp.yaw;
                         found = true;
                         break;
                     }

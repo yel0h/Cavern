@@ -77,5 +77,7 @@ public:
     void run();
 
     void setNetMode(bool host, const std::string &sJoinIp);
+
+    void setLocalName(const std::string &n);
 };
 #endif//CAVERN_GAME_HPP

@@ -271,6 +271,30 @@ void Game::tick()
         client->interpolate(0.01666667);
         remotePlayers = client->remote;
     }
+
+    auto spawnRemoteBreak = [&](const BreakEvent &b)
+    {
+        particles.spawnFromBlock(b.bx, b.by, b.bz, (BlockType)b.blockType);
+    };
+    if (client)
+    {
+        for (const auto &b : client->pendingBreaks)
+        {
+            spawnRemoteBreak(b);
+        }
+
+        client->clearBreaks();
+    }
+
+    if (server)
+    {
+        for (const auto &b : server->pendingBreaks)
+        {
+            spawnRemoteBreak(b);
+        }
+
+        server->clearBreaks();
+    }
 }
 
 void Game::generateNewLevel()
@@ -321,6 +345,7 @@ void Game::render()
     if (!remotePlayers.empty())
     {
         wandererRenderer.renderRemotePlayers(remotePlayers, camera, winW, winH);
+        renderer.renderPlayerNames(remotePlayers, camera, winW, winH);
     }
 
     float aspect = (winH > 0) ? (float)winW / (float)winH : 1.f;

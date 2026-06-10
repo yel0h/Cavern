@@ -35,5 +35,7 @@ public:
     void interpolate(float dt);
 
     [[nodiscard]] bool connected() const { return sock != INVALID_SOCKET; }
+
+    void clearBreaks() { pendingBreaks.clear(); }
 };
 #endif//CAVERN_CLIENT_HPP

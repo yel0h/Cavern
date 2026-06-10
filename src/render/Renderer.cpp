@@ -576,6 +576,49 @@ void Renderer::renderGenerating(int winW, int winH)
     glDisable(GL_BLEND);
 }
 
+void Renderer::renderPlayerNames(const std::vector<RemotePlayer> &players, const Camera &cam, int winW, int winH)
+{
+    float aspect = (winH > 0) ? (float)winW / (float)winH : 1.f;
+    glm::mat4 vp = cam.viewProjection(aspect);
+    txtShader.use();
+    txtShader.setInt("uFont", 1);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, font.texId);
+    txtShader.setVec3("uColor", 1.f, 1.f, 0.f);
+    glDisable(GL_DEPTH_TEST);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    constexpr int scale = 2;
+    for (const auto &p : players)
+    {
+        if (p.name[0] == '\0')
+        {
+            continue;
+        }
+
+        glm::vec4 clip = vp * glm::vec4(p.vx, p.vy + 0.70f, p.vz, 1.f);
+        if (clip.w <= 0.f)
+        {
+            continue;
+        }
+
+        glm::vec3 ndc = glm::vec3(clip) / clip.w;
+        if (ndc.z > 1.f)
+        {
+            continue;
+        }
+
+        float sx = ((ndc.x * 0.5f) + 0.5f) * (float)winW;
+        float sy = (1.f - ((ndc.y * 0.5f) + 0.5f)) * (float)winH;
+        float nameW = (float)(std::strlen(p.name) * Font::CHAR_W * scale);
+        sx -= nameW * 0.5f;
+        drawText(p.name, sx, sy, scale, winW, winH);
+    }
+
+    glEnable(GL_DEPTH_TEST);
+    glDisable(GL_BLEND);
+}
+
 void Renderer::renderPauseMenu(int winW, int winH)
 {
     float overlayVerts[12] = {

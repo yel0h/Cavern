@@ -7,6 +7,7 @@ int main(int argc, char *argv[])
 {
     bool doHost = false;
     std::string joinIp;
+    std::string playerName;
     for (int i = 1; i < argc; i++)
     {
         if (std::string(argv[i]) == "--host")
@@ -17,6 +18,15 @@ int main(int argc, char *argv[])
         {
             joinIp = argv[++i];
         }
+        else if (std::string(argv[i]) == "--name" && i + 1 < argc)
+        {
+            playerName = argv[++i];
+        }
+    }
+
+    if (playerName.empty())
+    {
+        playerName = "Player";
     }
 
     WSADATA wsa{};
@@ -28,6 +38,7 @@ int main(int argc, char *argv[])
 
     Game game;
     game.setNetMode(doHost, joinIp);
+    game.setLocalName(playerName);
     try
     {
         game.run();

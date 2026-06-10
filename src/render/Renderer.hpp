@@ -5,6 +5,7 @@
 #include "Font.hpp"
 #include "Shader.hpp"
 #include "TextureAtlas.hpp"
+#include "src/net/NetTypes.hpp"
 #include "src/world/Block.hpp"
 #include <array>
 
@@ -36,6 +37,8 @@ public:
     void renderGenerating(int winW, int winH);
 
     void renderPauseMenu(int winW, int winH);
+
+    void renderPlayerNames(const std::vector<RemotePlayer> &players, const Camera &cam, int winW, int winH);
 
     void markAllDirty() { for (auto &m : meshes) m.free(); }
 
