@@ -92,6 +92,6 @@ public:
 
     void render(const WandererManager &mgr, const Camera &cam, int winW, int winH, float time);
 
-    void renderRemotePlayers(const std::vector<RemotePlayer> &players, const Camera &cam, int winW, int winH, float time);
+    void renderRemotePlayers(const std::vector<RemotePlayer> &players, const Camera &cam, int winW, int winH);
 };
 #endif//CAVERN_WANDERERRENDERER_HPP

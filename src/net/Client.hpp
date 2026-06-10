@@ -26,6 +26,8 @@ public:
 
     void sendPosition(float x, float y, float z, float yaw) const;
 
+    void interpolate(float dt);
+
     [[nodiscard]] bool connected() const { return sock != INVALID_SOCKET; }
 };
 #endif//CAVERN_CLIENT_HPP

@@ -245,6 +245,7 @@ void Game::tick()
     {
         client->tick();
         client->sendPosition(player.position.x, player.position.y, player.position.z, player.yaw);
+        client->interpolate(0.01666667);
         remotePlayers = client->remote;
     }
 }
@@ -296,7 +297,7 @@ void Game::render()
     wandererRenderer.render(wanderers, camera, winW, winH, (float)glfwGetTime());
     if (!remotePlayers.empty())
     {
-        wandererRenderer.renderRemotePlayers(remotePlayers, camera, winW, winH, (float)glfwGetTime());
+        wandererRenderer.renderRemotePlayers(remotePlayers, camera, winW, winH);
     }
 
     float aspect = (winH > 0) ? (float)winW / (float)winH : 1.f;

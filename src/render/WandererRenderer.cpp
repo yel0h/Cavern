@@ -146,7 +146,7 @@ void WandererRenderer::render(const WandererManager &mgr, const Camera &cam, int
     glBindVertexArray(0);
 }
 
-void WandererRenderer::renderRemotePlayers(const std::vector<RemotePlayer> &players, const Camera &cam, int winW, int winH, float time)
+void WandererRenderer::renderRemotePlayers(const std::vector<RemotePlayer> &players, const Camera &cam, int winW, int winH)
 {
     verts.clear();
     constexpr float bodyR = 0.72f;
@@ -157,12 +157,12 @@ void WandererRenderer::renderRemotePlayers(const std::vector<RemotePlayer> &play
     constexpr float headB = 0.28f;
     for (const auto &p : players)
     {
-        float fa = std::sin(time * 1.2f) * glm::radians(12.0f);
-        float ra = std::sin((time * 1.2f) + 3.14159f) * glm::radians(12.0f);
-        float wx = p.x;
-        float wy = p.y;
-        float wz = p.z;
-        float yd = -p.yaw;
+        float fa = std::sin(p.walkPhase) * glm::radians(12.0f);
+        float ra = std::sin(p.walkPhase + 3.14159f) * glm::radians(12.0f);
+        float wx = p.vx;
+        float wy = p.vy;
+        float wz = p.vz;
+        float yd = -p.vyaw;
         float light = 1.0f;
         addBox(-0.25f, 0.0f, -0.25f, -0.15f, 0.2f, -0.15f, bodyR, bodyG, bodyB, light, yd, wx, wy, wz, -0.2f, 0.2f, -0.2f, fa);
         addBox( 0.15f, 0.0f, -0.25f, 0.25f, 0.2f, -0.15f, bodyR, bodyG, bodyB, light, yd, wx, wy, wz, 0.2f, 0.2f, -0.2f, -fa);

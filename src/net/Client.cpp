@@ -1,6 +1,7 @@
 #include "Client.hpp"
 #include "Packet.hpp"
 #include <algorithm>
+#include <cmath>
 #include <ws2tcpip.h>
 
 bool Client::connect(const std::string &host, unsigned short port)
@@ -70,6 +71,34 @@ void Client::sendPosition(float x, float y, float z, float yaw) const
     pp.z = z;
     pp.yaw = yaw;
     send(sock, reinterpret_cast<char const *>(&pp), sizeof(pp), 0);
+}
+
+void Client::interpolate(float dt)
+{
+    constexpr float rate = 10.f;
+    float factor = 1.f - std::exp(-rate * dt);
+    for (auto &r : remote)
+    {
+        float prevVx = r.vx;
+        float prevVz = r.vz;
+        r.vx += (r.x - r.vx) * factor;
+        r.vy += (r.y - r.vy) * factor;
+        r.vz += (r.z - r.vz) * factor;
+        float dyaw = r.yaw - r.vyaw;
+        while (dyaw > 180.f)
+        {
+            dyaw -= 360.f;
+        }
+
+        while (dyaw < -180.f)
+        {
+            dyaw += 360.f;
+        }
+
+        r.vyaw += dyaw * factor;
+        float moved = std::sqrt(((r.vx - prevVx) * (r.vx - prevVx)) + ((r.vz - prevVz) * (r.vz - prevVz)));
+        r.walkPhase += moved * 3.f;
+    }
 }
 
 void Client::drainRecv()
@@ -144,7 +173,17 @@ void Client::drainRecv()
 
             if (!found)
             {
-                remote.push_back({pp.id, pp.x, pp.y, pp.z, pp.yaw});
+                RemotePlayer rp{};
+                rp.id = pp.id;
+                rp.x = pp.x;
+                rp.y = pp.y;
+                rp.z = pp.z;
+                rp.yaw = pp.yaw;
+                rp.vx = pp.x;
+                rp.vy = pp.y;
+                rp.vz = pp.z;
+                rp.vyaw = pp.yaw;
+                remote.push_back(rp);
             }
         }
         else if (t == (unsigned char)PktType::Leave)

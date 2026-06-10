@@ -7,5 +7,10 @@ struct RemotePlayer
     float y;
     float z;
     float yaw;
+    float vx;
+    float vy;
+    float vz;
+    float vyaw;
+    float walkPhase;
 };
 #endif//CAVERN_NETTYPES_HPP
