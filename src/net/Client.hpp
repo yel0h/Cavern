@@ -16,7 +16,9 @@ private:
 
 public:
     unsigned int localId = 0;
+    char localName[16] = {};
     std::vector<RemotePlayer> remote;
+    std::vector<BreakEvent> pendingBreaks;
 
     bool connect(const std::string &host, unsigned short port = 5565);
 
@@ -25,6 +27,10 @@ public:
     void tick();
 
     void sendPosition(float x, float y, float z, float yaw) const;
+
+    void sendBreak(int bx, int by, int bz, unsigned char bt) const;
+
+    void setLocalName(const char *n);
 
     void interpolate(float dt);
 

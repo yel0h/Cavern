@@ -49,6 +49,7 @@ private:
     int switchHoldTimer = 0;
     bool isHost = false;
     std::string joinIp;
+    char localName[16] = {};
     std::unique_ptr<Server> server;
     std::unique_ptr<Client> client;
     std::vector<RemotePlayer> remotePlayers;

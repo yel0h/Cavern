@@ -6,12 +6,15 @@ enum class PktType : unsigned char
     Join = 1,
     Welcome = 2,
     Pos = 3,
-    Leave = 4
+    Leave = 4,
+    Info = 5,
+    Break = 6
 };
 
 struct PktJoin
 {
     unsigned char type = (unsigned char)PktType::Join;
+    char name[16]{};
 };
 
 struct PktWelcome
@@ -34,6 +37,22 @@ struct PktLeave
 {
     unsigned char type = (unsigned char)PktType::Leave;
     unsigned char id{};
+};
+
+struct PktInfo
+{
+    unsigned char type = (unsigned char)PktType::Info;
+    unsigned int id{};
+    char name[16]{};
+};
+
+struct PktBreak
+{
+    unsigned char type = (unsigned char)PktType::Break;
+    int bx{};
+    int by{};
+    int bz{};
+    unsigned char blockType{};
 };
 #pragma pack(pop)
 #endif//CAVERN_PACKET_HPP

@@ -1,6 +1,7 @@
 #include "Game.hpp"
-#include "../net/Server.hpp"
 #include "../net/Client.hpp"
+#include "../net/Server.hpp"
+#include <cstring>
 #include <fstream>
 #include <iostream>
 
@@ -14,6 +15,12 @@ void Game::setNetMode(bool host, const std::string &sJoinIp)
 {
     isHost = host;
     joinIp = sJoinIp;
+}
+
+void Game::setLocalName(const std::string &n)
+{
+    std::strncpy(localName, n.c_str(), 15);
+    localName[15] = '\0';
 }
 
 static void saveSpawnFile(float x, float z)
@@ -135,11 +142,14 @@ void Game::init()
         {
             std::cout << "Server listening on port 5565" << std::endl;
         }
+
+        server->setHostName(localName);
     }
 
     if (!joinIp.empty())
     {
         client = std::make_unique<Client>();
+        client->setLocalName(localName);
         if (!client->connect(joinIp, 5565))
         {
             std::cerr << "Client: failed to connect to " << joinIp << ":5565" << std::endl;
@@ -174,7 +184,7 @@ void Game::tick()
             return;
         }
 
-        if (++timer >= 15)
+        if (++timer >= 4)
         {
             action = true;
             timer = 0;
@@ -186,6 +196,19 @@ void Game::tick()
     if (player.lastBroken.valid)
     {
         particles.spawnFromBlock(player.lastBroken.bx, player.lastBroken.by, player.lastBroken.bz, player.lastBroken.type);
+        unsigned char bt = (unsigned char)player.lastBroken.type;
+        int bx = player.lastBroken.bx;
+        int by = player.lastBroken.by;
+        int bz = player.lastBroken.bz;
+        if (client)
+        {
+            client->sendBreak(bx, by, bz, bt);
+        }
+
+        if (server)
+        {
+            server->broadcastBreak(bx, by, bz, bt);
+        }
     }
 
     particles.tick(0.01666667, world);

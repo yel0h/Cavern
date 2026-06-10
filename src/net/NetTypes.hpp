@@ -12,5 +12,14 @@ struct RemotePlayer
     float vz;
     float vyaw;
     float walkPhase;
+    char name[16];
+};
+
+struct BreakEvent
+{
+    int bx;
+    int by;
+    int bz;
+    unsigned char blockType;
 };
 #endif//CAVERN_NETTYPES_HPP

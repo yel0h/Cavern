@@ -13,11 +13,14 @@ private:
         SOCKET sock = INVALID_SOCKET;
         unsigned int id = 0;
         std::vector<unsigned char> buf;
+        char name[16] = {};
+        bool nameReceived = false;
     };
 
     SOCKET listenSock = INVALID_SOCKET;
     unsigned int nextId = 1;
     RemotePlayer host{};
+    char hostName[16] = {};
     std::vector<ClientState> clients;
 
     void acceptClients();
@@ -30,6 +33,7 @@ private:
 
 public:
     std::vector<RemotePlayer> remote;
+    std::vector<BreakEvent> pendingBreaks;
 
     bool start(unsigned short port = 5565);
 
@@ -38,5 +42,9 @@ public:
     void tick();
 
     void setHostPos(float x, float y, float z, float yaw);
+
+    void setHostName(const char *n);
+
+    void broadcastBreak(int bx, int by, int bz, unsigned char bt);
 };
 #endif//CAVERN_SERVER_HPP

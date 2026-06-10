@@ -1,6 +1,7 @@
 #include "Server.hpp"
 #include "Packet.hpp"
 #include <algorithm>
+#include <cstring>
 
 bool Server::start(unsigned short port)
 {
@@ -53,6 +54,23 @@ void Server::setHostPos(float x, float y, float z, float yaw)
     host.y = y;
     host.z = z;
     host.yaw = yaw;
+}
+
+void Server::setHostName(const char *n)
+{
+    std::strncpy(hostName, n, 15);
+    hostName[15] = '\0';
+    std::strncpy(host.name, hostName, 16);
+}
+
+void Server::broadcastBreak(int bx, int by, int bz, unsigned char bt)
+{
+    PktBreak pk{};
+    pk.bx = bx;
+    pk.by = by;
+    pk.bz = bz;
+    pk.blockType = bt;
+    broadcastExcept(&pk, sizeof(pk), INVALID_SOCKET);
 }
 
 void Server::tick()
@@ -136,7 +154,41 @@ void Server::drainClients()
                     break;
                 }
 
+                PktJoin jn;
+                std::memcpy(&jn, buf.data(), sizeof(jn));
                 buf.erase(buf.begin(), buf.begin() + sizeof(PktJoin));
+                if (!cs.nameReceived)
+                {
+                    cs.nameReceived = true;
+                    std::strncpy(cs.name, jn.name, 15);
+                    cs.name[15] = '\0';
+                    PktInfo hi{};
+                    hi.id = 0;
+                    std::strncpy(hi.name, hostName, 16);
+                    send(cs.sock, reinterpret_cast<char const *>(&hi), sizeof(hi), 0);
+                    for (auto &client : clients)
+                    {
+                        if (client.sock == cs.sock)
+                        {
+                            continue;
+                        }
+
+                        if (!client.nameReceived)
+                        {
+                            continue;
+                        }
+
+                        PktInfo pi{};
+                        pi.id = client.id;
+                        std::strncpy(pi.name, client.name, 16);
+                        send(cs.sock, reinterpret_cast<char const *>(&pi), sizeof(pi), 0);
+                    }
+
+                    PktInfo ni{};
+                    ni.id = cs.id;
+                    std::strncpy(ni.name, cs.name, 16);
+                    broadcastExcept(&ni, sizeof(ni), cs.sock);
+                }
             }
             else if (t == (unsigned char)PktType::Pos)
             {
@@ -166,8 +218,28 @@ void Server::drainClients()
 
                 if (!found)
                 {
-                    remote.push_back({cs.id, pp.x, pp.y, pp.z, pp.yaw});
+                    RemotePlayer rp{};
+                    rp.id = cs.id;
+                    rp.x = pp.x;
+                    rp.y = pp.y;
+                    rp.z = pp.z;
+                    rp.yaw = pp.yaw;
+                    std::strncpy(rp.name, cs.name, 16);
+                    remote.push_back(rp);
                 }
+            }
+            else if (t == (unsigned char)PktType::Break)
+            {
+                if (buf.size() < sizeof(PktBreak))
+                {
+                    break;
+                }
+
+                PktBreak pk;
+                std::memcpy(&pk, buf.data(), sizeof(pk));
+                buf.erase(buf.begin(), buf.begin() + sizeof(PktBreak));
+                broadcastExcept(&pk, sizeof(pk), cs.sock);
+                pendingBreaks.push_back({pk.bx, pk.by, pk.bz, pk.blockType});
             }
             else
             {

@@ -2,6 +2,7 @@
 #include "Packet.hpp"
 #include <algorithm>
 #include <cmath>
+#include <cstring>
 #include <ws2tcpip.h>
 
 bool Client::connect(const std::string &host, unsigned short port)
@@ -32,7 +33,8 @@ bool Client::connect(const std::string &host, unsigned short port)
     unsigned long nb = 1;
     ioctlsocket(sock, FIONBIO, &nb);
     PktJoin j{};
-    j.type = (unsigned char)PktType::Join;
+    std::strncpy(j.name, localName, 15);
+    j.name[15] = '\0';
     send(sock, reinterpret_cast<char const *>(&j), sizeof(j), 0);
     return true;
 }
@@ -56,6 +58,12 @@ void Client::tick()
     }
 }
 
+void Client::setLocalName(const char *n)
+{
+    std::strncpy(localName, n, 15);
+    localName[15] = '\0';
+}
+
 void Client::sendPosition(float x, float y, float z, float yaw) const
 {
     if (sock == INVALID_SOCKET)
@@ -71,6 +79,21 @@ void Client::sendPosition(float x, float y, float z, float yaw) const
     pp.z = z;
     pp.yaw = yaw;
     send(sock, reinterpret_cast<char const *>(&pp), sizeof(pp), 0);
+}
+
+void Client::sendBreak(int bx, int by, int bz, unsigned char bt) const
+{
+    if (sock == INVALID_SOCKET)
+    {
+        return;
+    }
+
+    PktBreak pk{};
+    pk.bx = bx;
+    pk.by = by;
+    pk.bz = bz;
+    pk.blockType = bt;
+    send(sock, reinterpret_cast<char const *>(&pk), sizeof(pk), 0);
 }
 
 void Client::interpolate(float dt)
@@ -198,6 +221,47 @@ void Client::drainRecv()
             buf.erase(buf.begin(), buf.begin() + sizeof(PktLeave));
             remote.erase(std::remove_if(remote.begin(), remote.end(),
                                           [&](const RemotePlayer& r) { return r.id == lv.id; }), remote.end());
+        }
+        else if (t == (unsigned char)PktType::Info)
+        {
+            if (buf.size() < sizeof(PktInfo))
+            {
+                break;
+            }
+
+            PktInfo pi;
+            std::memcpy(&pi, buf.data(), sizeof(pi));
+            buf.erase(buf.begin(), buf.begin() + sizeof(PktInfo));
+            bool found = false;
+            for (auto &r : remote)
+            {
+                if (r.id == pi.id)
+                {
+                    std::strncpy(r.name, pi.name, 16);
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found)
+            {
+                RemotePlayer rp{};
+                rp.id = pi.id;
+                std::strncpy(rp.name, pi.name, 16);
+                remote.push_back(rp);
+            }
+        }
+        else if (t == (unsigned char)PktType::Break)
+        {
+            if (buf.size() < sizeof(PktBreak))
+            {
+                break;
+            }
+
+            PktBreak pk;
+            std::memcpy(&pk, buf.data(), sizeof(pk));
+            buf.erase(buf.begin(), buf.begin() + sizeof(PktBreak));
+            pendingBreaks.push_back({pk.bx, pk.by, pk.bz, pk.blockType});
         }
         else
         {
