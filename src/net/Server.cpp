@@ -73,6 +73,15 @@ void Server::broadcastBreak(int bx, int by, int bz, unsigned char bt)
     broadcastExcept(&pk, sizeof(pk), INVALID_SOCKET);
 }
 
+void Server::broadcastChat(unsigned int senderId, const char *msg)
+{
+    PktChat pk{};
+    pk.senderId = senderId;
+    std::strncpy(pk.msg, msg, 127);
+    pk.msg[127] = '\0';
+    broadcastExcept(&pk, sizeof(pk), INVALID_SOCKET);
+}
+
 void Server::tick()
 {
     acceptClients();
@@ -245,6 +254,24 @@ void Server::drainClients()
                 buf.erase(buf.begin(), buf.begin() + sizeof(PktBreak));
                 broadcastExcept(&pk, sizeof(pk), cs.sock);
                 pendingBreaks.push_back({pk.bx, pk.by, pk.bz, pk.blockType});
+            }
+            else if (t == (unsigned char)PktType::Chat)
+            {
+                if (buf.size() < sizeof(PktChat))
+                {
+                    break;
+                }
+
+                PktChat pk;
+                std::memcpy(&pk, buf.data(), sizeof(pk));
+                buf.erase(buf.begin(), buf.begin() + sizeof(PktChat));
+                pk.senderId = cs.id;
+                broadcastExcept(&pk, sizeof(pk), cs.sock);
+                ChatEvent ev{};
+                ev.senderId = cs.id;
+                std::strncpy(ev.name, cs.name, 16);
+                std::strncpy(ev.msg, pk.msg, 128);
+                pendingChats.push_back(ev);
             }
             else
             {

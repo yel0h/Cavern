@@ -7,10 +7,11 @@ void Input::init(GLFWwindow *iWindow)
     inst = this;
     window = iWindow;
     glfwSetKeyCallback(iWindow, keyCB);
+    glfwSetCharCallback(iWindow, charCB);
     glfwSetCursorPosCallback(iWindow, cursorCB);
     glfwSetMouseButtonCallback(iWindow, mouseBtnCB);
     glfwSetScrollCallback(iWindow, scrollCB);
-    glfwSetWindowFocusCallback(window, windowFocusCB);
+    glfwSetWindowFocusCallback(iWindow, windowFocusCB);
     setCaptureMode(true);
 }
 
@@ -60,6 +61,29 @@ void Input::keyCB(GLFWwindow *, int key, int, int action, int)
 {
     if (!inst)
     {
+        return;
+    }
+
+    if (inst->chatOpen)
+    {
+        if (action == GLFW_PRESS || action == GLFW_REPEAT)
+        {
+            if (key == GLFW_KEY_ENTER)
+            {
+                inst->chatSubmit = true;
+            }
+
+            if (key == GLFW_KEY_ESCAPE)
+            {
+                inst->chatCancel = true;
+            }
+
+            if (key == GLFW_KEY_BACKSPACE && !inst->chatBuffer.empty())
+            {
+                inst->chatBuffer.pop_back();
+            }
+        }
+
         return;
     }
 
@@ -211,6 +235,14 @@ void Input::keyCB(GLFWwindow *, int key, int, int action, int)
 
             break;
 
+        case GLFW_KEY_T:
+            if (action == GLFW_PRESS)
+            {
+                inst->chatToggle = true;
+            }
+
+            break;
+
         case GLFW_KEY_ESCAPE:
             if (action == GLFW_PRESS)
             {
@@ -238,6 +270,19 @@ void Input::keyCB(GLFWwindow *, int key, int, int action, int)
 
         default:
             break;
+    }
+}
+
+void Input::charCB(GLFWwindow *, unsigned int codepoint)
+{
+    if (!inst || !inst->chatOpen)
+    {
+        return;
+    }
+
+    if (inst->chatBuffer.size() < 127 && codepoint < 128)
+    {
+        inst->chatBuffer += static_cast<char>(codepoint);
     }
 }
 
@@ -408,5 +453,26 @@ int Input::getScrollDelta()
 {
     int temp = scrollDelta;
     scrollDelta = 0;
+    return temp;
+}
+
+bool Input::getChatToggle()
+{
+    bool temp = chatToggle;
+    chatToggle = false;
+    return temp;
+}
+
+bool Input::getChatSubmit()
+{
+    bool temp = chatSubmit;
+    chatSubmit = false;
+    return temp;
+}
+
+bool Input::getChatCancel()
+{
+    bool temp = chatCancel;
+    chatCancel = false;
     return temp;
 }

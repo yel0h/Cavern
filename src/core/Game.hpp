@@ -53,6 +53,7 @@ private:
     std::unique_ptr<Server> server;
     std::unique_ptr<Client> client;
     std::vector<RemotePlayer> remotePlayers;
+    std::vector<std::string> chatMessages;
     static Game *inst;
 
     void init();

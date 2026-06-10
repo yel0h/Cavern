@@ -19,6 +19,7 @@ public:
     char localName[16] = {};
     std::vector<RemotePlayer> remote;
     std::vector<BreakEvent> pendingBreaks;
+    std::vector<ChatEvent> pendingChats;
 
     bool connect(const std::string &host, unsigned short port = 5565);
 
@@ -30,6 +31,8 @@ public:
 
     void sendBreak(int bx, int by, int bz, unsigned char bt) const;
 
+    void sendChat(const char *msg);
+
     void setLocalName(const char *n);
 
     void interpolate(float dt);
@@ -37,5 +40,7 @@ public:
     [[nodiscard]] bool connected() const { return sock != INVALID_SOCKET; }
 
     void clearBreaks() { pendingBreaks.clear(); }
+
+    void clearChats() { pendingChats.clear(); }
 };
 #endif//CAVERN_CLIENT_HPP

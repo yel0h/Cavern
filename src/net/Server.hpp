@@ -34,6 +34,7 @@ private:
 public:
     std::vector<RemotePlayer> remote;
     std::vector<BreakEvent> pendingBreaks;
+    std::vector<ChatEvent> pendingChats;
 
     bool start(unsigned short port = 5565);
 
@@ -47,6 +48,10 @@ public:
 
     void broadcastBreak(int bx, int by, int bz, unsigned char bt);
 
+    void broadcastChat(unsigned int senderId, const char *msg);
+
     void clearBreaks() { pendingBreaks.clear(); }
+
+    void clearChats() { pendingChats.clear(); }
 };
 #endif//CAVERN_SERVER_HPP

@@ -22,4 +22,11 @@ struct BreakEvent
     int bz;
     unsigned char blockType;
 };
+
+struct ChatEvent
+{
+    unsigned int senderId;
+    char name[16];
+    char msg[128];
+};
 #endif//CAVERN_NETTYPES_HPP

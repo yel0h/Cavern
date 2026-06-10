@@ -295,6 +295,36 @@ void Game::tick()
 
         server->clearBreaks();
     }
+
+    auto addChat = [&](const ChatEvent &e)
+    {
+        std::string line = std::string("[") + e.name + "]: " + e.msg;
+        chatMessages.push_back(std::move(line));
+        if (chatMessages.size() > 20)
+        {
+            chatMessages.erase(chatMessages.begin());
+        }
+    };
+
+    if (client)
+    {
+        for (const auto &e : client->pendingChats)
+        {
+            addChat(e);
+        }
+
+        client->clearChats();
+    }
+
+    if (server)
+    {
+        for (const auto &e : server->pendingChats)
+        {
+            addChat(e);
+        }
+
+        server->clearChats();
+    }
 }
 
 void Game::generateNewLevel()
@@ -427,6 +457,45 @@ void Game::run()
         }
         else
         {
+            if (input.getChatToggle())
+            {
+                input.chatOpen = !input.chatOpen;
+                input.chatBuffer.clear();
+                input.setCaptureMode(!input.chatOpen);
+            }
+
+            if (input.getChatSubmit() && !input.chatBuffer.empty())
+            {
+                std::string name(localName[0] ? localName : "Player");
+                std::string line = "[" + name + "]: " + input.chatBuffer;
+                chatMessages.push_back(std::move(line));
+                if (chatMessages.size() > 20)
+                {
+                    chatMessages.erase(chatMessages.begin());
+                }
+
+                if (client)
+                {
+                    client->sendChat(input.chatBuffer.c_str());
+                }
+
+                if (server)
+                {
+                    server->broadcastChat(0, input.chatBuffer.c_str());
+                }
+
+                input.chatBuffer.clear();
+                input.chatOpen = false;
+                input.setCaptureMode(true);
+            }
+
+            if (input.getChatCancel() && input.chatOpen)
+            {
+                input.chatOpen = false;
+                input.chatBuffer.clear();
+                input.setCaptureMode(true);
+            }
+
             player.applyMouseLook(input);
             camera.position = player.eyePos();
             camera.yaw = player.yaw;

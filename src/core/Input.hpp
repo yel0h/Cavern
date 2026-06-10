@@ -1,6 +1,7 @@
 #ifndef CAVERN_INPUT_HPP
 #define CAVERN_INPUT_HPP
 #include <GLFW/glfw3.h>
+#include <string>
 
 class Input
 {
@@ -22,8 +23,13 @@ private:
     bool respawn = false;
     bool funcKey[10] = {};
     int scrollDelta = 0;
+    bool chatToggle = false;
+    bool chatSubmit = false;
+    bool chatCancel = false;
 
     static void keyCB(GLFWwindow *, int key, int, int action, int);
+
+    static void charCB(GLFWwindow *, unsigned int codepoint);
 
     static void cursorCB(GLFWwindow *, double x, double y);
 
@@ -42,6 +48,8 @@ public:
     float mouseDX = 0.f;
     float mouseDY = 0.f;
     bool mouseCaptured = true;
+    bool chatOpen = false;
+    std::string chatBuffer;
     bool invertY = false;
     bool primaryAction = false;
     bool primaryHeld = false;
@@ -51,8 +59,6 @@ public:
     void init(GLFWwindow *iWindow);
 
     void beginFrame();
-
-    void resetMouseState() { firstMouse = true; }
 
     void setCaptureMode(bool capture);
 
@@ -81,5 +87,11 @@ public:
     bool getFuncKey(unsigned char index);
 
     int getScrollDelta();
+
+    bool getChatToggle();
+
+    bool getChatSubmit();
+
+    bool getChatCancel();
 };
 #endif//CAVERN_INPUT_HPP

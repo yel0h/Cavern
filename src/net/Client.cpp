@@ -96,6 +96,20 @@ void Client::sendBreak(int bx, int by, int bz, unsigned char bt) const
     send(sock, reinterpret_cast<char const *>(&pk), sizeof(pk), 0);
 }
 
+void Client::sendChat(const char *msg)
+{
+    if (sock == INVALID_SOCKET)
+    {
+        return;
+    }
+
+    PktChat pk{};
+    pk.senderId = localId;
+    std::strncpy(pk.msg, msg, 127);
+    pk.msg[127] = '\0';
+    send(sock, reinterpret_cast<char const *>(&pk), sizeof(pk), 0);
+}
+
 void Client::interpolate(float dt)
 {
     constexpr float rate = 10.f;
@@ -262,6 +276,30 @@ void Client::drainRecv()
             std::memcpy(&pk, buf.data(), sizeof(pk));
             buf.erase(buf.begin(), buf.begin() + sizeof(PktBreak));
             pendingBreaks.push_back({pk.bx, pk.by, pk.bz, pk.blockType});
+        }
+        else if (t == (unsigned char)PktType::Chat)
+        {
+            if (buf.size() < sizeof(PktChat))
+            {
+                break;
+            }
+
+            PktChat pk;
+            std::memcpy(&pk, buf.data(), sizeof(pk));
+            buf.erase(buf.begin(), buf.begin() + sizeof(PktChat));
+            ChatEvent ev{};
+            ev.senderId = pk.senderId;
+            for (const auto &r : remote)
+            {
+                if (r.id == pk.senderId)
+                {
+                    std::strncpy(ev.name, r.name, 16);
+                    break;
+                }
+            }
+
+            std::strncpy(ev.msg, pk.msg, 128);
+            pendingChats.push_back(ev);
         }
         else
         {

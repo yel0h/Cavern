@@ -8,7 +8,8 @@ enum class PktType : unsigned char
     Pos = 3,
     Leave = 4,
     Info = 5,
-    Break = 6
+    Break = 6,
+    Chat = 7
 };
 
 struct PktJoin
@@ -53,6 +54,13 @@ struct PktBreak
     int by{};
     int bz{};
     unsigned char blockType{};
+};
+
+struct PktChat
+{
+    unsigned char type = (unsigned char)PktType::Chat;
+    unsigned int senderId;
+    char msg[128];
 };
 #pragma pack(pop)
 #endif//CAVERN_PACKET_HPP
