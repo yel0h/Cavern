@@ -121,8 +121,8 @@ void WandererRenderer::render(const WandererManager &mgr, const Camera &cam, int
     verts.clear();
     for (const auto &w : mgr.wanderers)
     {
-        float frontAngle = std::sin((time * 2.0f) + w.frontLegPhase) * glm::radians(12.0f);
-        float rearAngle = std::sin((time * 2.0f) + w.rearLegPhase) * glm::radians(12.0f);
+        float frontAngle = std::sin((time * 1.2f) + w.frontLegPhase) * glm::radians(12.0f);
+        float rearAngle = std::sin((time * 1.2f) + w.rearLegPhase) * glm::radians(12.0f);
         buildMobMesh(w.position.x, w.position.y, w.position.z,
                      w.yaw, frontAngle, rearAngle, w.light);
     }
@@ -157,8 +157,8 @@ void WandererRenderer::renderRemotePlayers(const std::vector<RemotePlayer> &play
     constexpr float headB = 0.28f;
     for (const auto &p : players)
     {
-        float fa = std::sin(time * 2.0f) * glm::radians(12.0f);
-        float ra = std::sin((time * 2.0f) + 3.14159f) * glm::radians(12.0f);
+        float fa = std::sin(time * 1.2f) * glm::radians(12.0f);
+        float ra = std::sin((time * 1.2f) + 3.14159f) * glm::radians(12.0f);
         float wx = p.x;
         float wy = p.y;
         float wz = p.z;
