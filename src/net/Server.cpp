@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstring>
+#include <iostream>
 
 bool Server::start(unsigned short port)
 {
@@ -110,6 +111,12 @@ void Server::acceptClients()
 
         unsigned long nb = 1;
         ioctlsocket(s, FIONBIO, &nb);
+        if ((int)clients.size() >= maxClients)
+        {
+            closesocket(s);
+            continue;
+        }
+
         ClientState cs;
         cs.sock = s;
         cs.id = nextId++;
@@ -127,12 +134,14 @@ void Server::drainClients()
     {
         ClientState &cs = clients[i];
         char tmp[256];
+        bool removed = false;
         while (true)
         {
             int n = recv(cs.sock, tmp, sizeof(tmp), 0);
             if (n == 0)
             {
                 removeClient(i);
+                removed = true;
                 break;
             }
 
@@ -144,12 +153,14 @@ void Server::drainClients()
                 }
 
                 removeClient(i);
+                removed = true;
                 break;
             }
 
             cs.buf.insert(cs.buf.end(), tmp, tmp + n);
         }
-        if (i >= (int)clients.size())
+
+        if (removed)
         {
             continue;
         }
@@ -276,6 +287,7 @@ void Server::drainClients()
             }
             else
             {
+                std::cerr << "Server: unknown packet " << (short)t << " from client " << cs.id << ", dropping connection" << std::endl;
                 buf.clear();
                 break;
             }

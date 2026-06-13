@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstring>
+#include <iostream>
 #include <ws2tcpip.h>
 
 bool Client::connect(const std::string &host, unsigned short port)
@@ -328,6 +329,7 @@ void Client::drainRecv()
         }
         else
         {
+            std::cerr << "Client: unknown packet " << (short)t << " from server, dropping connection" << std::endl;
             buf.clear();
             break;
         }

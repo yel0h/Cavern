@@ -2,18 +2,18 @@
 #define CAVERN_NETTYPES_HPP
 struct RemotePlayer
 {
-    unsigned int id;
-    float x;
-    float y;
-    float z;
-    float yaw;
-    float vx;
-    float vy;
-    float vz;
-    float vyaw;
-    float walkPhase;
+    unsigned int id{};
+    float x{};
+    float y{};
+    float z{};
+    float yaw{};
+    float vx{};
+    float vy{};
+    float vz{};
+    float vyaw{};
+    float walkPhase{};
     bool posInitialized = false;
-    char name[16];
+    char name[16]{};
 };
 
 struct BreakEvent

@@ -10,6 +10,7 @@ class Server
 {
 private:
     static constexpr int levelChunksPerTick = 8;
+    static constexpr int maxClients = 8;
 
     struct ClientState
     {
