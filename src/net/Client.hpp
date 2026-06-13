@@ -20,6 +20,7 @@ public:
     std::vector<RemotePlayer> remote;
     std::vector<BreakEvent> pendingBreaks;
     std::vector<ChatEvent> pendingChats;
+    std::vector<LevelChunkEvent> pendingLevelChunks;
 
     bool connect(const std::string &host, unsigned short port = 5565);
 
@@ -31,7 +32,7 @@ public:
 
     void sendBreak(int bx, int by, int bz, unsigned char bt) const;
 
-    void sendChat(const char *msg);
+    void sendChat(const char *msg) const;
 
     void setLocalName(const char *n);
 
@@ -42,5 +43,7 @@ public:
     void clearBreaks() { pendingBreaks.clear(); }
 
     void clearChats() { pendingChats.clear(); }
+
+    void clearLevelChunks() { pendingLevelChunks.clear(); }
 };
 #endif//CAVERN_CLIENT_HPP

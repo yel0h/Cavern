@@ -1,6 +1,7 @@
 #include "Game.hpp"
 #include "../net/Client.hpp"
 #include "../net/Server.hpp"
+#include "src/world/Lighting.hpp"
 #include <cstring>
 #include <fstream>
 #include <iostream>
@@ -143,6 +144,7 @@ void Game::init()
             std::cout << "Server listening on port 5565" << std::endl;
         }
 
+        server->world = &world;
         server->setHostName(localName);
     }
 
@@ -196,7 +198,7 @@ void Game::tick()
     if (player.lastBroken.valid)
     {
         particles.spawnFromBlock(player.lastBroken.bx, player.lastBroken.by, player.lastBroken.bz, player.lastBroken.type);
-        unsigned char bt = (unsigned char)player.lastBroken.type;
+        auto bt = (unsigned char)player.lastBroken.type;
         int bx = player.lastBroken.bx;
         int by = player.lastBroken.by;
         int bz = player.lastBroken.bz;
@@ -294,6 +296,21 @@ void Game::tick()
         }
 
         server->clearBreaks();
+    }
+
+    if (client && !client->pendingLevelChunks.empty())
+    {
+        for (const auto &e : client->pendingLevelChunks)
+        {
+            if (Chunk *ch = world.getChunk(e.cx, e.cz))
+            {
+                std::memcpy(ch->blocks.data(), e.blocks, sizeof(e.blocks));
+                ch->dirty = true;
+            }
+        }
+
+        Lighting::propagate(world);
+        client->clearLevelChunks();
     }
 
     auto addChat = [&](const ChatEvent &e)

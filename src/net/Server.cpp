@@ -86,6 +86,7 @@ void Server::tick()
 {
     acceptClients();
     drainClients();
+    sendPendingLevels();
     PktPos hp{};
     hp.type = (unsigned char)PktType::Pos;
     hp.id = 0;
@@ -169,6 +170,7 @@ void Server::drainClients()
                 if (!cs.nameReceived)
                 {
                     cs.nameReceived = true;
+                    cs.levelSentChunks = 0;
                     std::strncpy(cs.name, jn.name, 15);
                     cs.name[15] = '\0';
                     PktInfo hi{};
@@ -268,7 +270,6 @@ void Server::drainClients()
                 pk.senderId = cs.id;
                 broadcastExcept(&pk, sizeof(pk), cs.sock);
                 ChatEvent ev{};
-                ev.senderId = cs.id;
                 std::strncpy(ev.name, cs.name, 16);
                 std::strncpy(ev.msg, pk.msg, 128);
                 pendingChats.push_back(ev);
@@ -278,6 +279,39 @@ void Server::drainClients()
                 buf.clear();
                 break;
             }
+        }
+    }
+}
+
+void Server::sendPendingLevels()
+{
+    if (!world)
+    {
+        return;
+    }
+
+    for (auto &cs : clients)
+    {
+        if (cs.levelSentChunks < 0 || cs.levelSentChunks >= 256)
+        {
+            continue;
+        }
+
+        for (int n = 0; n < levelChunksPerTick && cs.levelSentChunks < 256; n++, cs.levelSentChunks++)
+        {
+            int cx = cs.levelSentChunks % World::CHUNKS_X;
+            int cz = cs.levelSentChunks / World::CHUNKS_X;
+            const Chunk *ch = world->getChunk(cx, cz);
+            if (!ch)
+            {
+                continue;
+            }
+
+            PktLevelChunk pk{};
+            pk.cx = (unsigned char)cx;
+            pk.cz = (unsigned char)cz;
+            std::memcpy(pk.blocks, ch->blocks.data(), sizeof(pk.blocks));
+            send(cs.sock, reinterpret_cast<char const *>(&pk), sizeof(pk), 0);
         }
     }
 }

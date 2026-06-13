@@ -25,8 +25,14 @@ struct BreakEvent
 
 struct ChatEvent
 {
-    unsigned int senderId;
     char name[16];
     char msg[128];
+};
+
+struct LevelChunkEvent
+{
+    unsigned char cx;
+    unsigned char cz;
+    unsigned char blocks[16 * 64 * 16];
 };
 #endif//CAVERN_NETTYPES_HPP

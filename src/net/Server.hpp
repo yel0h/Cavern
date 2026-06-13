@@ -2,12 +2,15 @@
 #define CAVERN_SERVER_HPP
 #define WIN32_LEAN_AND_MEAN
 #include "NetTypes.hpp"
+#include "src/world/World.hpp"
 #include <vector>
 #include <winsock2.h>
 
 class Server
 {
 private:
+    static constexpr int levelChunksPerTick = 8;
+
     struct ClientState
     {
         SOCKET sock = INVALID_SOCKET;
@@ -15,6 +18,7 @@ private:
         std::vector<unsigned char> buf;
         char name[16] = {};
         bool nameReceived = false;
+        int levelSentChunks = -1;
     };
 
     SOCKET listenSock = INVALID_SOCKET;
@@ -27,6 +31,8 @@ private:
 
     void drainClients();
 
+    void sendPendingLevels();
+
     void broadcastExcept(const void *data, int len, SOCKET skip);
 
     void removeClient(int idx);
@@ -35,6 +41,7 @@ public:
     std::vector<RemotePlayer> remote;
     std::vector<BreakEvent> pendingBreaks;
     std::vector<ChatEvent> pendingChats;
+    const World *world = nullptr;
 
     bool start(unsigned short port = 5565);
 

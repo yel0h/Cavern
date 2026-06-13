@@ -1,6 +1,7 @@
 #ifndef CAVERN_PACKET_HPP
 #define CAVERN_PACKET_HPP
 #pragma pack(push, 1)
+#include "src/world/Chunk.hpp"
 enum class PktType : unsigned char
 {
     Join = 1,
@@ -9,7 +10,8 @@ enum class PktType : unsigned char
     Leave = 4,
     Info = 5,
     Break = 6,
-    Chat = 7
+    Chat = 7,
+    LevelChunk = 8
 };
 
 struct PktJoin
@@ -59,8 +61,16 @@ struct PktBreak
 struct PktChat
 {
     unsigned char type = (unsigned char)PktType::Chat;
-    unsigned int senderId;
-    char msg[128];
+    unsigned int senderId{};
+    char msg[128]{};
+};
+
+struct PktLevelChunk
+{
+    unsigned char type = (unsigned char)PktType::LevelChunk;
+    unsigned char cx{};
+    unsigned char cz{};
+    unsigned char blocks[Chunk::WIDTH * Chunk::HEIGHT * Chunk::DEPTH]{};
 };
 #pragma pack(pop)
 #endif//CAVERN_PACKET_HPP

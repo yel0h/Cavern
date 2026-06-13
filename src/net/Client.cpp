@@ -96,7 +96,7 @@ void Client::sendBreak(int bx, int by, int bz, unsigned char bt) const
     send(sock, reinterpret_cast<char const *>(&pk), sizeof(pk), 0);
 }
 
-void Client::sendChat(const char *msg)
+void Client::sendChat(const char *msg) const
 {
     if (sock == INVALID_SOCKET)
     {
@@ -288,7 +288,6 @@ void Client::drainRecv()
             std::memcpy(&pk, buf.data(), sizeof(pk));
             buf.erase(buf.begin(), buf.begin() + sizeof(PktChat));
             ChatEvent ev{};
-            ev.senderId = pk.senderId;
             for (const auto &r : remote)
             {
                 if (r.id == pk.senderId)
@@ -300,6 +299,22 @@ void Client::drainRecv()
 
             std::strncpy(ev.msg, pk.msg, 128);
             pendingChats.push_back(ev);
+        }
+        else if (t == (unsigned char)PktType::LevelChunk)
+        {
+            if (buf.size() < sizeof(PktLevelChunk))
+            {
+                break;
+            }
+
+            PktLevelChunk pk;
+            std::memcpy(&pk, buf.data(), sizeof(pk));
+            buf.erase(buf.begin(), buf.begin() + sizeof(PktLevelChunk));
+            LevelChunkEvent ev{};
+            ev.cx = pk.cx;
+            ev.cz = pk.cz;
+            std::memcpy(ev.blocks, pk.blocks, sizeof(ev.blocks));
+            pendingLevelChunks.push_back(ev);
         }
         else
         {
