@@ -12,6 +12,7 @@ struct RemotePlayer
     float vz;
     float vyaw;
     float walkPhase;
+    bool posInitialized = false;
     char name[16];
 };
 

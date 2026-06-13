@@ -203,6 +203,15 @@ void Client::drainRecv()
                     r.y = pp.y;
                     r.z = pp.z;
                     r.yaw = pp.yaw;
+                    if (!r.posInitialized)
+                    {
+                        r.vx = pp.x;
+                        r.vy = pp.y;
+                        r.vz = pp.z;
+                        r.vyaw = pp.yaw;
+                        r.posInitialized = true;
+                    }
+
                     found = true;
                     break;
                 }
@@ -220,6 +229,7 @@ void Client::drainRecv()
                 rp.vy = pp.y;
                 rp.vz = pp.z;
                 rp.vyaw = pp.yaw;
+                rp.posInitialized = true;
                 remote.push_back(rp);
             }
         }
