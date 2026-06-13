@@ -1,6 +1,7 @@
 #include "Server.hpp"
 #include "Packet.hpp"
 #include <algorithm>
+#include <cmath>
 #include <cstring>
 
 bool Server::start(unsigned short port)
@@ -218,15 +219,10 @@ void Server::drainClients()
                 {
                     if (r.id == cs.id)
                     {
-                        r.id = pp.id;
                         r.x = pp.x;
                         r.y = pp.y;
                         r.z = pp.z;
                         r.yaw = pp.yaw;
-                        r.vx = pp.x;
-                        r.vy = pp.y;
-                        r.vz = pp.z;
-                        r.vyaw = pp.yaw;
                         found = true;
                         break;
                     }
@@ -240,6 +236,10 @@ void Server::drainClients()
                     rp.y = pp.y;
                     rp.z = pp.z;
                     rp.yaw = pp.yaw;
+                    rp.vx = pp.x;
+                    rp.vy = pp.y;
+                    rp.vz = pp.z;
+                    rp.vyaw = pp.yaw;
                     std::strncpy(rp.name, cs.name, 16);
                     remote.push_back(rp);
                 }
@@ -313,6 +313,34 @@ void Server::sendPendingLevels()
             std::memcpy(pk.blocks, ch->blocks.data(), sizeof(pk.blocks));
             send(cs.sock, reinterpret_cast<char const *>(&pk), sizeof(pk), 0);
         }
+    }
+}
+
+void Server::interpolate(float dt)
+{
+    constexpr float rate = 10.f;
+    float factor = 1.f - std::exp(-rate * dt);
+    for (auto &r : remote)
+    {
+        float prevVx = r.vx;
+        float prevVz = r.vz;
+        r.vx += (r.x - r.vx) * factor;
+        r.vy += (r.y - r.vy) * factor;
+        r.vz += (r.z - r.vz) * factor;
+        float dyaw = r.yaw - r.vyaw;
+        while (dyaw > 180.f)
+        {
+            dyaw -= 360.f;
+        }
+
+        while (dyaw < -180.f)
+        {
+            dyaw += 360.f;
+        }
+
+        r.vyaw += dyaw * factor;
+        float moved = std::sqrt(((r.vx - prevVx) * (r.vx - prevVx)) + ((r.vz - prevVz) * (r.vz - prevVz)));
+        r.walkPhase += moved * 3.f;
     }
 }
 

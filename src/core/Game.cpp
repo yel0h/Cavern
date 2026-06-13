@@ -263,6 +263,7 @@ void Game::tick()
     {
         server->setHostPos(player.position.x, player.position.y, player.position.z, player.yaw);
         server->tick();
+        server->interpolate(0.01666667);
         remotePlayers = server->remote;
     }
 

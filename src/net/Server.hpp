@@ -49,6 +49,8 @@ public:
 
     void tick();
 
+    void interpolate(float dt);
+
     void setHostPos(float x, float y, float z, float yaw);
 
     void setHostName(const char *n);
