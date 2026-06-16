@@ -66,6 +66,7 @@ struct PktChat
     unsigned char type = (unsigned char)PktType::Chat;
     unsigned int senderId{};
     char msg[128]{};
+    unsigned char isPrivate = 0;
 };
 
 struct PktLevelChunk
