@@ -312,14 +312,22 @@ void Client::drainRecv()
             std::memcpy(&pk, buf.data(), sizeof(pk));
             buf.erase(buf.begin(), buf.begin() + sizeof(PktChat));
             ChatEvent ev{};
+            ev.isPrivate = pk.isPrivate;
             if (pk.isPrivate == 0)
             {
-                for (const auto &r : remote)
+                if (localId == pk.senderId)
                 {
-                    if (r.id == pk.senderId)
+                    std::strncpy(ev.name, localName, 16);
+                }
+                else
+                {
+                    for (const auto &r : remote)
                     {
-                        std::strncpy(ev.name, r.name, 16);
-                        break;
+                        if (r.id == pk.senderId)
+                        {
+                            std::strncpy(ev.name, r.name, 16);
+                            break;
+                        }
                     }
                 }
             }

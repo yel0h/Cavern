@@ -316,14 +316,13 @@ void Game::tick()
 
     auto addChat = [&](const ChatEvent &e)
     {
-        std::string line = std::string("[") + e.name + "]: " + e.msg;
+        std::string line = (e.isPrivate == 1) ? std::string(e.msg) : std::string("[") + e.name + "]: " + e.msg;
         chatMessages.push_back(std::move(line));
         if (chatMessages.size() > 20)
         {
             chatMessages.erase(chatMessages.begin());
         }
     };
-
     if (client)
     {
         for (const auto &e : client->pendingChats)

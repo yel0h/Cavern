@@ -28,6 +28,7 @@ struct ChatEvent
 {
     char name[16]{};
     char msg[128]{};
+    unsigned char isPrivate = 0;
 };
 
 struct LevelChunkEvent

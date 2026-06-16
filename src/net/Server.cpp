@@ -83,6 +83,7 @@ void Server::broadcastChat(unsigned int senderId, const char *msg)
 {
     PktChat pk{};
     pk.senderId = senderId;
+    pk.isPrivate = 0;
     std::strncpy(pk.msg, msg, 127);
     pk.msg[127] = '\0';
     broadcastExcept(&pk, sizeof(pk), INVALID_SOCKET);
@@ -476,6 +477,7 @@ void Server::sendServerChat(SOCKET sock, const char *msg)
 {
     PktChat pk{};
     pk.senderId = 0;
+    pk.isPrivate = 1;
     std::strncpy(pk.msg, msg, 127);
     pk.msg[127] = '\0';
     send(sock, reinterpret_cast<char const *>(&pk), sizeof(pk), 0);
@@ -791,7 +793,8 @@ void Server::handleCommand(Server::ClientState &sender, const char *raw)
 
         broadcastChat(sender.id, arg);
         ChatEvent ev{};
-        std::strncpy(ev.name, sender.name, 16);
+        ev.isPrivate = 0;
+        std::strncpy(ev.name, sender.id == host.id ? hostName : sender.name, 16);
         std::strncpy(ev.msg, arg, 128);
         pendingChats.push_back(ev);
     }
