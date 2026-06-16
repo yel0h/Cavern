@@ -731,16 +731,26 @@ void Server::handleCommand(Server::ClientState &sender, const char *raw)
             return;
         }
 
-        if (!std::any_of(exiledIps.begin(), exiledIps.end(), [arg](const std::string &e) { return e == arg; }))
+        in_addr addr4{};
+        if (inet_pton(AF_INET, arg, &addr4) != 1)
         {
-            exiledIps.emplace_back(arg);
+            replyTo("[Server]: Invalid IP address.");
+            return;
+        }
+
+        char normed[16]{};
+        inet_ntop(AF_INET, &addr4, normed, sizeof(normed));
+        if (!std::any_of(exiledIps.begin(), exiledIps.end(),
+                         [normed](const std::string &e) { return e == normed; }))
+        {
+            exiledIps.emplace_back(normed);
         }
 
         saveExiles();
-        std::cerr << "[Server] IP " << arg << " exiled. Edit exiled_ips.txt to pardon." << std::endl;
+        std::cerr << "[Server] IP " << normed << " exiled. Edit exiled_ips.txt to pardon." << std::endl;
         for (int i = (int)clients.size() - 1; i >= 0; i--)
         {
-            if (std::strcmp(clients[i].ip, arg) == 0)
+            if (std::strcmp(clients[i].ip, normed) == 0)
             {
                 if (clients[i].id == 0)
                 {
