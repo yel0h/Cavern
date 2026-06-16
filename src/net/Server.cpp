@@ -342,7 +342,6 @@ void Server::drainClients()
                 {
                     broadcastExcept(&pk, sizeof(pk), cs.sock);
                     ChatEvent ev{};
-                    ev.senderId = cs.id;
                     std::strncpy(ev.name, cs.name, 16);
                     std::strncpy(ev.msg, pk.msg, 128);
                     pendingChats.push_back(ev);
@@ -782,18 +781,17 @@ void Server::handleCommand(Server::ClientState &sender, const char *raw)
         removeClient(idx);
         replyTo("[Server]: Player expelled.");
     }
-    else if (_stricmp(cmd, "/announce") == 0)
+    else if (_stricmp(cmd, "/say") == 0)
     {
         if (!*arg)
         {
-            replyTo("[Server]: Usage: /announce <message>");
+            replyTo("[Server]: Usage: /say <message>");
             return;
         }
 
-        broadcastChat(0, arg);
+        broadcastChat(sender.id, arg);
         ChatEvent ev{};
-        ev.senderId = 0;
-        std::strncpy(ev.name, "Server", 16);
+        std::strncpy(ev.name, sender.name, 16);
         std::strncpy(ev.msg, arg, 128);
         pendingChats.push_back(ev);
     }

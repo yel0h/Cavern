@@ -358,7 +358,6 @@ void Client::drainRecv()
             std::memcpy(&pk, buf.data(), sizeof(pk));
             buf.erase(buf.begin(), buf.begin() + sizeof(PktExpel));
             ChatEvent ev{};
-            ev.senderId = 0;
             std::strncpy(ev.name, "Server", 16);
             std::strncpy(ev.msg, pk.reason, 128);
             pendingChats.push_back(ev);
@@ -376,7 +375,6 @@ void Client::drainRecv()
             std::memcpy(&pk, buf.data(), sizeof(pk));
             buf.erase(buf.begin(), buf.begin() + sizeof(PktWardenStatus));
             ChatEvent ev{};
-            ev.senderId = 0;
             std::strncpy(ev.name, "Server", 16);
             std::strncpy(ev.msg, pk.granted
                                          ? "You have been granted warden status."
