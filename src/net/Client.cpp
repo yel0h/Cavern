@@ -24,15 +24,37 @@ bool Client::connect(const std::string &host, unsigned short port)
         return false;
     }
 
-    if (::connect(sock, reinterpret_cast<sockaddr const *>(&addr), sizeof(addr)) != 0)
+    unsigned long nb = 1;
+    ioctlsocket(sock, FIONBIO, &nb);
+    int r = ::connect(sock, reinterpret_cast<sockaddr const *>(&addr), sizeof(addr));
+    if (r != 0 && WSAGetLastError() != WSAEWOULDBLOCK)
     {
         closesocket(sock);
         sock = INVALID_SOCKET;
         return false;
     }
 
-    unsigned long nb = 1;
-    ioctlsocket(sock, FIONBIO, &nb);
+    fd_set wfds;
+    FD_ZERO(&wfds);
+    FD_SET(sock, &wfds);
+    timeval tv{3, 0};
+    if (select(0, nullptr, &wfds, nullptr, &tv) != 1)
+    {
+        closesocket(sock);
+        sock = INVALID_SOCKET;
+        return false;
+    }
+
+    int sockErr = 0;
+    int errLen = sizeof(sockErr);
+    getsockopt(sock, SOL_SOCKET, SO_ERROR, reinterpret_cast<char *>(&sockErr), &errLen);
+    if (sockErr != 0)
+    {
+        closesocket(sock);
+        sock = INVALID_SOCKET;
+        return false;
+    }
+
     PktJoin j{};
     std::strncpy(j.name, localName, 15);
     j.name[15] = '\0';
