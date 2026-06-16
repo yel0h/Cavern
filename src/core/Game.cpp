@@ -231,7 +231,7 @@ void Game::tick()
     }
 
     player.selectedBlock = hotbar[hotbarIdx];
-    if (input.getSpawnMob())
+    if (input.getSpawnMob() && !client)
     {
         wanderers.spawnOne(world, player.position.x, player.position.z);
     }
@@ -346,6 +346,8 @@ void Game::tick()
 
 void Game::generateNewLevel()
 {
+    renderer.renderGenerating(winW, winH);
+    glfwSwapBuffers(window);
     renderer.renderGenerating(winW, winH);
     glfwSwapBuffers(window);
     seed++;
