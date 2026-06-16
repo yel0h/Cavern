@@ -65,13 +65,25 @@ void Client::setLocalName(const char *n)
     localName[15] = '\0';
 }
 
-void Client::sendPosition(float x, float y, float z, float yaw) const
+void Client::sendPosition(float x, float y, float z, float yaw)
 {
     if (sock == INVALID_SOCKET)
     {
         return;
     }
 
+    float dx = x - lastSentX;
+    float dy = y - lastSentY;
+    float dz = z - lastSentZ;
+    if ((dx * dx) + (dy * dy) + (dz * dz) < 0.0004f && std::abs(yaw - lastSentYaw) < 0.5f)
+    {
+        return;
+    }
+
+    lastSentX = x;
+    lastSentY = y;
+    lastSentZ = z;
+    lastSentYaw = yaw;
     PktPos pp{};
     pp.type = (unsigned char)PktType::Pos;
     pp.id = localId;
@@ -326,6 +338,42 @@ void Client::drainRecv()
             ev.cz = pk.cz;
             std::memcpy(ev.blocks, pk.blocks, sizeof(ev.blocks));
             pendingLevelChunks.push_back(ev);
+        }
+        else if (t == (unsigned char)PktType::Expel)
+        {
+            if (buf.size() < sizeof(PktExpel))
+            {
+                break;
+            }
+
+            PktExpel pk;
+            std::memcpy(&pk, buf.data(), sizeof(pk));
+            buf.erase(buf.begin(), buf.begin() + sizeof(PktExpel));
+            ChatEvent ev{};
+            ev.senderId = 0;
+            std::strncpy(ev.name, "Server", 16);
+            std::strncpy(ev.msg, pk.reason, 128);
+            pendingChats.push_back(ev);
+            disconnect();
+            return;
+        }
+        else if (t == (unsigned char)PktType::WardenStatus)
+        {
+            if (buf.size() < sizeof(PktWardenStatus))
+            {
+                break;
+            }
+
+            PktWardenStatus pk;
+            std::memcpy(&pk, buf.data(), sizeof(pk));
+            buf.erase(buf.begin(), buf.begin() + sizeof(PktWardenStatus));
+            ChatEvent ev{};
+            ev.senderId = 0;
+            std::strncpy(ev.name, "Server", 16);
+            std::strncpy(ev.msg, pk.granted
+                                         ? "You have been granted warden status."
+                                         : "Your warden status has been revoked.", 128);
+            pendingChats.push_back(ev);
         }
         else
         {

@@ -10,13 +10,17 @@ class Client
 {
 private:
     SOCKET sock = INVALID_SOCKET;
+    char localName[16] = {};
     std::vector<unsigned char> buf;
+    float lastSentX = 0;
+    float lastSentY = 0;
+    float lastSentZ = 0;
+    float lastSentYaw = 0;
 
     void drainRecv();
 
 public:
     unsigned int localId = 0;
-    char localName[16] = {};
     std::vector<RemotePlayer> remote;
     std::vector<BreakEvent> pendingBreaks;
     std::vector<ChatEvent> pendingChats;
@@ -28,7 +32,7 @@ public:
 
     void tick();
 
-    void sendPosition(float x, float y, float z, float yaw) const;
+    void sendPosition(float x, float y, float z, float yaw);
 
     void sendBreak(int bx, int by, int bz, unsigned char bt) const;
 
