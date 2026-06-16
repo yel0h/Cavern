@@ -26,6 +26,7 @@ struct BreakEvent
 
 struct ChatEvent
 {
+    unsigned int senderId;
     char name[16];
     char msg[128];
 };

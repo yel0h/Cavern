@@ -2,6 +2,7 @@
 #define CAVERN_SERVER_HPP
 #define WIN32_LEAN_AND_MEAN
 #include "NetTypes.hpp"
+#include "Packet.hpp"
 #include "src/world/World.hpp"
 #include <vector>
 #include <winsock2.h>
@@ -18,8 +19,10 @@ private:
         unsigned int id = 0;
         std::vector<unsigned char> buf;
         char name[16] = {};
+        char ip[16] = {};
         bool nameReceived = false;
         int levelSentChunks = -1;
+        std::vector<PktBreak> pendingBreakQueue;
     };
 
     SOCKET listenSock = INVALID_SOCKET;
@@ -27,6 +30,13 @@ private:
     RemotePlayer host{};
     char hostName[16] = {};
     std::vector<ClientState> clients;
+    std::vector<std::string> wardens;
+    std::vector<std::string> exiledNames;
+    std::vector<std::string> exiledIps;
+    float lastSentX = 0;
+    float lastSentY = 0;
+    float lastSentZ=0;
+    float lastSentYaw=0;
 
     void acceptClients();
 
@@ -36,7 +46,27 @@ private:
 
     void broadcastExcept(const void *data, int len, SOCKET skip);
 
+    void broadcastBreakExcept(const PktBreak &pk, SOCKET skip);
+
     void removeClient(int idx);
+
+    void handleCommand(ClientState &sender, const char *raw);
+
+    static void sendServerChat(SOCKET sock, const char *msg);
+
+    bool isWarden(unsigned int id, const char *name) const;
+
+    void loadWardens() { wardens = loadTextList("wardens.txt"); };
+
+    void saveWardens() const { saveTextList("wardens.txt", wardens, "# Cavern warden list"); };
+
+    void loadExiles();
+
+    void saveExiles() const;
+
+    static std::vector<std::string> loadTextList(const char *path);
+
+    static void saveTextList(const char *path, const std::vector<std::string> &list, const char *header);
 
 public:
     std::vector<RemotePlayer> remote;
