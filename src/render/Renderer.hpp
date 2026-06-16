@@ -32,7 +32,7 @@ public:
     void renderFrame(const World &world, const Camera &cam, int winW, int winH,
                      const HighlightBlock &hl, float time,
                      BlockType selectedBlock, int fps, int chunkUpdates, bool placeMode,
-                     bool underLava);
+                     bool underLava, bool underWater);
 
     void renderGenerating(int winW, int winH);
 

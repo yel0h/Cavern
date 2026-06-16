@@ -387,7 +387,7 @@ void Game::render()
                            hl, (float)glfwGetTime(),
                            player.selectedBlock,
                            fps, chunks, player.placeMode,
-                           player.underLava);
+                           player.underLava, player.underWater);
     wandererRenderer.render(wanderers, camera, winW, winH, (float)glfwGetTime());
     if (!remotePlayers.empty())
     {

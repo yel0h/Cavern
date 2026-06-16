@@ -699,7 +699,7 @@ void Renderer::renderPauseMenu(int winW, int winH)
     glDisable(GL_BLEND);
 }
 
-void Renderer::renderFrame(const World &world, const Camera &cam, int winW, int winH, const Renderer::HighlightBlock &hl, float time, BlockType selectedBlock, int fps, int chunkUpdates, bool placeMode, bool underLava)
+void Renderer::renderFrame(const World &world, const Camera &cam, int winW, int winH, const Renderer::HighlightBlock &hl, float time, BlockType selectedBlock, int fps, int chunkUpdates, bool placeMode, bool underLava, bool underWater)
 {
     rebuildDirty(world, cam.position);
     float cFogNear;
@@ -714,6 +714,14 @@ void Renderer::renderFrame(const World &world, const Camera &cam, int winW, int 
         fogR = 0.9f;
         fogG = 0.08f;
         fogB = 0.05f;
+    }
+    else if (underWater)
+    {
+        cFogNear = 4.f;
+        cFogFar = 14.f;
+        fogR = 0.294f;
+        fogG = 0.0f;
+        fogB = 0.510f;
     }
     else
     {

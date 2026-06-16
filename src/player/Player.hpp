@@ -41,6 +41,7 @@ public:
     BlockType selectedBlock = BlockType::Stone;
     bool placeMode = true;
     bool underLava = false;
+    bool underWater = false;
     float spawnX = 128.f;
     float spawnZ = 128.f;
 
