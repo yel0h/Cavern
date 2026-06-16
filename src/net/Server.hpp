@@ -35,8 +35,8 @@ private:
     std::vector<std::string> exiledIps;
     float lastSentX = 0;
     float lastSentY = 0;
-    float lastSentZ=0;
-    float lastSentYaw=0;
+    float lastSentZ = 0;
+    float lastSentYaw = 0;
 
     void acceptClients();
 
@@ -89,6 +89,8 @@ public:
     void broadcastBreak(int bx, int by, int bz, unsigned char bt);
 
     void broadcastChat(unsigned int senderId, const char *msg);
+
+    void handleHostCommand(const char *raw);
 
     void clearBreaks() { pendingBreaks.clear(); }
 

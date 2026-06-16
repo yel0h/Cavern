@@ -485,12 +485,16 @@ void Game::run()
 
             if (input.getChatSubmit() && !input.chatBuffer.empty())
             {
-                std::string name(localName[0] ? localName : "Player");
-                std::string line = "[" + name + "]: " + input.chatBuffer;
-                chatMessages.push_back(std::move(line));
-                if (chatMessages.size() > 20)
+                bool isCmd = input.chatBuffer[0] == '/';
+                if (!isCmd)
                 {
-                    chatMessages.erase(chatMessages.begin());
+                    std::string name(localName[0] ? localName : "Player");
+                    std::string line = "[" + name + "]: " + input.chatBuffer;
+                    chatMessages.push_back(std::move(line));
+                    if (chatMessages.size() > 20)
+                    {
+                        chatMessages.erase(chatMessages.begin());
+                    }
                 }
 
                 if (client)
@@ -498,9 +502,16 @@ void Game::run()
                     client->sendChat(input.chatBuffer.c_str());
                 }
 
-                if (server)
+                if (server && !client)
                 {
-                    server->broadcastChat(0, input.chatBuffer.c_str());
+                    if (isCmd)
+                    {
+                        server->handleHostCommand(input.chatBuffer.c_str());
+                    }
+                    else
+                    {
+                        server->broadcastChat(0, input.chatBuffer.c_str());
+                    }
                 }
 
                 input.chatBuffer.clear();

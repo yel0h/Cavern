@@ -154,13 +154,14 @@ void Client::interpolate(float dt)
 void Client::drainRecv()
 {
     char tmp[512];
+    bool disconnected = false;
     while (true)
     {
         int n = recv(sock, tmp, sizeof(tmp), 0);
         if (n == 0)
         {
-            disconnect();
-            return;
+            disconnected = true;
+            break;
         }
 
         if (n < 0)
@@ -170,8 +171,8 @@ void Client::drainRecv()
                 break;
             }
 
-            disconnect();
-            return;
+            disconnected = true;
+            break;
         }
 
         buf.insert(buf.end(), tmp, tmp + n);
@@ -311,12 +312,19 @@ void Client::drainRecv()
             std::memcpy(&pk, buf.data(), sizeof(pk));
             buf.erase(buf.begin(), buf.begin() + sizeof(PktChat));
             ChatEvent ev{};
-            for (const auto &r : remote)
+            if (pk.senderId == 0)
             {
-                if (r.id == pk.senderId)
+                std::strncpy(ev.name, "Server", 16);
+            }
+            else
+            {
+                for (const auto &r : remote)
                 {
-                    std::strncpy(ev.name, r.name, 16);
-                    break;
+                    if (r.id == pk.senderId)
+                    {
+                        std::strncpy(ev.name, r.name, 16);
+                        break;
+                    }
                 }
             }
 
@@ -381,5 +389,10 @@ void Client::drainRecv()
             buf.clear();
             break;
         }
+    }
+
+    if (disconnected)
+    {
+        disconnect();
     }
 }

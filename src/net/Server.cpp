@@ -550,6 +550,16 @@ void Server::saveExiles() const
     saveTextList("exiled_ips.txt", exiledIps, "# Cavern exiled IPs - remove an entry here to pardon an IP");
 }
 
+void Server::handleHostCommand(const char *raw)
+{
+    ClientState cHost{};
+    cHost.id = 0;
+    std::strncpy(host.name, hostName, 15);
+    cHost.name[15] = '\0';
+    cHost.sock = INVALID_SOCKET;
+    handleCommand(cHost, raw);
+}
+
 void Server::handleCommand(Server::ClientState &sender, const char *raw)
 {
     if (!isWarden(sender.id, sender.name))
@@ -780,13 +790,11 @@ void Server::handleCommand(Server::ClientState &sender, const char *raw)
             return;
         }
 
-        char full[128];
-        std::snprintf(full, sizeof(full), "[Announcement]: %s", arg);
-        broadcastChat(0, full);
+        broadcastChat(0, arg);
         ChatEvent ev{};
         ev.senderId = 0;
         std::strncpy(ev.name, "Server", 16);
-        std::strncpy(ev.msg, full, 128);
+        std::strncpy(ev.msg, arg, 128);
         pendingChats.push_back(ev);
     }
     else
