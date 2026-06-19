@@ -34,8 +34,16 @@ bool Server::start(unsigned short port)
     }
 
     host.id = 0;
+    loadConfig();
     loadWardens();
     loadExiles();
+    loadServerSpawn();
+    saveLoggedIn();
+    if (!_private)
+    {
+        writeExternalUrl(port);
+    }
+
     return true;
 }
 
@@ -267,6 +275,11 @@ void Server::drainClients()
                     ni.id = cs.id;
                     std::strncpy(ni.name, cs.name, 16);
                     broadcastExcept(&ni, sizeof(ni), cs.sock);
+                    PktSpawn sp{};
+                    sp.x = spawnX;
+                    sp.z = spawnZ;
+                    send(cs.sock, reinterpret_cast<char const *>(&sp), sizeof(sp), 0);
+                    saveLoggedIn();
                 }
             }
             else if (t == (unsigned char)PktType::Pos)
@@ -347,6 +360,51 @@ void Server::drainClients()
                     std::strncpy(ev.msg, pk.msg, 128);
                     pendingChats.push_back(ev);
                 }
+            }
+            else if (t == (unsigned char)PktType::Place)
+            {
+                if (buf.size() < sizeof(PktPlace))
+                {
+                    break;
+                }
+
+                PktPlace pk;
+                std::memcpy(&pk, buf.data(), sizeof(pk));
+                buf.erase(buf.begin(), buf.begin() + sizeof(PktPlace));
+                static constexpr unsigned char legalBlocks[] = {1, 3, 4, 5, 6, 7, 11, 12};
+                bool legalType = false;
+                for (unsigned char lb : legalBlocks)
+                {
+                    if (pk.blockType == lb)
+                    {
+                        legalType = true;
+                        break;
+                    }
+                }
+
+                if (!legalType)
+                {
+                    PktExpel ep{};
+                    std::strncpy(ep.reason, "Placing an unavailable block type.", sizeof(ep.reason) - 1);
+                    send(cs.sock, reinterpret_cast<char const *>(&ep), sizeof(ep), 0);
+                    removeClient(i);
+                    break;
+                }
+
+                float dx = (float)pk.bx + 0.5f - pk.px;
+                float dy = (float)pk.by + 0.5f - pk.py;
+                float dz = (float)pk.bz + 0.5f - pk.pz;
+                if ((dx * dx) + (dy * dy) + (dz * dz) > maxPlaceReach * maxPlaceReach)
+                {
+                    PktExpel ep{};
+                    std::strncpy(ep.reason, "Placing a block beyond reach.", sizeof(ep.reason) - 1);
+                    send(cs.sock, reinterpret_cast<char const *>(&ep), sizeof(ep), 0);
+                    removeClient(i);
+                    break;
+                }
+
+                broadcastExcept(&pk, sizeof(pk), cs.sock);
+                pendingPlaces.push_back({pk.bx, pk.by, pk.bz});
             }
             else
             {
@@ -471,6 +529,7 @@ void Server::removeClient(int idx)
     broadcastExcept(&lv, sizeof(lv), INVALID_SOCKET);
     remote.erase(std::remove_if(remote.begin(), remote.end(),
                                   [id](const RemotePlayer &r) { return r.id == id; }), remote.end());
+    saveLoggedIn();
 }
 
 void Server::sendServerChat(SOCKET sock, const char *msg)
@@ -808,8 +867,136 @@ void Server::handleCommand(Server::ClientState &sender, const char *raw)
         std::strncpy(ev.msg, arg, 128);
         pendingChats.push_back(ev);
     }
+    else if (_stricmp(cmd, "/setspawn") == 0)
+    {
+        if (sender.id == 0)
+        {
+            spawnX = host.x;
+            spawnZ = host.z;
+        }
+        else
+        {
+            for (const auto &r : remote)
+            {
+                if (r.id == sender.id)
+                {
+                    spawnX = r.x;
+                    spawnZ = r.z;
+                    break;
+                }
+            }
+        }
+
+        saveServerSpawn();
+        replyTo("[Server]: Spawn point set.");
+    }
     else
     {
         replyTo("[Server]: Unknown command.");
+    }
+}
+
+void Server::loadServerSpawn()
+{
+    std::ifstream f("server_spawn.dat", std::ios::binary);
+    if (!f)
+    {
+        return;
+    }
+
+    f.read(reinterpret_cast<char *>(&spawnX), sizeof(spawnX));
+    f.read(reinterpret_cast<char *>(&spawnZ), sizeof(spawnZ));
+}
+
+void Server::saveServerSpawn() const
+{
+    std::ofstream f("server_spawn.dat", std::ios::binary);
+    if (!f)
+    {
+        return;
+    }
+
+    f.write(reinterpret_cast<char const *>(&spawnX), sizeof(spawnX));
+    f.write(reinterpret_cast<char const *>(&spawnZ), sizeof(spawnZ));
+}
+
+void Server::loadConfig()
+{
+    std::ifstream f("server.cfg");
+    if (!f.is_open())
+    {
+        return;
+    }
+
+    std::string line;
+    while (std::getline(f, line))
+    {
+        if (line.empty() || line[0] == '#')
+        {
+            continue;
+        }
+
+        auto eq = line.find('=');
+        if (eq == std::string::npos)
+        {
+            continue;
+        }
+
+        std::string key = line.substr(0, eq);
+        std::string val = line.substr(eq + 1);
+        if (key == "private")
+        {
+            _private = (val == "true");
+        }
+    }
+}
+
+void Server::writeExternalUrl(unsigned short port) const
+{
+    char hostname[256] = {};
+    if (gethostname(hostname, sizeof(hostname)) != 0)
+    {
+        std::strncpy(hostname, "127.0.0.1", sizeof(hostname) - 1);
+    }
+
+    char ipStr[16] = "127.0.0.1";
+    struct addrinfo hints{};
+    struct addrinfo *res = nullptr;
+    hints.ai_family = AF_INET;
+    hints.ai_socktype = SOCK_STREAM;
+    if (getaddrinfo(hostname, nullptr, &hints, &res) == 0 && res)
+    {
+        inet_ntop(AF_INET,
+                  &reinterpret_cast<sockaddr_in *>(res->ai_addr)->sin_addr,
+                  ipStr, sizeof(ipStr));
+        freeaddrinfo(res);
+    }
+
+    std::ofstream f("externalurl.txt");
+    if (!f.is_open())
+    {
+        return;
+    }
+
+    f << "--join " << ipStr << ":" << port << "\n";
+    std::cerr << "Server address written to externalurl.txt" << std::endl;
+}
+
+void Server::saveLoggedIn() const
+{
+    std::ofstream f("logged-in.txt");
+    if (!f.is_open())
+    {
+        return;
+    }
+
+    f << "# Cavern logged-in players\n";
+    f << hostName << "\n";
+    for (const auto &cs : clients)
+    {
+        if (cs.nameReceived)
+        {
+            f << cs.name << "\n";
+        }
     }
 }

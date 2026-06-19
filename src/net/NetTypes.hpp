@@ -24,6 +24,13 @@ struct BreakEvent
     unsigned char blockType;
 };
 
+struct PlaceEvent
+{
+    int bx;
+    int by;
+    int bz;
+};
+
 struct ChatEvent
 {
     char name[16]{};

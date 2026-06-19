@@ -14,7 +14,9 @@ enum class PktType : unsigned char
     Chat = 7,
     LevelChunk = 8,
     Expel = 9,
-    WardenStatus = 10
+    WardenStatus = 10,
+    Spawn = 11,
+    Place = 12
 };
 
 struct PktJoin
@@ -87,6 +89,25 @@ struct PktWardenStatus
 {
     unsigned char type = (unsigned char)PktType::WardenStatus;
     unsigned char granted{};
+};
+
+struct PktSpawn
+{
+    unsigned char type = (unsigned char)PktType::Spawn;
+    float x;
+    float z;
+};
+
+struct PktPlace
+{
+    unsigned char type = (unsigned char)PktType::Place;
+    int bx;
+    int by;
+    int bz;
+    unsigned char blockType;
+    float px;
+    float py;
+    float pz;
 };
 #pragma pack(pop)
 #endif//CAVERN_PACKET_HPP
