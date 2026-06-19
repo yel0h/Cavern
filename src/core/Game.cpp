@@ -406,6 +406,18 @@ void Game::render()
     }
 
     renderer.renderChat(chatMessages, input.chatOpen, input.chatBuffer, winW, winH);
+    if (input.tabHeld && (server || client))
+    {
+        std::vector<std::string> playerNames;
+        playerNames.emplace_back(localName[0] ? localName : "Player");
+        for (const auto &r : remotePlayers)
+        {
+            playerNames.emplace_back(r.name);
+        }
+
+        renderer.renderPlayerList(playerNames, winW, winH);
+    }
+
     glfwSwapBuffers(window);
 }
 

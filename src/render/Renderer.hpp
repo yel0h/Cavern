@@ -42,6 +42,8 @@ public:
 
     void renderChat(const std::vector<std::string> &msgs, bool chatOpen, const std::string &buffer, int winW, int winH);
 
+    void renderPlayerList(const std::vector<std::string> &names, int winW, int winH);
+
     void markAllDirty() { for (auto &m : meshes) m.free(); }
 
     void cycleFog() { fogLevel = (fogLevel + 1) % 4; }

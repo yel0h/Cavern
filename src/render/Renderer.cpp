@@ -658,6 +658,42 @@ void Renderer::renderChat(const std::vector<std::string> &msgs, bool chatOpen, c
     glDisable(GL_BLEND);
 }
 
+void Renderer::renderPlayerList(const std::vector<std::string> &names, int winW, int winH)
+{
+    if (names.empty())
+    {
+        return;
+    }
+
+    txtShader.use();
+    txtShader.setInt("uFont", 1);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, font.texId);
+    glDisable(GL_DEPTH_TEST);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    constexpr int s = 2;
+    constexpr float lineH = (Font::CHAR_H * s) + 4.f;
+    char header[32];
+    std::snprintf(header, sizeof(header), "Players: %d", (int)names.size());
+    float headerW = (float)(std::strlen(header) * Font::CHAR_W * s);
+    float textX = ((float)winW - headerW) * 0.5f;
+    float textY = 20.f;
+    txtShader.setVec3("uColor", 1.f, 1.f, 0.3f);
+    drawText(header, textX, textY, s, winW, winH);
+    textY += lineH;
+    txtShader.setVec3("uColor", 1.f, 1.f, 1.f);
+    for (const auto &n : names)
+    {
+        float nw = (float)(n.size() * Font::CHAR_W * s);
+        drawText(n.c_str(), ((float)winW - nw) * 0.5f, textY, s, winW, winH);
+        textY += lineH;
+    }
+
+    glEnable(GL_DEPTH_TEST);
+    glDisable(GL_BLEND);
+}
+
 void Renderer::renderPauseMenu(int winW, int winH)
 {
     float overlayVerts[12] = {

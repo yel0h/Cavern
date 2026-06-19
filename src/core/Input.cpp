@@ -243,6 +243,22 @@ void Input::keyCB(GLFWwindow *, int key, int, int action, int)
 
             break;
 
+        case GLFW_KEY_TAB:
+            if (!inst->chatOpen)
+            {
+                if (action == GLFW_PRESS)
+                {
+                    inst->tabHeld = true;
+                }
+
+                if (action == GLFW_RELEASE)
+                {
+                    inst->tabHeld = false;
+                }
+            }
+
+            break;
+
         case GLFW_KEY_ESCAPE:
             if (action == GLFW_PRESS)
             {

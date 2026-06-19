@@ -50,6 +50,7 @@ public:
     bool mouseCaptured = true;
     bool chatOpen = false;
     std::string chatBuffer;
+    bool tabHeld = false;
     bool invertY = false;
     bool primaryAction = false;
     bool primaryHeld = false;
