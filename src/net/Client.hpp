@@ -23,8 +23,12 @@ public:
     unsigned int localId = 0;
     std::vector<RemotePlayer> remote;
     std::vector<BreakEvent> pendingBreaks;
+    std::vector<PlaceEvent> pendingPlaces;
     std::vector<ChatEvent> pendingChats;
     std::vector<LevelChunkEvent> pendingLevelChunks;
+    bool hasPendingSpawn = false;
+    float pendingSpawnX = 128.f;
+    float pendingSpawnZ = 128.f;
 
     bool connect(const std::string &host, unsigned short port = 5565);
 
@@ -45,6 +49,8 @@ public:
     [[nodiscard]] bool connected() const { return sock != INVALID_SOCKET; }
 
     void clearBreaks() { pendingBreaks.clear(); }
+
+    void  clearPendingSpawn() { hasPendingSpawn = false; }
 
     void clearChats() { pendingChats.clear(); }
 

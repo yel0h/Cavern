@@ -407,6 +407,32 @@ void Client::drainRecv()
                                          : "Your warden status has been revoked.", 128);
             pendingChats.push_back(ev);
         }
+        else if (t == (unsigned char)PktType::Spawn)
+        {
+            if (buf.size() < sizeof(PktSpawn))
+            {
+                break;
+            }
+
+            PktSpawn pk;
+            std::memcpy(&pk, buf.data(), sizeof(pk));
+            buf.erase(buf.begin(), buf.begin() + sizeof(PktSpawn));
+            pendingSpawnX = pk.x;
+            pendingSpawnZ = pk.z;
+            hasPendingSpawn = true;
+        }
+        else if (t == (unsigned char)PktType::Place)
+        {
+            if (buf.size() < sizeof(PktPlace))
+            {
+                break;
+            }
+
+            PktPlace pk;
+            std::memcpy(&pk, buf.data(), sizeof(pk));
+            buf.erase(buf.begin(), buf.begin() + sizeof(PktPlace));
+            pendingPlaces.push_back({pk.bx, pk.by, pk.bz, pk.blockType});
+        }
         else
         {
             std::cerr << "Client: unknown packet " << (short)t << " from server, dropping connection" << std::endl;

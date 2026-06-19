@@ -270,6 +270,13 @@ void Game::tick()
     if (client)
     {
         client->tick();
+        if (client->hasPendingSpawn)
+        {
+            player.loadSpawn(client->pendingSpawnX, client->pendingSpawnZ);
+            player.respawn();
+            client->clearPendingSpawn();
+        }
+
         client->sendPosition(player.position.x, player.position.y, player.position.z, player.yaw);
         client->interpolate(0.01666667);
         remotePlayers = client->remote;
