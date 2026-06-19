@@ -37,6 +37,7 @@ bool Server::start(unsigned short port)
     loadConfig();
     loadWardens();
     loadExiles();
+    connRecords.reserve(maxClients * 2);
     loadServerSpawn();
     saveLoggedIn();
     if (!_private)
@@ -153,7 +154,7 @@ void Server::acceptClients()
         char ipBuf[16] = {};
         inet_ntop(AF_INET, &peer.sin_addr, ipBuf, sizeof(ipBuf));
         unsigned long now = (unsigned long)GetTickCount64();
-        auto &rec = connRecords[ipBuf];
+        auto &rec = connRecords.try_emplace(ipBuf).first->second;
         if (now - rec.windowStart > connectWindowMs)
         {
             rec.windowStart = now;
