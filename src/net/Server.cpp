@@ -152,6 +152,20 @@ void Server::acceptClients()
         ioctlsocket(s, FIONBIO, &nb);
         char ipBuf[16] = {};
         inet_ntop(AF_INET, &peer.sin_addr, ipBuf, sizeof(ipBuf));
+        unsigned long now = (unsigned long)GetTickCount64();
+        auto &rec = connRecords[ipBuf];
+        if (now - rec.windowStart > connectWindowMs)
+        {
+            rec.windowStart = now;
+            rec.count = 0;
+        }
+
+        if (++rec.count > maxConnectsPerWindow)
+        {
+            closesocket(s);
+            continue;
+        }
+
         for (const auto &banned : exiledIps)
         {
             if (banned == ipBuf)

@@ -544,7 +544,7 @@ void Game::run()
         }
         else
         {
-            if (input.getChatToggle())
+            if (input.getChatToggle() && (server || client))
             {
                 input.chatOpen = !input.chatOpen;
                 input.chatBuffer.clear();
