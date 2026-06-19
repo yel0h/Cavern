@@ -116,6 +116,10 @@ public:
 
     void clearBreaks() { pendingBreaks.clear(); }
 
+    void broadcastPlace(int bx, int by, int bz, unsigned char bt);
+
+    void clearPlaces() { pendingPlaces.clear(); }
+
     void clearChats() { pendingChats.clear(); }
 };
 #endif//CAVERN_SERVER_HPP

@@ -40,6 +40,8 @@ public:
 
     void sendBreak(int bx, int by, int bz, unsigned char bt) const;
 
+    void sendPlace(int bx, int by, int bz, unsigned char bt, float px, float py, float pz);
+
     void sendChat(const char *msg) const;
 
     void setLocalName(const char *n);
@@ -49,6 +51,8 @@ public:
     [[nodiscard]] bool connected() const { return sock != INVALID_SOCKET; }
 
     void clearBreaks() { pendingBreaks.clear(); }
+
+    void clearPlaces() { pendingPlaces.clear(); }
 
     void  clearPendingSpawn() { hasPendingSpawn = false; }
 

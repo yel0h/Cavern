@@ -131,6 +131,24 @@ void Client::sendBreak(int bx, int by, int bz, unsigned char bt) const
     send(sock, reinterpret_cast<char const *>(&pk), sizeof(pk), 0);
 }
 
+void Client::sendPlace(int bx, int by, int bz, unsigned char bt, float px, float py, float pz)
+{
+    if (sock == INVALID_SOCKET)
+    {
+        return;
+    }
+
+    PktPlace pk{};
+    pk.bx = bx;
+    pk.by = by;
+    pk.bz = bz;
+    pk.blockType = bt;
+    pk.px = px;
+    pk.py = py;
+    pk.pz = pz;
+    send(sock, reinterpret_cast<char const *>(&pk), sizeof(pk), 0);
+}
+
 void Client::sendChat(const char *msg) const
 {
     if (sock == INVALID_SOCKET)

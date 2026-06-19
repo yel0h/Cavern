@@ -36,8 +36,18 @@ public:
         BlockType type = BlockType::Air;
     };
 
+    struct PlacedEvent
+    {
+        bool valid = false;
+        int bx = 0;
+        int by = 0;
+        int bz = 0;
+        BlockType type = BlockType::Air;
+    };
+
     RayHit hitBlock;
     BrokenEvent lastBroken;
+    PlacedEvent lastPlaced;
     BlockType selectedBlock = BlockType::Stone;
     bool placeMode = true;
     bool underLava = false;

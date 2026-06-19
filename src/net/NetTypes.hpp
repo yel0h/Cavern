@@ -29,6 +29,7 @@ struct PlaceEvent
     int bx;
     int by;
     int bz;
+    unsigned char blockType;
 };
 
 struct ChatEvent

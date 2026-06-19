@@ -283,6 +283,7 @@ void Player::tick(float dt, World &world, Input &input)
 
     hitBlock = castRay(world);
     lastBroken = {};
+    lastPlaced = {};
     if (input.getSwitchMode())
     {
         placeMode = !placeMode;
@@ -303,6 +304,7 @@ void Player::tick(float dt, World &world, Input &input)
             {
                 world.setBlock(px, py, pz, toPlace);
                 Lighting::propagateColumn(world, px, pz);
+                lastPlaced = {true, px, py, pz, toPlace};
             }
         }
         else

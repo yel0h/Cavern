@@ -87,6 +87,19 @@ void Server::broadcastBreak(int bx, int by, int bz, unsigned char bt)
     broadcastBreakExcept(pk, INVALID_SOCKET);
 }
 
+void Server::broadcastPlace(int bx, int by, int bz, unsigned char bt)
+{
+    PktPlace pk{};
+    pk.bx = bx;
+    pk.by = by;
+    pk.bz = bz;
+    pk.blockType = bt;
+    pk.px = 0.f;
+    pk.py = 0.f;
+    pk.pz = 0.f;
+    broadcastExcept(&pk, sizeof(pk), INVALID_SOCKET);
+}
+
 void Server::broadcastChat(unsigned int senderId, const char *msg)
 {
     PktChat pk{};
@@ -404,7 +417,7 @@ void Server::drainClients()
                 }
 
                 broadcastExcept(&pk, sizeof(pk), cs.sock);
-                pendingPlaces.push_back({pk.bx, pk.by, pk.bz});
+                pendingPlaces.push_back({pk.bx, pk.by, pk.bz, pk.blockType});
             }
             else
             {

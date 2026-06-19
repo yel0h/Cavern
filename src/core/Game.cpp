@@ -213,6 +213,26 @@ void Game::tick()
         }
     }
 
+    if (player.lastPlaced.valid)
+    {
+        unsigned char bt = (unsigned char)player.lastPlaced.type;
+        int bx = player.lastPlaced.bx;
+        int by = player.lastPlaced.by;
+        int bz = player.lastPlaced.bz;
+        float px = player.position.x;
+        float py = player.position.y;
+        float pz = player.position.z;
+        if (client)
+        {
+            client->sendPlace(bx, by, bz, bt, px, py, pz);
+        }
+
+        if (server)
+        {
+            server->broadcastPlace(bx, by, bz, bt);
+        }
+    }
+
     particles.tick(0.01666667, world);
     wanderers.tick((float)Timer::dt, world);
     world.tickDynamic();
@@ -304,6 +324,33 @@ void Game::tick()
         }
 
         server->clearBreaks();
+    }
+
+    auto applyRemotePlace = [&](const PlaceEvent &p)
+    {
+        if (world.inBounds(p.bx, p.by, p.bz))
+        {
+            world.setBlock(p.bx, p.by, p.bz, (BlockType)p.blockType);
+        }
+    };
+    if (client)
+    {
+        for (const auto &p : client->pendingPlaces)
+        {
+            applyRemotePlace(p);
+        }
+
+        client->clearPlaces();
+    }
+
+    if (server)
+    {
+        for (const auto &p : server->pendingPlaces)
+        {
+            applyRemotePlace(p);
+        }
+
+        server->clearPlaces();
     }
 
     if (client && !client->pendingLevelChunks.empty())
