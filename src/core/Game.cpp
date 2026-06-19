@@ -331,6 +331,7 @@ void Game::tick()
         if (world.inBounds(p.bx, p.by, p.bz))
         {
             world.setBlock(p.bx, p.by, p.bz, (BlockType)p.blockType);
+            Lighting::propagateColumn(world, p.bx, p.bz);
         }
     };
     if (client)
