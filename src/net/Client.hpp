@@ -40,7 +40,7 @@ public:
 
     void sendBreak(int bx, int by, int bz, unsigned char bt) const;
 
-    void sendPlace(int bx, int by, int bz, unsigned char bt, float px, float py, float pz);
+    void sendPlace(int bx, int by, int bz, unsigned char bt, float px, float py, float pz) const;
 
     void sendChat(const char *msg) const;
 

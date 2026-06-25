@@ -131,7 +131,7 @@ void Client::sendBreak(int bx, int by, int bz, unsigned char bt) const
     send(sock, reinterpret_cast<char const *>(&pk), sizeof(pk), 0);
 }
 
-void Client::sendPlace(int bx, int by, int bz, unsigned char bt, float px, float py, float pz)
+void Client::sendPlace(int bx, int by, int bz, unsigned char bt, float px, float py, float pz) const
 {
     if (sock == INVALID_SOCKET)
     {
@@ -315,7 +315,8 @@ void Client::drainRecv()
             {
                 if (r.id == pi.id)
                 {
-                    std::strncpy(r.name, pi.name, 16);
+                    std::strncpy(r.name, pi.name, 15);
+                    r.name[15] = '\0';
                     found = true;
                     break;
                 }
@@ -325,7 +326,8 @@ void Client::drainRecv()
             {
                 RemotePlayer rp{};
                 rp.id = pi.id;
-                std::strncpy(rp.name, pi.name, 16);
+                std::strncpy(rp.name, pi.name, 15);
+                rp.name[15] = '\0';
                 remote.push_back(rp);
             }
         }
