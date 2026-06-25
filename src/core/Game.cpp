@@ -94,7 +94,7 @@ void Game::init()
     }
 
     glfwMakeContextCurrent(window);
-    glfwSwapInterval(0);
+    glfwSwapInterval(1);
     if (!gladLoadGL())
     {
         throw std::runtime_error("gladLoadGL failed");
@@ -215,7 +215,7 @@ void Game::tick()
 
     if (player.lastPlaced.valid)
     {
-        unsigned char bt = (unsigned char)player.lastPlaced.type;
+        auto bt = (unsigned char)player.lastPlaced.type;
         int bx = player.lastPlaced.bx;
         int by = player.lastPlaced.by;
         int bz = player.lastPlaced.bz;
@@ -328,7 +328,7 @@ void Game::tick()
 
     auto applyRemotePlace = [&](const PlaceEvent &p)
     {
-        if (world.inBounds(p.bx, p.by, p.bz))
+        if (World::inBounds(p.bx, p.by, p.bz))
         {
             world.setBlock(p.bx, p.by, p.bz, (BlockType)p.blockType);
             Lighting::propagateColumn(world, p.bx, p.bz);
