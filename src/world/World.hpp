@@ -8,7 +8,6 @@ class World
 {
 private:
     unsigned int tick = 0;
-    std::vector<std::tuple<int, int, int, unsigned int>> wickTimers;
 
     static int chunkIdx(int cx, int cz) { return (cz * CHUNKS_X) + cx; }
 
