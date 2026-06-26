@@ -94,7 +94,7 @@ void Game::init()
     }
 
     glfwMakeContextCurrent(window);
-    glfwSwapInterval(1);
+    glfwSwapInterval(0);
     if (!gladLoadGL())
     {
         throw std::runtime_error("gladLoadGL failed");
