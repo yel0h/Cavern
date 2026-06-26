@@ -14,7 +14,6 @@ private:
     static constexpr int levelChunksPerTick = 8;
     static constexpr int maxClients = 8;
     static constexpr float maxPlaceReach = 6.f;
-    static constexpr int maxConnectsPerWindow = 5;
     static constexpr unsigned long connectWindowMs = 5000;
 
     struct ClientState

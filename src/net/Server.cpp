@@ -167,7 +167,7 @@ void Server::acceptClients()
             rec.count = 0;
         }
 
-        if (++rec.count > maxConnectsPerWindow)
+        if (++rec.count > maxConnsPerIp)
         {
             closesocket(s);
             continue;
