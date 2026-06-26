@@ -164,8 +164,8 @@ void Game::init()
 }
 
 static constexpr BlockType hotbar[] = {
-        BlockType::Stone, BlockType::Rubble, BlockType::Soil, BlockType::Timber,
-        BlockType::Boards, BlockType::Sapling, BlockType::Silt, BlockType::Grit
+        BlockType::Stone, BlockType::Soil, BlockType::Pith, BlockType::Boards,
+        BlockType::Sapling, BlockType::Timber, BlockType::Glaze, BlockType::Grit
 };
 
 static constexpr int hotbarSize = 8;
