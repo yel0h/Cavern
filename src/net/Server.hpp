@@ -27,6 +27,10 @@ private:
         bool nameReceived = false;
         int levelSentChunks = -1;
         std::vector<PktBreak> pendingBreakQueue;
+        unsigned long long lastChatTick  = 0;
+        bool chatMuted = false;
+        unsigned long long muteUntilTick = 0;
+        bool movedThisTick = false;
     };
 
     struct ConnRecord
@@ -51,6 +55,8 @@ private:
     float spawnX = 128.f;
     float spawnZ = 128.f;
     bool _private = false;
+    unsigned long long serverTick = 0;
+    int maxConnsPerIp = 3;
 
     void acceptClients();
 
@@ -84,7 +90,7 @@ private:
 
     void loadConfig();
 
-    void writeExternalUrl(unsigned short port) const;
+    static void writeExternalUrl(unsigned short port) ;
 
     void saveLoggedIn() const;
 

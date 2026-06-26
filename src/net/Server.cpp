@@ -113,6 +113,12 @@ void Server::broadcastChat(unsigned int senderId, const char *msg)
 
 void Server::tick()
 {
+    serverTick++;
+    for (auto &cs : clients)
+    {
+        cs.movedThisTick = false;
+    }
+
     acceptClients();
     drainClients();
     sendPendingLevels();
@@ -153,7 +159,7 @@ void Server::acceptClients()
         ioctlsocket(s, FIONBIO, &nb);
         char ipBuf[16] = {};
         inet_ntop(AF_INET, &peer.sin_addr, ipBuf, sizeof(ipBuf));
-        unsigned long now = (unsigned long)GetTickCount64();
+        auto now = (unsigned long)GetTickCount64();
         auto &rec = connRecords.try_emplace(ipBuf).first->second;
         if (now - rec.windowStart > connectWindowMs)
         {
@@ -320,6 +326,12 @@ void Server::drainClients()
                 PktPos pp;
                 memcpy(&pp, buf.data(), sizeof(pp));
                 buf.erase(buf.begin(), buf.begin() + sizeof(PktPos));
+                if (cs.movedThisTick)
+                {
+                    continue;
+                }
+
+                cs.movedThisTick = true;
                 pp.id = cs.id;
                 broadcastExcept(&pp, sizeof(pp), cs.sock);
                 bool found = false;
@@ -375,7 +387,29 @@ void Server::drainClients()
                 PktChat pk;
                 std::memcpy(&pk, buf.data(), sizeof(pk));
                 buf.erase(buf.begin(), buf.begin() + sizeof(PktChat));
+                pk.msg[sizeof(pk.msg) - 1] = '\0';
                 pk.senderId = cs.id;
+                if (cs.chatMuted)
+                {
+                    if (serverTick < cs.muteUntilTick)
+                    {
+                        sendServerChat(cs.sock, "[Server]: You are muted for spamming.");
+                        continue;
+                    }
+
+                    cs.chatMuted = false;
+                }
+
+                static constexpr unsigned long long chatCooldown = 60;
+                if (serverTick - cs.lastChatTick < chatCooldown)
+                {
+                    cs.chatMuted = true;
+                    cs.muteUntilTick = serverTick + 480;
+                    sendServerChat(cs.sock, "[Server]: Slow down! You have been muted for 8 seconds.");
+                    continue;
+                }
+
+                cs.lastChatTick = serverTick;
                 if (pk.msg[0] == '/')
                 {
                     handleCommand(cs, pk.msg);
@@ -979,7 +1013,7 @@ void Server::loadConfig()
     }
 }
 
-void Server::writeExternalUrl(unsigned short port) const
+void Server::writeExternalUrl(unsigned short port)
 {
     char hostname[256] = {};
     if (gethostname(hostname, sizeof(hostname)) != 0)
