@@ -112,6 +112,39 @@ void World::setBlock(int wx, int wy, int wz, BlockType t)
             n->dirty = true;
         }
     }
+
+    if (t == BlockType::Pith)
+    {
+        absorbLiquids(wx, wy, wz);
+        wickTimers.emplace_back(wx, wy, wz, tick + 600u);
+    }
+}
+
+void World::absorbLiquids(int ox, int oy, int oz)
+{
+    for (int dy = -2; dy <= 2; dy++)
+    {
+        for (int dx = -2; dx <= 2; dx++)
+        {
+            for (int dz = -2; dz <= 2; dz++)
+            {
+                int wx = ox + dx;
+                int wy = oy + dy;
+                int wz = oz + dz;
+                if (!inBounds(wx, wy, wz))
+                {
+                    continue;
+                }
+
+                BlockType bt = getBlock(wx, wy, wz);
+                if (bt == BlockType::Water || bt == BlockType::Lava)
+                {
+                    setBlock(wx, wy, wz, BlockType::Air);
+                    Lighting::propagateColumn(*this, wx, wz);
+                }
+            }
+        }
+    }
 }
 
 unsigned char World::getLight(int wx, int wy, int wz) const
@@ -161,6 +194,24 @@ void World::generate(unsigned int seed)
 
 void World::tickDynamic()
 {
+    tick++;
+    for (auto it = wickTimers.begin(); it != wickTimers.end(); )
+    {
+        auto &[wx, wy, wz, exp] = *it;
+        if (tick >= exp)
+        {
+            if (getBlock(wx, wy, wz) == BlockType::Pith)
+            {
+                setBlock(wx, wy, wz, BlockType::Air);
+                Lighting::propagateColumn(*this, wx, wz);
+            }
+
+            it = wickTimers.erase(it);
+        }
+
+        else it++;
+    }
+
     static std::mt19937 mt{std::random_device()()};
     static std::uniform_int_distribution<int> wDist(0, BLOCK_W - 1);
     static std::uniform_int_distribution<int> hDist(0, BLOCK_H - 1);

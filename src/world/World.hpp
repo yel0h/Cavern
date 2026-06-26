@@ -2,11 +2,17 @@
 #define CAVERN_WORLD_HPP
 #include "Chunk.hpp"
 #include <memory>
+#include <vector>
 
 class World
 {
 private:
+    unsigned int tick = 0;
+    std::vector<std::tuple<int, int, int, unsigned int>> wickTimers;
+
     static int chunkIdx(int cx, int cz) { return (cz * CHUNKS_X) + cx; }
+
+    void absorbLiquids(int wx, int wy, int wz);
 
 public:
     static constexpr int CHUNKS_X = 16;

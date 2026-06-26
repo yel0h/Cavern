@@ -271,11 +271,11 @@ namespace WorldGen
                     continue;
                 }
 
-                float falloff = islandFalloff((float) wx, (float) wz);
-                if (falloff < 0.35f && sy <= oceanLevel + 4)
+                float falloff = islandFalloff((float)wx, (float)wz);
+                if (falloff < 0.22f && sy <= oceanLevel + 3)
                 {
                     float siltN = hashNoise(wx, wz, seed + 0x5E115u);
-                    if (siltN > 0.4f)
+                    if (siltN > 0.55f)
                     {
                         world.setBlock(wx, sy, wz, BlockType::Silt);
                         if (sy - 1 >= 1)
