@@ -116,7 +116,6 @@ void World::setBlock(int wx, int wy, int wz, BlockType t)
     if (t == BlockType::Pith)
     {
         absorbLiquids(wx, wy, wz);
-        wickTimers.emplace_back(wx, wy, wz, tick + 600u);
     }
 }
 
@@ -137,7 +136,7 @@ void World::absorbLiquids(int ox, int oy, int oz)
                 }
 
                 BlockType bt = getBlock(wx, wy, wz);
-                if (bt == BlockType::Water || bt == BlockType::Lava)
+                if (bt == BlockType::Water)
                 {
                     setBlock(wx, wy, wz, BlockType::Air);
                     Lighting::propagateColumn(*this, wx, wz);
