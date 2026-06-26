@@ -29,10 +29,7 @@ public:
 
     void shutdown();
 
-    void renderFrame(const World &world, const Camera &cam, int winW, int winH,
-                     const HighlightBlock &hl, float time,
-                     BlockType selectedBlock, int fps, int chunkUpdates, bool placeMode,
-                     bool underLava, bool underWater);
+    void renderFrame(const World &world, const Camera &cam, int winW, int winH, const Renderer::HighlightBlock &hl, float time, int hotbarSize, int hotbarIdx, int fps, int chunkUpdates, bool placeMode, bool underLava, bool underWater);
 
     void renderGenerating(int winW, int winH);
 
@@ -70,6 +67,7 @@ private:
     unsigned int txtVbo = 0;
     unsigned int cloudVao = 0;
     unsigned int cloudVbo = 0;
+    unsigned int iconAtlas = 0;
     Shader cloudShader;
     int cloudVertCount = 0;
     int fogLevel = 2;
@@ -79,6 +77,7 @@ private:
 layout(location=0) in vec3 aPos;
 layout(location=1) in vec2 aUV;
 layout(location=2) in float aLight;
+layout(location=3) in float aFlags;
 
 uniform mat4 uMVP;
 uniform float uFogNear;
@@ -87,6 +86,8 @@ uniform float uFogFar;
 out vec2 vUV;
 out float vLight;
 out float vFogFactor;
+out float vFlags;
+out vec3 vWorldPos;
 out float vEyeDist;
 
 void main()
@@ -95,6 +96,8 @@ void main()
     gl_Position = clipPos;
     vUV = aUV;
     vLight = aLight;
+    vFlags = aFlags;
+    vWorldPos = aPos;
     float eyeDist = clipPos.w;
     vEyeDist = eyeDist;
     vFogFactor = clamp((uFogFar - eyeDist) / (uFogFar - uFogNear), 0.0, 1.0);
@@ -105,10 +108,14 @@ void main()
 in vec2 vUV;
 in float vLight;
 in float vFogFactor;
+in float vFlags;
+in vec3 vWorldPos;
 in float vEyeDist;
 
 uniform sampler2D uAtlas;
 uniform vec3 uFogColor;
+uniform float uTime;
+uniform int uUnderwater;
 uniform float uFogNear;
 uniform float uFogFar;
 
@@ -116,7 +123,22 @@ out vec4 fragColor;
 
 void main()
 {
-    vec4 tex = texture(uAtlas, vUV);
+    if (uUnderwater != 0 && vFlags > 1.5)
+    {
+        discard;
+    }
+
+    vec2 uv = vUV;
+    if (vFlags > 0.5 && vFlags < 1.5)
+    {
+        bool border = (vWorldPos.x < 2.0 || vWorldPos.x > 254.0 || vWorldPos.z < 2.0 || vWorldPos.z > 254.0);
+        if (!border)
+        {
+            uv.y += sin(uTime * 1.5 + vWorldPos.x * 0.7 + vWorldPos.z * 0.5) * 0.03;
+        }
+    }
+
+    vec4 tex = texture(uAtlas, uv);
     if (tex.a < 0.1)
     {
         discard;
@@ -198,12 +220,13 @@ void main()
 in vec2 vUV;
 
 uniform sampler2D uAtlas;
+uniform vec4 uTint;
 
 out vec4 fragColor;
 
 void main()
 {
-    fragColor = texture(uAtlas, vUV);
+    fragColor = texture(uAtlas, vUV) * uTint;
 }
 )";
     static constexpr const char *txtVertSrc = R"(
@@ -276,7 +299,9 @@ void main()
 
     void initHUD();
 
-    void renderHUD(int winW, int winH, BlockType selectedBlock);
+    void initIconAtlas();
+
+    void renderHUD(int winW, int winH, int hotbarSize, int hotbarIdx);
 
     void initText();
 

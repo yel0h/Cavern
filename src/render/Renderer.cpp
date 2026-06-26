@@ -61,6 +61,7 @@ void Renderer::init()
     initOutline();
     initCrosshair();
     initHUD();
+    initIconAtlas();
     initText();
     initClouds();
     glEnable(GL_DEPTH_TEST);
@@ -145,6 +146,12 @@ void Renderer::shutdown()
     {
         glDeleteBuffers(1, &cloudVbo);
         cloudVbo = 0;
+    }
+
+    if (iconAtlas)
+    {
+        glDeleteTextures(1, &iconAtlas);
+        iconAtlas = 0;
     }
 
     font.shutdown();
@@ -373,46 +380,146 @@ void Renderer::initHUD()
     glGenBuffers(1, &hudVbo);
     glBindVertexArray(hudVao);
     glBindBuffer(GL_ARRAY_BUFFER, hudVbo);
-    glBufferData(GL_ARRAY_BUFFER, 6 * 4 * sizeof(float), nullptr, GL_DYNAMIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, 64 * 6 * 4 * sizeof(float), nullptr, GL_DYNAMIC_DRAW);
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), nullptr);
     glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)(2 * sizeof(float)));
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), reinterpret_cast<void const *>(2 * sizeof(float)));
     glBindVertexArray(0);
 }
 
-void Renderer::renderHUD(int winW, int winH, BlockType selectedBlock)
+void Renderer::initIconAtlas()
 {
-    float qW = 64.f;
-    float qH = 64.f;
-    float inset = 8.f;
-    float x1 = 1.f - ((inset / (float)winW) * 2.f);
-    float x0 = x1 - ((qW / (float)winW) * 2.f);
-    float y1 = 1.f - ((inset / (float)winH) * 2.f);
-    float y0 = y1 - ((qH / (float)winH) * 2.f);
-    unsigned char tileIdx = blockDef(selectedBlock).texTop;
-    float u0;
-    float v0;
-    float u1;
-    float v1;
-    TextureAtlas::uvRect(tileIdx, u0, v0, u1, v1);
-    float verts[6 * 4] = {
-            x0, y0, u1, v1,
-            x1, y0, u0, v1,
-            x1, y1, u0, v0,
-            x0, y0, u1, v1,
-            x1, y1, u0, v0,
-            x0, y1, u1, v0,
+    static constexpr BlockType hotbar[] = {
+            BlockType::Stone, BlockType::Soil, BlockType::Pith, BlockType::Boards,
+            BlockType::Sapling, BlockType::Timber, BlockType::Glaze, BlockType::Grit
     };
+    static constexpr int size = 8;
+    int tops[size];
+    int sides[size];
+    for (int i = 0; i < size; i++)
+    {
+        BlockType bt = hotbar[i];
+        if (bt == BlockType::Glaze || bt == BlockType::Water || bt == BlockType::Lava)
+        {
+            tops[i] = -1;
+            sides[i] = -1;
+        }
+        else
+        {
+            tops[i] = (int)blockDef(bt).texTop;
+            sides[i] = (int)blockDef(bt).texSide;
+        }
+    }
+
+    iconAtlas = atlas.buildIconAtlas(tops, sides, size);
+}
+
+void Renderer::renderHUD(int winW, int winH, int hotbarSize, int hotbarIdx)
+{
+    static constexpr float slot = 40.f;
+    static constexpr float gap = 2.f;
+    static constexpr float inset = 8.f;
+    auto fw = (float)winW;
+    auto fh = (float)winH;
+    float barW = (hotbarSize * slot) + ((hotbarSize - 1) * gap);
+    float barX0 = (fw - barW) * 0.5f;
+    float barY0 = inset;
+    auto toNDC = [&](float px, float py) -> std::pair<float,float>
+    {
+        return {(px / fw * 2.f) - 1.f, (py / fh * 2.f) - 1.f};
+    };
+    auto pushQuad = [](std::vector<float> &v,
+                       float x0, float y0, float x1, float y1,
+                       float u0, float vv0, float u1, float vv1)
+    {
+        v.insert(v.end(), {
+                                  x0, y0, u0, vv1, x1, y0, u1, vv1, x1, y1, u1, vv0,
+                                  x0, y0, u0, vv1, x1, y1, u1, vv0, x0, y1, u0, vv0,
+                          });
+    };
+
+    std::vector<float> iconVerts;
+    std::vector<float> bgVerts;
+    for (int i = 0; i < hotbarSize; i++)
+    {
+        float sx0 = barX0 + (i * (slot + gap));
+        float sx1 = sx0 + slot;
+        float sy0 = barY0;
+        float sy1 = sy0 + slot;
+        auto [nx0, ny0] = toNDC(sx0, sy0);
+        auto [nx1, ny1] = toNDC(sx1, sy1);
+        float au0;
+        float av0;
+        float au1;
+        float av1;
+        TextureAtlas::uvRect(4, au0, av0, au1, av1);
+        pushQuad(bgVerts, nx0, ny0, nx1, ny1, au0, av0, au1, av1);
+        float iu0 = (float)i / (float)hotbarSize;
+        float iu1 = (float)(i + 1) / (float)hotbarSize;
+        pushQuad(iconVerts, nx0, ny0, nx1, ny1, iu0, 0.f, iu1, 1.f);
+    }
+
     glBindBuffer(GL_ARRAY_BUFFER, hudVbo);
-    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(verts), verts);
+    glBindVertexArray(hudVao);
     hudShader.use();
-    hudShader.setInt("uAtlas", 0);
-    atlas.bind(0);
     glDisable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glBindVertexArray(hudVao);
+    hudShader.setInt("uAtlas", 0);
+    atlas.bind(0);
+    glUniform4f(glGetUniformLocation(hudShader.id, "uTint"), 0.f, 0.f, 0.f, 0.55f);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, (GLsizeiptr)(bgVerts.size() * sizeof(float)), bgVerts.data());
+    glDrawArrays(GL_TRIANGLES, 0, (int)(bgVerts.size() / 4));
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, iconAtlas);
+    glUniform4f(glGetUniformLocation(hudShader.id, "uTint"), 1.f, 1.f, 1.f, 1.f);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, (GLsizeiptr)(iconVerts.size() * sizeof(float)), iconVerts.data());
+    glDrawArrays(GL_TRIANGLES, 0, (int)(iconVerts.size() / 4));
+    float sx0 = barX0 + (hotbarIdx * (slot + gap));
+    float sx1 = sx0 + slot;
+    float sy0 = barY0;
+    float sy1 = sy0 + slot;
+    auto [nx0, ny0] = toNDC(sx0, sy0);
+    auto [nx1, ny1] = toNDC(sx1, sy1);
+    float au0;
+    float av0;
+    float au1;
+    float av1;
+    TextureAtlas::uvRect(4, au0, av0, au1, av1);
+    atlas.bind(0);
+    glUniform4f(glGetUniformLocation(hudShader.id, "uTint"), 1.f, 1.f, 1.f, 0.35f);
+    float sel[6 * 4];
+    float *p = sel;
+    auto quad = [&](float x0, float y0, float x1, float y1)
+    {
+        *p++ = x0;
+        *p++ = y0;
+        *p++ = au0;
+        *p++ = av0;
+        *p++ = x1;
+        *p++ = y0;
+        *p++ = au1;
+        *p++ = av0;
+        *p++ = x1;
+        *p++ = y1;
+        *p++ = au1;
+        *p++ = av1;
+        *p++ = x0;
+        *p++ = y0;
+        *p++ = au0;
+        *p++ = av0;
+        *p++ = x1;
+        *p++ = y1;
+        *p++ = au1;
+        *p++ = av1;
+        *p++ = x0;
+        *p++ = y1;
+        *p++ = au0;
+        *p++ = av1;
+    };
+    quad(nx0, ny0, nx1, ny1);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(sel), sel);
     glDrawArrays(GL_TRIANGLES, 0, 6);
     glBindVertexArray(0);
     glEnable(GL_DEPTH_TEST);
@@ -429,9 +536,9 @@ void Renderer::initText()
     glBindBuffer(GL_ARRAY_BUFFER, txtVbo);
     glBufferData(GL_ARRAY_BUFFER, 512 * 6 * 4 * sizeof(float), nullptr, GL_DYNAMIC_DRAW);
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), nullptr);
     glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)(2 * sizeof(float)));
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), reinterpret_cast<void const *>(2 * sizeof(float)));
     glBindVertexArray(0);
 }
 
@@ -610,7 +717,7 @@ void Renderer::renderPlayerNames(const std::vector<RemotePlayer> &players, const
 
         float sx = ((ndc.x * 0.5f) + 0.5f) * (float)winW;
         float sy = (1.f - ((ndc.y * 0.5f) + 0.5f)) * (float)winH;
-        float nameW = (float)(std::strlen(p.name) * Font::CHAR_W * scale);
+        auto nameW = (float)(std::strlen(p.name) * Font::CHAR_W * scale);
         sx -= nameW * 0.5f;
         drawText(p.name, sx, sy, scale, winW, winH);
     }
@@ -676,7 +783,7 @@ void Renderer::renderPlayerList(const std::vector<std::string> &names, int winW,
     constexpr float lineH = (Font::CHAR_H * s) + 4.f;
     char header[32];
     std::snprintf(header, sizeof(header), "Players: %d", (int)names.size());
-    float headerW = (float)(std::strlen(header) * Font::CHAR_W * s);
+    auto headerW = (float)(std::strlen(header) * Font::CHAR_W * s);
     float textX = ((float)winW - headerW) * 0.5f;
     float textY = 20.f;
     txtShader.setVec3("uColor", 1.f, 1.f, 0.3f);
@@ -685,7 +792,7 @@ void Renderer::renderPlayerList(const std::vector<std::string> &names, int winW,
     txtShader.setVec3("uColor", 1.f, 1.f, 1.f);
     for (const auto &n : names)
     {
-        float nw = (float)(n.size() * Font::CHAR_W * s);
+        auto nw = (float)(n.size() * Font::CHAR_W * s);
         drawText(n.c_str(), ((float)winW - nw) * 0.5f, textY, s, winW, winH);
         textY += lineH;
     }
@@ -735,7 +842,7 @@ void Renderer::renderPauseMenu(int winW, int winH)
     glDisable(GL_BLEND);
 }
 
-void Renderer::renderFrame(const World &world, const Camera &cam, int winW, int winH, const Renderer::HighlightBlock &hl, float time, BlockType selectedBlock, int fps, int chunkUpdates, bool placeMode, bool underLava, bool underWater)
+void Renderer::renderFrame(const World &world, const Camera &cam, int winW, int winH, const Renderer::HighlightBlock &hl, float time, int hotbarSize, int hotbarIdx, int fps, int chunkUpdates, bool placeMode, bool underLava, bool underWater)
 {
     rebuildDirty(world, cam.position);
     float cFogNear;
@@ -779,6 +886,8 @@ void Renderer::renderFrame(const World &world, const Camera &cam, int winW, int 
     shader.setFloat("uFogNear", cFogNear);
     shader.setFloat("uFogFar", cFogFar);
     shader.setVec3("uFogColor", fogR, fogG, fogB);
+    shader.setFloat("uTime", time);
+    shader.setInt("uUnderwater", underWater ? 1 : 0);
     atlas.bind(0);
     int pCx = (int)(cam.position.x / 16.f);
     int pCz = (int)(cam.position.z / 16.f);
@@ -808,6 +917,6 @@ void Renderer::renderFrame(const World &world, const Camera &cam, int winW, int 
     renderHighlight(hl, glm::value_ptr(vp), time, world);
     renderOutline(hl, glm::value_ptr(vp));
     renderCrosshair(winW, winH);
-    renderHUD(winW, winH, selectedBlock);
+    renderHUD(winW, winH, hotbarSize, hotbarIdx);
     renderDebug(winW, winH, fps, chunkUpdates, placeMode);
 }

@@ -23,7 +23,7 @@ static const int faceCorners[6][4][3] = {
 
 static const float faceUVs[4][2] = {{0.f, 1.f}, {0.f, 0.f}, {1.f, 0.f}, {1.f, 1.f},};
 
-void ChunkMesh::addFace(float x, float y, float z, int face, float u0, float v0, float u1, float v1, float light)
+void ChunkMesh::addFace(float x, float y, float z, int face, float u0, float v0, float u1, float v1, float light, float flags)
 {
     auto base = (unsigned int)verts.size();
     for (int i = 0; i < 4; i++)
@@ -35,6 +35,7 @@ void ChunkMesh::addFace(float x, float y, float z, int face, float u0, float v0,
         vtx.u = u0 + ((u1 - u0) * faceUVs[i][0]);
         vtx.v = v0 + ((v1 - v0) * faceUVs[i][1]);
         vtx.light = light;
+        vtx.flags = flags;
         verts.push_back(vtx);
     }
 
@@ -103,7 +104,17 @@ void ChunkMesh::build(const Chunk &chunk, const World &world)
 
                     float u0, v0, u1, v1;
                     TextureAtlas::uvRect(tileIdx, u0, v0, u1, v1);
-                    addFace((float)wx, (float)wy, (float)wz, f, u0, v0, u1, v1, light);
+                    float flags = 0.f;
+                    if (blockDef(bt).liquid)
+                    {
+                        flags = 1.f;
+                    }
+                    else if (bt == BlockType::Glaze)
+                    {
+                        flags = 2.f;
+                    }
+
+                    addFace((float)wx, (float)wy, (float)wz, f, u0, v0, u1, v1, light, flags);
                 }
             }
         }
@@ -137,7 +148,10 @@ void ChunkMesh::upload()
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, u));
     glEnableVertexAttribArray(2);
     glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, sizeof(Vertex),
-                          (void*)offsetof(Vertex, light));
+                          (void *)offsetof(Vertex, light));
+    glEnableVertexAttribArray(3);
+    glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(Vertex),
+                          (void *)offsetof(Vertex, flags));
     glBindVertexArray(0);
     verts.clear();
     indices.clear();

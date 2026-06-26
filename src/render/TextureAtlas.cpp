@@ -351,6 +351,49 @@ void TextureAtlas::paintTile(unsigned int *pixels, int tile)
                     break;
                 }
 
+                case 17:
+                {
+                    bool border = (x < 2 || x > 13 || y < 2 || y > 13);
+                    bool crossH = (y == 7 || y == 8);
+                    bool crossV = (x == 7 || x == 8);
+                    if (border)
+                    {
+                        int base = 180 + (int)((ph(x, y, 170) & 0x1F) - 15);
+                        px = (0xB4000000u) | clampByte(base) << 16 | clampByte(base) << 8 | clampByte(base);
+                    }
+                    else if (crossH || crossV)
+                    {
+                        px = 0x50C8C8C8u;
+                    }
+                    else
+                    {
+                        px = 0x30A8C8D8u;
+                    }
+
+                    break;
+                }
+
+                case 18:
+                {
+                    int r = 210 + (int)((ph(x, y, 181) & 0x1F) - 15);
+                    int g = 190 + (int)((ph(x, y, 182) & 0x1F) - 15);
+                    int b = 145 + (int)((ph(x, y, 183) & 0x17) - 12);
+                    if (ph(x, y, 184) % 5 == 0)
+                    {
+                        r = r * 50 / 100;
+                        g = g * 50 / 100;
+                        b = b * 50 / 100;
+                    }
+                    else if (ph(x, y, 185) % 8 == 0)
+                    {
+                        r = std::min(255, r + 18);
+                        g = std::min(255, g + 15);
+                    }
+
+                    px = makePixel(r, g, b);
+                    break;
+                }
+
                 default:
                     break;
             }
@@ -358,9 +401,21 @@ void TextureAtlas::paintTile(unsigned int *pixels, int tile)
     }
 }
 
+unsigned int TextureAtlas::applyBright(unsigned int px, float f)
+{
+    unsigned int a = (px >> 24) & 0xFF;
+    unsigned int b = (px >> 16) & 0xFF;
+    unsigned int g = (px >> 8) & 0xFF;
+    unsigned int r = (px) & 0xFF;
+    r = clampByte((int)(r * f));
+    g = clampByte((int)(g * f));
+    b = clampByte((int)(b * f));
+    return (a << 24) | (b << 16) | (g << 8) | r;
+}
+
 void TextureAtlas::build()
 {
-    std::vector<unsigned int> pixels(WIDTH * HEIGHT, 0);
+    pixels.assign(WIDTH * HEIGHT, 0u);
     for (int t = 0; t < TILE_COUNT; t++)
     {
         paintTile(pixels.data(), t);
@@ -375,6 +430,64 @@ void TextureAtlas::build()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+unsigned int TextureAtlas::buildIconAtlas(const int *topTiles, const int *sideTiles, int count) const
+{
+    const int ICON = TILE_SIZE;
+    std::vector<unsigned int> buf(count * ICON * ICON, 0u);
+    auto sampleTile = [&](int tile, int tx, int ty) -> unsigned int
+    {
+        if (tile < 0 || tile >= TILE_COUNT)
+        {
+            return 0u;
+        }
+
+        tx = std::clamp(tx, 0, TILE_SIZE - 1);
+        ty = std::clamp(ty, 0, TILE_SIZE - 1);
+        return pixels[(ty * WIDTH) + (tile * TILE_SIZE) + tx];
+    };
+
+    for (int i = 0; i < count; i++)
+    {
+        int top = topTiles[i];
+        int side = sideTiles[i];
+        for (int iy = 0; iy < ICON; iy++)
+        {
+            for (int ix = 0; ix < ICON; ix++)
+            {
+                unsigned int px = 0u;
+                if (iy < 7)
+                {
+                    int tx = 15 - (iy * 2);
+                    int ty = ix;
+                    px = applyBright(sampleTile(top, tx, ty), 1.0f);
+                }
+                else
+                {
+                    int ly = iy - 7;
+                    int tx = ix < 8 ? ix * 2 : (ix - 8) * 2;
+                    int ty = ly * 16 / 9;
+                    float bright = (ix < 8) ? 0.6f : 0.8f;
+                    px = applyBright(sampleTile(side, tx, ty), bright);
+                }
+
+                buf[(iy * count * ICON) + (i * ICON) + ix] = px;
+            }
+        }
+    }
+
+    unsigned int tex = 0;
+    glGenTextures(1, &tex);
+    glBindTexture(GL_TEXTURE_2D, tex);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, count * ICON, ICON, 0,
+                 GL_RGBA, GL_UNSIGNED_BYTE, buf.data());
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    return tex;
 }
 
 void TextureAtlas::bind(int unit) const

@@ -15,6 +15,7 @@ struct Vertex
     float u;
     float v;
     float light;
+    float flags;
 };
 
 class ChunkMesh
@@ -27,7 +28,7 @@ private:
     std::vector<Vertex> verts;
     std::vector<unsigned int> indices;
 
-    void addFace(float x, float y, float z, int face, float u0, float v0, float u1, float v1, float light);
+    void addFace(float x, float y, float z, int face, float u0, float v0, float u1, float v1, float light, float flags);
 
 public:
     ~ChunkMesh() { free(); }

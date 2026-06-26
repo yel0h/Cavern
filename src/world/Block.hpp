@@ -18,6 +18,8 @@ enum class BlockType : unsigned char
     CharVein = 13,
     IronVein = 14,
     GoldVein = 15,
+    Glaze = 16,
+    Pith = 17,
 };
 
 struct BlockDef
@@ -30,7 +32,7 @@ struct BlockDef
     unsigned char texBottom;
 };
 
-inline constexpr BlockDef blockDefs[16] = {
+inline constexpr BlockDef blockDefs[18] = {
         {false, true, false, 0, 0, 0},
         {true, false, false, 1, 2, 3},
         {true, false, false, 4, 4, 4},
@@ -40,13 +42,15 @@ inline constexpr BlockDef blockDefs[16] = {
         {false, true, false, 7, 7, 7},
         {true, false, false, 8, 8, 8},
         {true, false, false, 9, 9, 9},
-        {false, false,  true, 10, 10, 10},
+        {false, false, true, 10, 10, 10},
         {false, true, true, 11, 11, 11},
         {true, false, false, 12, 12, 12},
         {true, false, false, 13, 13, 13},
         {true, false, false, 14, 14, 14},
         {true, false, false, 15, 15, 15},
         {true, false, false, 16, 16, 16},
+        {false, true, false, 17, 17, 17},
+        {true, false, false, 18, 18, 18},
 };
 
 inline constexpr const BlockDef &blockDef(BlockType t)
