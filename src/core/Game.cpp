@@ -606,6 +606,9 @@ void Game::run()
         }
 
         render();
+        static constexpr double frameBudget = 1.0 / 100.0;
+        double deadline = lastFrameTime + frameBudget;
+        while (glfwGetTime() < deadline) {}
     }
 
     shutdown();
