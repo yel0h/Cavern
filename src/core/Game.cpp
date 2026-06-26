@@ -441,9 +441,10 @@ void Game::render()
     }
 
     renderer.renderFrame(world, camera, winW, winH,
-                         hl, (float) glfwGetTime(),
+                         hl, (float)glfwGetTime(),
+                         hotbarSize, hotbarIdx,
                          fps, chunks, player.placeMode,
-                         player.underLava, player.underWater, false, false);
+                         player.underLava, player.underWater);
     wandererRenderer.render(wanderers, camera, winW, winH, (float)glfwGetTime());
     if (!remotePlayers.empty())
     {
