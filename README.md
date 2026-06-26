@@ -1,7 +1,7 @@
 # Cavern
 Cavern is a simple voxel sandbox game with multiplayer support written in C++ using OpenGL shaders.
 
-<img width="856" height="512" alt="image" src="https://github.com/user-attachments/assets/c1d06a8e-f3a1-4d96-9787-52990a195aa0" />
+<img width="856" height="512" alt="image" src="https://github.com/user-attachments/assets/418e0032-4dee-4c63-b5e0-6354fbf2703e" />
 
 ## Running
 To start the game in singleplayer, simply run `Cavern.exe`.
