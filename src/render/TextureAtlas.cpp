@@ -353,21 +353,45 @@ void TextureAtlas::paintTile(unsigned int *pixels, int tile)
 
                 case 17:
                 {
-                    bool border = (x < 2 || x > 13 || y < 2 || y > 13);
-                    bool crossH = (y == 7 || y == 8);
-                    bool crossV = (x == 7 || x == 8);
-                    if (border)
+                    float cx = (float)x - 7.5f;
+                    float cy = (float)y - 7.5f;
+                    float ax = std::abs(cx);
+                    float ay = std::abs(cy);
+                    bool onSeam = (std::abs(ax - ay) < 1.5f);
+                    int n = (int)((ph(x, y, 175) & 0x0F) - 8);
+                    if (onSeam)
                     {
-                        int base = 180 + (int)((ph(x, y, 170) & 0x1F) - 15);
-                        px = makePixel(base, base, base);
+                        int s = 148 + (int)((ph(x, y, 176) & 0x0F) - 8);
+                        px = makePixel(s, s + 4, s + 8);
                     }
-                    else if (crossH || crossV)
+                    else if (ay > ax && cy < 0.f)
                     {
-                        px = makePixel(200, 200, 200);
+                        px = makePixel(std::clamp(182 + n, 0, 255),
+                                       std::clamp(228 + n, 0, 255),
+                                       std::clamp(198 + n, 0, 255));
+                    }
+                    else if (ay > ax)
+                    {
+                        px = makePixel(std::clamp(232 + n, 0, 255),
+                                       std::clamp(215 + n, 0, 255),
+                                       std::clamp(175 + n, 0, 255));
+                    }
+                    else if (ax > ay && cx < 0.f)
+                    {
+                        px = makePixel(std::clamp(180 + n, 0, 255),
+                                       std::clamp(208 + n, 0, 255),
+                                       std::clamp(238 + n, 0, 255));
                     }
                     else
                     {
-                        px = makePixel(195, 225, 235);
+                        px = makePixel(std::clamp(218 + n, 0, 255),
+                                       std::clamp(192 + n, 0, 255),
+                                       std::clamp(232 + n, 0, 255));
+                    }
+
+                    if (ax < 1.5f && ay < 1.5f)
+                    {
+                        px = makePixel(252, 254, 255);
                     }
 
                     break;
@@ -427,8 +451,8 @@ void TextureAtlas::build()
                  GL_RGBA, GL_UNSIGNED_BYTE, pixels.data());
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
@@ -457,19 +481,37 @@ unsigned int TextureAtlas::buildIconAtlas(const int *topTiles, const int *sideTi
             for (int ix = 0; ix < ICON; ix++)
             {
                 unsigned int px = 0u;
-                if (iy < 7)
+                if (iy > 3)
                 {
-                    int tx = 15 - (iy * 2);
-                    int ty = ix;
-                    px = applyBright(sampleTile(top, tx, ty), 1.0f);
+                    int ly = iy - 4;
+                    if (ix < 8)
+                    {
+                        int a = ix * 2;
+                        int b = (2 * ly) - ix;
+                        if (a >= 0 && a <= TILE_SIZE && b >= 0 && b <= TILE_SIZE)
+                        {
+                            px = applyBright(sampleTile(side, a, b), 0.6f);
+                        }
+                    }
+                    else
+                    {
+                        int a = (ix * 2) - TILE_SIZE;
+                        int b = (2 * ly) - TILE_SIZE + ix;
+                        if (a >= 0 && a <= TILE_SIZE && b >= 0 && b <= TILE_SIZE)
+                        {
+                            px = applyBright(sampleTile(side, a, b), 0.8f);
+                        }
+                    }
                 }
-                else
+
+                if (iy < 8)
                 {
-                    int ly = iy - 7;
-                    int tx = ix < 8 ? ix * 2 : (ix - 8) * 2;
-                    int ty = ly * 16 / 9;
-                    float bright = (ix < 8) ? 0.6f : 0.8f;
-                    px = applyBright(sampleTile(side, tx, ty), bright);
+                    int a = (2 * iy) + ix - 8;
+                    int b = (2 * iy) - ix + 8;
+                    if (a >= 0 && a <= TILE_SIZE && b >= 0 && b <= TILE_SIZE)
+                    {
+                        px = sampleTile(top, a, b);
+                    }
                 }
 
                 buf[(iy * count * ICON) + (i * ICON) + ix] = px;

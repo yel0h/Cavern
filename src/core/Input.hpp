@@ -26,6 +26,7 @@ private:
     bool chatToggle = false;
     bool chatSubmit = false;
     bool chatCancel = false;
+    bool hotbarToggle = false;
 
     static void keyCB(GLFWwindow *, int key, int, int action, int);
 
@@ -94,5 +95,7 @@ public:
     bool getChatSubmit();
 
     bool getChatCancel();
+
+    bool getHotbarToggle();
 };
 #endif//CAVERN_INPUT_HPP

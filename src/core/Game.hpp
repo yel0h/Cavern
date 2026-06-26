@@ -54,6 +54,7 @@ private:
     std::unique_ptr<Client> client;
     std::vector<RemotePlayer> remotePlayers;
     std::vector<std::string> chatMessages;
+    bool hotbarOpen = true;
     static Game *inst;
 
     void init();

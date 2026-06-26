@@ -842,7 +842,7 @@ void Renderer::renderPauseMenu(int winW, int winH)
     glDisable(GL_BLEND);
 }
 
-void Renderer::renderFrame(const World &world, const Camera &cam, int winW, int winH, const Renderer::HighlightBlock &hl, float time, int hotbarSize, int hotbarIdx, int fps, int chunkUpdates, bool placeMode, bool underLava, bool underWater)
+void Renderer::renderFrame(const World &world, const Camera &cam, int winW, int winH, const Renderer::HighlightBlock &hl, float time, int hotbarSize, int hotbarIdx, int fps, int chunkUpdates, bool placeMode, bool underLava, bool underWater, bool showHotbar)
 {
     rebuildDirty(world, cam.position);
     float cFogNear;
@@ -917,6 +917,10 @@ void Renderer::renderFrame(const World &world, const Camera &cam, int winW, int 
     renderHighlight(hl, glm::value_ptr(vp), time, world);
     renderOutline(hl, glm::value_ptr(vp));
     renderCrosshair(winW, winH);
-    renderHUD(winW, winH, hotbarSize, hotbarIdx);
+    if (showHotbar)
+    {
+        renderHUD(winW, winH, hotbarSize, hotbarIdx);
+    }
+
     renderDebug(winW, winH, fps, chunkUpdates, placeMode);
 }

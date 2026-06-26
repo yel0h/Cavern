@@ -284,6 +284,12 @@ void Input::keyCB(GLFWwindow *, int key, int, int action, int)
 
             break;
 
+        case GLFW_KEY_H:
+            if (action == GLFW_PRESS)
+            {
+                inst->hotbarToggle = true;
+            }
+
         default:
             break;
     }
@@ -490,5 +496,12 @@ bool Input::getChatCancel()
 {
     bool temp = chatCancel;
     chatCancel = false;
+    return temp;
+}
+
+bool Input::getHotbarToggle()
+{
+    bool temp = hotbarToggle;
+    hotbarToggle = false;
     return temp;
 }

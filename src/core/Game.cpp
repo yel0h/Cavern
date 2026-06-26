@@ -449,7 +449,7 @@ void Game::render()
                          hl, (float)glfwGetTime(),
                          hotbarSize, hotbarIdx,
                          fps, chunks, player.placeMode,
-                         player.underLava, player.underWater);
+                         player.underLava, player.underWater, hotbarOpen);
     wandererRenderer.render(wanderers, camera, winW, winH, (float)glfwGetTime());
     if (!remotePlayers.empty())
     {
@@ -549,6 +549,11 @@ void Game::run()
         }
         else
         {
+            if (input.getHotbarToggle())
+            {
+                hotbarOpen = !hotbarOpen;
+            }
+
             if (input.getChatToggle() && (server || client))
             {
                 input.chatOpen = !input.chatOpen;
