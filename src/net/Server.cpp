@@ -433,7 +433,7 @@ void Server::drainClients()
                 PktPlace pk;
                 std::memcpy(&pk, buf.data(), sizeof(pk));
                 buf.erase(buf.begin(), buf.begin() + sizeof(PktPlace));
-                static constexpr unsigned char legalBlocks[] = {1, 3, 4, 5, 6, 7, 11, 12};
+                static constexpr unsigned char legalBlocks[] = {2, 4, 17, 7, 6, 5, 16, 12};
                 bool legalType = false;
                 for (unsigned char lb : legalBlocks)
                 {
