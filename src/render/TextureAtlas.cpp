@@ -359,15 +359,15 @@ void TextureAtlas::paintTile(unsigned int *pixels, int tile)
                     if (border)
                     {
                         int base = 180 + (int)((ph(x, y, 170) & 0x1F) - 15);
-                        px = (0xB4000000u) | clampByte(base) << 16 | clampByte(base) << 8 | clampByte(base);
+                        px = makePixel(base, base, base);
                     }
                     else if (crossH || crossV)
                     {
-                        px = 0x50C8C8C8u;
+                        px = makePixel(200, 200, 200);
                     }
                     else
                     {
-                        px = 0x30A8C8D8u;
+                        px = makePixel(195, 225, 235);
                     }
 
                     break;

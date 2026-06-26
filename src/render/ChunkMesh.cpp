@@ -109,10 +109,6 @@ void ChunkMesh::build(const Chunk &chunk, const World &world)
                     {
                         flags = 1.f;
                     }
-                    else if (bt == BlockType::Glaze)
-                    {
-                        flags = 2.f;
-                    }
 
                     addFace((float)wx, (float)wy, (float)wz, f, u0, v0, u1, v1, light, flags);
                 }

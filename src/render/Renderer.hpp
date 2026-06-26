@@ -123,11 +123,6 @@ out vec4 fragColor;
 
 void main()
 {
-    if (uUnderwater != 0 && vFlags > 1.5)
-    {
-        discard;
-    }
-
     vec2 uv = vUV;
     if (vFlags > 0.5 && vFlags < 1.5)
     {

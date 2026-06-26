@@ -400,7 +400,7 @@ void Renderer::initIconAtlas()
     for (int i = 0; i < size; i++)
     {
         BlockType bt = hotbar[i];
-        if (bt == BlockType::Glaze || bt == BlockType::Water || bt == BlockType::Lava)
+        if (bt == BlockType::Water || bt == BlockType::Lava)
         {
             tops[i] = -1;
             sides[i] = -1;
