@@ -37,7 +37,7 @@ bool Server::start(unsigned short port)
     loadConfig();
     loadWardens();
     loadExiles();
-    connRecords.reserve(maxClients * 2);
+    connCounts.reserve(maxClients * 2);
     loadServerSpawn();
     saveLoggedIn();
     if (!_private)
@@ -159,15 +159,8 @@ void Server::acceptClients()
         ioctlsocket(s, FIONBIO, &nb);
         char ipBuf[16] = {};
         inet_ntop(AF_INET, &peer.sin_addr, ipBuf, sizeof(ipBuf));
-        auto now = (unsigned long)GetTickCount64();
-        auto &rec = connRecords.try_emplace(ipBuf).first->second;
-        if (now - rec.windowStart > connectWindowMs)
-        {
-            rec.windowStart = now;
-            rec.count = 0;
-        }
-
-        if (++rec.count > maxConnsPerIp)
+        auto &rec = connCounts.try_emplace(ipBuf).first->second;
+        if (++rec > maxConnsPerIp)
         {
             closesocket(s);
             continue;

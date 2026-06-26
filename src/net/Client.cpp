@@ -353,6 +353,7 @@ void Client::drainRecv()
             PktChat pk;
             std::memcpy(&pk, buf.data(), sizeof(pk));
             buf.erase(buf.begin(), buf.begin() + sizeof(PktChat));
+            pk.msg[sizeof(pk.msg) - 1] = '\0';
             ChatEvent ev{};
             ev.isPrivate = pk.isPrivate;
             if (pk.isPrivate == 0)

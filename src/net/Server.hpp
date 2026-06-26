@@ -14,7 +14,6 @@ private:
     static constexpr int levelChunksPerTick = 8;
     static constexpr int maxClients = 8;
     static constexpr float maxPlaceReach = 6.f;
-    static constexpr unsigned long connectWindowMs = 5000;
 
     struct ClientState
     {
@@ -32,12 +31,6 @@ private:
         bool movedThisTick = false;
     };
 
-    struct ConnRecord
-    {
-        unsigned long windowStart = 0;
-        int count = 0;
-    };
-
     SOCKET listenSock = INVALID_SOCKET;
     unsigned int nextId = 1;
     RemotePlayer host{};
@@ -46,7 +39,7 @@ private:
     std::vector<std::string> wardens;
     std::vector<std::string> exiledNames;
     std::vector<std::string> exiledIps;
-    std::unordered_map<std::string, ConnRecord> connRecords;
+    std::unordered_map<std::string, int> connCounts;
     float lastSentX = 0;
     float lastSentY = 0;
     float lastSentZ = 0;
