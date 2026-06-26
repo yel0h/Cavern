@@ -401,6 +401,11 @@ void Game::tick()
 
 void Game::generateNewLevel()
 {
+    if (server || client)
+    {
+        return;
+    }
+
     renderer.renderGenerating(winW, winH);
     glfwSwapBuffers(window);
     renderer.renderGenerating(winW, winH);
