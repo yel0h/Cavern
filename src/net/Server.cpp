@@ -1010,6 +1010,19 @@ void Server::loadConfig()
         {
             _private = (val == "true");
         }
+        else if (key == "max-connections")
+        {
+            try
+            {
+                maxConnsPerIp = std::stoi(val);
+            }
+            catch (...) {}
+
+            if (maxConnsPerIp < 1)
+            {
+                maxConnsPerIp = 1;
+            }
+        }
     }
 }
 
