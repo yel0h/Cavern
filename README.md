@@ -1,7 +1,7 @@
 # Cavern
 Cavern is a simple voxel sandbox game with multiplayer support written in C++ using OpenGL shaders.
 
-<img width="856" height="512" alt="image" src="https://github.com/user-attachments/assets/418e0032-4dee-4c63-b5e0-6354fbf2703e" />
+<img width="856" height="512" alt="image" src="https://github.com/user-attachments/assets/ab195551-15dd-4bd4-b0af-df3144fd83f5" />
 
 ## Running
 To start the game in singleplayer, simply run `Cavern.exe`.
@@ -48,3 +48,4 @@ A server persists its configuration across multiple files containing lists of li
 #### server.cfg options
 The server.cfg configuration file contains a list of key=value pairs. Here's a list of all supported keys:
 - `private` - when set to `true`, the externalurl.txt file doesn't get created
+- `max-connections` - integer value representing the number of connections allowed from one IP; `3` by default
