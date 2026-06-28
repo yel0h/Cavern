@@ -15,9 +15,9 @@ void WandererRenderer::init()
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(MobVertex), nullptr);
     glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(MobVertex), (void *)(3 * sizeof(float)));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(MobVertex), reinterpret_cast<void const *>(3 * sizeof(float)));
     glEnableVertexAttribArray(2);
-    glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, sizeof(MobVertex), (void *)(6 * sizeof(float)));
+    glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, sizeof(MobVertex), reinterpret_cast<void const *>(6 * sizeof(float)));
     glBindVertexArray(0);
 }
 
@@ -45,14 +45,13 @@ void WandererRenderer::addBox(float x0, float y0, float z0, float x1, float y1, 
     };
 
     const Face faces[6] = {
-            {{{x0, y1, z0}, {x0, y1, z1}, {x1, y1, z1}, {x1, y1, z0}},  0.118f},
-            {{{x0, y0, z1}, {x0, y0, z0}, {x1, y0, z0}, {x1, y0, z1}}, -0.118f},
-            {{{x0, y0, z1}, {x0, y1, z1}, {x0, y1, z0}, {x0, y0, z0}},  0.f},
-            {{{x1, y0, z0}, {x1, y1, z0}, {x1, y1, z1}, {x1, y0, z1}},  0.f},
-            {{{x0, y0, z0}, {x0, y1, z0}, {x1, y1, z0}, {x1, y0, z0}},  0.f},
-            {{{x1, y0, z1}, {x1, y1, z1}, {x0, y1, z1}, {x0, y0, z1}},  0.f},
+            {{{x0, y1, z0}, {x1, y1, z0}, {x1, y1, z1}, {x0, y1, z1}}, 0.118f},
+            {{{x0, y0, z1}, {x1, y0, z1}, {x1, y0, z0}, {x0, y0, z0}}, -0.118f},
+            {{{x1, y0, z0}, {x1, y1, z0}, {x0, y1, z0}, {x0, y0, z0}}, 0.f},
+            {{{x0, y0, z1}, {x0, y1, z1}, {x1, y1, z1}, {x1, y0, z1}}, 0.f},
+            {{{x0, y0, z0}, {x0, y1, z0}, {x0, y1, z1}, {x0, y0, z1}}, 0.f},
+            {{{x1, y0, z1}, {x1, y1, z1}, {x1, y1, z0}, {x1, y0, z0}}, 0.f},
     };
-
     float cy = std::cos(glm::radians(yawDeg));
     float sy = std::sin(glm::radians(yawDeg));
     float cr = std::cos(rotAngle);
@@ -68,8 +67,8 @@ void WandererRenderer::addBox(float x0, float y0, float z0, float x1, float y1, 
         lx = rx + pvtX;
         ly = ry + pvtY;
         lz = rz + pvtZ;
-        float fx = (lx * cy) + (lz * sy);
-        float fz = (-lx * sy) + (lz * cy);
+        float fx = (lx * cy) - (lz * sy);
+        float fz = (lx * sy) + (lz * cy);
         v.x = fx + wx;
         v.y = ly + wy;
         v.z = fz + wz;
@@ -80,7 +79,7 @@ void WandererRenderer::addBox(float x0, float y0, float z0, float x1, float y1, 
         float fr = clamp01(br + face.bright);
         float fg = clamp01(bg + face.bright);
         float fb = clamp01(bb + face.bright);
-        int order[6] = {0, 1, 2, 0, 2, 3};
+        int order[6] = {0, 2, 1, 0, 3, 2};
         for (int i : order)
         {
             MobVertex v{};
@@ -157,12 +156,17 @@ void WandererRenderer::renderRemotePlayers(const std::vector<RemotePlayer> &play
     constexpr float headB = 0.28f;
     for (const auto &p : players)
     {
+        if (!p.posInitialized)
+        {
+            continue;
+        }
+
         float fa = std::sin(p.walkPhase) * glm::radians(12.0f);
         float ra = std::sin(p.walkPhase + 3.14159f) * glm::radians(12.0f);
         float wx = p.vx;
         float wy = p.vy;
         float wz = p.vz;
-        float yd = -p.vyaw;
+        float yd = p.vyaw;
         float light = 1.0f;
         addBox(-0.25f, 0.0f, -0.25f, -0.15f, 0.2f, -0.15f, bodyR, bodyG, bodyB, light, yd, wx, wy, wz, -0.2f, 0.2f, -0.2f, fa);
         addBox( 0.15f, 0.0f, -0.25f, 0.25f, 0.2f, -0.15f, bodyR, bodyG, bodyB, light, yd, wx, wy, wz, 0.2f, 0.2f, -0.2f, -fa);

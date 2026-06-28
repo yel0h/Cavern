@@ -10,7 +10,7 @@ void WandererManager::pickDirection(Wanderer &w)
     float angle = angleDist(mt);
     w.dirX = std::cos(angle);
     w.dirZ = std::sin(angle);
-    w.yaw = glm::degrees(std::atan2(-w.dirX, -w.dirZ));
+    w.yaw = glm::degrees(std::atan2(w.dirX, -w.dirZ));
     static std::uniform_int_distribution<int> dist(40, 120);
     w.ticksLeft = dist(mt);
 }
@@ -117,7 +117,7 @@ bool WandererManager::save(const char *path) const
     }
 
     f.write(reinterpret_cast<char const *>(&wandererMagic), sizeof(wandererMagic));
-    unsigned int sCount = (unsigned int)wanderers.size();
+    auto sCount = (unsigned int)wanderers.size();
     f.write(reinterpret_cast<char const *>(&sCount), sizeof(sCount));
     for (const auto &wd : wanderers)
     {
