@@ -919,10 +919,35 @@ void Renderer::renderFrame(const World &world, const Camera &cam, int winW, int 
                 continue;
             }
 
-            meshes[(cz * 16) + cx].draw();
+            meshes[(cz * 16) + cx].drawOpaque();
         }
     }
 
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glDepthMask(GL_FALSE);
+    for (int cz = 0; cz < 16; cz++)
+    {
+        for (int cx = 0; cx < 16; cx++)
+        {
+            auto dx = (float)(cx - pCx);
+            auto dz = (float)(cz - pCz);
+            if (std::max(std::abs(dx), std::abs(dz)) > maxChunkDist)
+            {
+                continue;
+            }
+
+            if (!chunkInFrustum(cx, cz, planes))
+            {
+                continue;
+            }
+
+            meshes[(cz * 16) + cx].drawTransparent();
+        }
+    }
+
+    glDepthMask(GL_TRUE);
+    glDisable(GL_BLEND);
     renderClouds(glm::value_ptr(vp), time);
     renderHighlight(hl, glm::value_ptr(vp), time, world);
     renderOutline(hl, glm::value_ptr(vp));

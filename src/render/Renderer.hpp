@@ -152,7 +152,8 @@ void main()
     vec3 first = mix(mix(vec3(0.1), uFogColor, vLight), lit, vFogFactor);
     float secondFactor = clamp((uFogFar - vEyeDist) / (uFogFar - uFogNear), 0.0, 1.0);
     vec3 final = mix(uFogColor, first, mix(secondFactor, 1.0, vLight));
-    fragColor = vec4(final, 1.0);
+    float alpha = (vFlags > 0.5 && vFlags < 1.5) ? 0.68 : 1.0;
+    fragColor = vec4(final, alpha);
 }
 )";
     static constexpr const char *hlVertSrc = R"(

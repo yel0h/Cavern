@@ -23,9 +23,11 @@ static const int faceCorners[6][4][3] = {
 
 static const float faceUVs[4][2] = {{0.f, 1.f}, {0.f, 0.f}, {1.f, 0.f}, {1.f, 1.f},};
 
-void ChunkMesh::addFace(float x, float y, float z, int face, float u0, float v0, float u1, float v1, float light, float flags)
+void ChunkMesh::addFace(float x, float y, float z, int face, float u0, float v0, float u1, float v1, float light, float flags, bool transparent)
 {
-    auto base = (unsigned int)verts.size();
+    auto &fVerts = transparent ? transVerts : verts;
+    auto &fIndices = transparent ? transIndices : indices;
+    auto base = (unsigned int)fVerts.size();
     for (int i = 0; i < 4; i++)
     {
         Vertex vtx{};
@@ -36,21 +38,23 @@ void ChunkMesh::addFace(float x, float y, float z, int face, float u0, float v0,
         vtx.v = v0 + ((v1 - v0) * faceUVs[i][1]);
         vtx.light = light;
         vtx.flags = flags;
-        verts.push_back(vtx);
+        fVerts.push_back(vtx);
     }
 
-    indices.push_back(base + 0);
-    indices.push_back(base + 1);
-    indices.push_back(base + 2);
-    indices.push_back(base + 0);
-    indices.push_back(base + 2);
-    indices.push_back(base + 3);
+    fIndices.push_back(base + 0);
+    fIndices.push_back(base + 1);
+    fIndices.push_back(base + 2);
+    fIndices.push_back(base + 0);
+    fIndices.push_back(base + 2);
+    fIndices.push_back(base + 3);
 }
 
 void ChunkMesh::build(const Chunk &chunk, const World &world)
 {
     verts.clear();
     indices.clear();
+    transVerts.clear();
+    transIndices.clear();
     int ox = chunk.x * Chunk::WIDTH;
     int oz = chunk.z * Chunk::DEPTH;
     for (int y = 0; y < Chunk::HEIGHT; y++)
@@ -110,22 +114,20 @@ void ChunkMesh::build(const Chunk &chunk, const World &world)
                         flags = 1.f;
                     }
 
-                    addFace((float)wx, (float)wy, (float)wz, f, u0, v0, u1, v1, light, flags);
+                    addFace((float)wx, (float)wy, (float)wz, f, u0, v0, u1, v1, light, flags, blockDef(bt).transparent);
                 }
             }
         }
     }
 
     indexCount = (int)indices.size();
+    transIndexCount = (int)transIndices.size();
 }
 
-void ChunkMesh::upload()
+static void uploadMesh(unsigned int &vao, unsigned int &vbo, unsigned int &ibo,
+                       const std::vector<Vertex> &verts,
+                       const std::vector<unsigned int> &indices)
 {
-    if (indexCount == 0)
-    {
-        return;
-    }
-
     if (vao == 0)
     {
         glGenVertexArrays(1, &vao);
@@ -137,23 +139,57 @@ void ChunkMesh::upload()
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glBufferData(GL_ARRAY_BUFFER, verts.size() * sizeof(Vertex), verts.data(), GL_STATIC_DRAW);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int),indices.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), indices.data(), GL_STATIC_DRAW);
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, x));
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, x));
     glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, u));
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, u));
     glEnableVertexAttribArray(2);
-    glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, sizeof(Vertex),
-                          (void *)offsetof(Vertex, light));
+    glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, light));
     glEnableVertexAttribArray(3);
-    glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(Vertex),
-                          (void *)offsetof(Vertex, flags));
+    glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, flags));
     glBindVertexArray(0);
-    verts.clear();
-    indices.clear();
 }
 
-void ChunkMesh::draw() const
+void ChunkMesh::upload()
+{
+    if (indexCount > 0)
+    {
+        uploadMesh(vao, vbo, ibo, verts, indices);
+    }
+
+    verts.clear();
+    indices.clear();
+    if (transIndexCount > 0)
+    {
+        uploadMesh(transVao, transVbo, transIbo, transVerts, transIndices);
+    }
+    else
+    {
+        if (transVao)
+        {
+            glDeleteVertexArrays(1, &transVao);
+            transVao = 0;
+        }
+
+        if (transVbo)
+        {
+            glDeleteBuffers(1, &transVbo);
+            transVbo = 0;
+        }
+
+        if (transIbo)
+        {
+            glDeleteBuffers(1, &transIbo);
+            transIbo = 0;
+        }
+    }
+
+    transVerts.clear();
+    transIndices.clear();
+}
+
+void ChunkMesh::drawOpaque() const
 {
     if (vao == 0 || indexCount == 0)
     {
@@ -162,6 +198,18 @@ void ChunkMesh::draw() const
 
     glBindVertexArray(vao);
     glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, nullptr);
+    glBindVertexArray(0);
+}
+
+void ChunkMesh::drawTransparent() const
+{
+    if (transVao == 0 || transIndexCount == 0)
+    {
+        return;
+    }
+
+    glBindVertexArray(transVao);
+    glDrawElements(GL_TRIANGLES, transIndexCount, GL_UNSIGNED_INT, nullptr);
     glBindVertexArray(0);
 }
 
@@ -186,4 +234,23 @@ void ChunkMesh::free()
     }
 
     indexCount = 0;
+    if (transVao)
+    {
+        glDeleteVertexArrays(1, &transVao);
+        transVao = 0;
+    }
+
+    if (transVbo)
+    {
+        glDeleteBuffers(1, &transVbo);
+        transVbo = 0;
+    }
+
+    if (transIbo)
+    {
+        glDeleteBuffers(1, &transIbo);
+        transIbo = 0;
+    }
+
+    transIndexCount = 0;
 }

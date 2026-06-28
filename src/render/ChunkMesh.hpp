@@ -25,10 +25,16 @@ private:
     unsigned int vbo = 0;
     unsigned int ibo = 0;
     int indexCount = 0;
+    unsigned int transVao = 0;
+    unsigned int transVbo = 0;
+    unsigned int transIbo = 0;
+    int transIndexCount = 0;
     std::vector<Vertex> verts;
     std::vector<unsigned int> indices;
+    std::vector<Vertex> transVerts;
+    std::vector<unsigned int> transIndices;
 
-    void addFace(float x, float y, float z, int face, float u0, float v0, float u1, float v1, float light, float flags);
+    void addFace(float x, float y, float z, int face, float u0, float v0, float u1, float v1, float light, float flags, bool transparent);
 
 public:
     ~ChunkMesh() { free(); }
@@ -37,7 +43,9 @@ public:
 
     void upload();
 
-    void draw() const;
+    void drawOpaque() const;
+
+    void drawTransparent() const;
 
     void free();
 };
