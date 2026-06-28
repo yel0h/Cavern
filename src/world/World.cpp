@@ -260,6 +260,24 @@ void World::tickDynamic()
         }
     }
 
+    auto nearPith = [&](int x, int y, int z) -> bool
+    {
+        for (int ndy = -2; ndy <= 2; ndy++)
+        {
+            for (int ndx = -2; ndx <= 2; ndx++)
+            {
+                for (int ndz = -2; ndz <= 2; ndz++)
+                {
+                    if (getBlock(x + ndx, y + ndy, z + ndz) == BlockType::Pith)
+                    {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    };
     for (int i = 0; i < 30000; i++)
     {
         int wx = wDist(mt);
@@ -268,24 +286,6 @@ void World::tickDynamic()
         BlockType bt = getBlock(wx, wy, wz);
         if (bt == BlockType::Water && (waterTick % 3) == 0)
         {
-            auto nearPith = [&](int x, int y, int z) -> bool
-            {
-                for (int ndy = -2; ndy <= 2; ndy++)
-                {
-                    for (int ndx = -2; ndx <= 2; ndx++)
-                    {
-                        for (int ndz = -2; ndz <= 2; ndz++)
-                        {
-                            if (getBlock(x + ndx, y + ndy, z + ndz) == BlockType::Pith)
-                            {
-                                return true;
-                            }
-                        }
-                    }
-                }
-
-                return false;
-            };
             if (wy > 1)
             {
                 BlockType below = getBlock(wx, wy - 1, wz);
@@ -361,8 +361,12 @@ void World::tickDynamic()
                 BlockType below = getBlock(wx, wy - 1, wz);
                 if (below == BlockType::Air)
                 {
-                    setBlock(wx, wy - 1, wz, BlockType::Lava);
-                    Lighting::propagateColumn(*this, wx, wz);
+                    if (!nearPith(wx, wy - 1, wz))
+                    {
+                        setBlock(wx, wy - 1, wz, BlockType::Lava);
+                        Lighting::propagateColumn(*this, wx, wz);
+                    }
+
                     continue;
                 }
                 else if (below == BlockType::Water)
@@ -398,8 +402,12 @@ void World::tickDynamic()
                 BlockType nb = getBlock(nx, wy, nz);
                 if (nb == BlockType::Air)
                 {
-                    setBlock(nx, wy, nz, BlockType::Lava);
-                    Lighting::propagateColumn(*this, nx, nz);
+                    if (!nearPith(nx, wy, nz))
+                    {
+                        setBlock(nx, wy, nz, BlockType::Lava);
+                        Lighting::propagateColumn(*this, nx, nz);
+                    }
+
                     break;
                 }
                 else if (nb == BlockType::Water)
