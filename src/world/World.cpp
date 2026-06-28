@@ -136,7 +136,7 @@ void World::absorbLiquids(int ox, int oy, int oz)
                 }
 
                 BlockType bt = getBlock(wx, wy, wz);
-                if (bt == BlockType::Water)
+                if (bt == BlockType::Water || bt == BlockType::Lava)
                 {
                     setBlock(wx, wy, wz, BlockType::Air);
                     Lighting::propagateColumn(*this, wx, wz);
