@@ -29,6 +29,10 @@ public:
     bool hasPendingSpawn = false;
     float pendingSpawnX = 128.f;
     float pendingSpawnZ = 128.f;
+    bool hasPendingWarp = false;
+    float pendingWarpX = 0;
+    float pendingWarpY = 0;
+    float pendingWarpZ = 0;
 
     bool connect(const std::string &host, unsigned short port = 5565);
 
@@ -54,7 +58,9 @@ public:
 
     void clearPlaces() { pendingPlaces.clear(); }
 
-    void  clearPendingSpawn() { hasPendingSpawn = false; }
+    void clearPendingSpawn() { hasPendingSpawn = false; }
+
+    void clearPendingWarp() { hasPendingWarp = false; }
 
     void clearChats() { pendingChats.clear(); }
 

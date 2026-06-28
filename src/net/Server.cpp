@@ -1034,6 +1034,17 @@ void Server::handleCommand(Server::ClientState &sender, const char *raw)
         wp.z = tz;
         send(clients[idx].sock, reinterpret_cast<char const *>(&wp), sizeof(wp), 0);
         clients[idx].hasPrevPos = false;
+        for (auto &r : remote)
+        {
+            if (r.id == clients[idx].id)
+            {
+                r.vx = tx;
+                r.vy = ty;
+                r.vz = tz;
+                break;
+            }
+        }
+
         replyTo("[Server]: Player teleported.");
     }
     else

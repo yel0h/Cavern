@@ -464,6 +464,21 @@ void Client::drainRecv()
             buf.erase(buf.begin(), buf.begin() + sizeof(PktPlace));
             pendingPlaces.push_back({pk.bx, pk.by, pk.bz, pk.blockType});
         }
+        else if (t == (unsigned char)PktType::Warp)
+        {
+            if (buf.size() < sizeof(PktWarp))
+            {
+                break;
+            }
+
+            PktWarp pk;
+            std::memcpy(&pk, buf.data(), sizeof(pk));
+            buf.erase(buf.begin(), buf.begin() + sizeof(PktWarp));
+            pendingWarpX = pk.x;
+            pendingWarpY = pk.y;
+            pendingWarpZ = pk.z;
+            hasPendingWarp = true;
+        }
         else
         {
             std::cerr << "Client: unknown packet " << (short)t << " from server, dropping connection" << std::endl;

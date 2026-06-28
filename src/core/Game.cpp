@@ -297,6 +297,15 @@ void Game::tick()
             client->clearPendingSpawn();
         }
 
+        if (client->hasPendingWarp)
+        {
+            player.position.x = client->pendingWarpX;
+            player.position.y = client->pendingWarpY;
+            player.position.z = client->pendingWarpZ;
+            player.velocity = {};
+            client->clearPendingWarp();
+        }
+
         client->sendPosition(player.position.x, player.position.y, player.position.z, player.yaw);
         client->interpolate(0.01666667);
         remotePlayers = client->remote;
