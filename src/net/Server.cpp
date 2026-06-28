@@ -328,12 +328,11 @@ void Server::drainClients()
                 if (cs.hasPrevPos && cs.levelSentChunks >= 256)
                 {
                     float dx = pp.x - cs.prevPosX;
-                    float dy = pp.y - cs.prevPosY;
                     float dz = pp.z - cs.prevPosZ;
                     unsigned long long td = std::max(serverTick - cs.prevPosTick, 2ull);
-                    constexpr float maxSpeed = 50.f;
-                    float maxDist = maxSpeed * ((float)td / 60.f);
-                    if ((dx * dx) + (dy * dy) + (dz * dz) > maxDist * maxDist)
+                    constexpr float maxHorizSpeed = 20.f;
+                    float maxDist = maxHorizSpeed * ((float)td / 60.f);
+                    if ((dx * dx) + (dz * dz) > maxDist * maxDist)
                     {
                         PktExpel ep{};
                         std::strncpy(ep.reason, "Movement speed exceeded.", sizeof(ep.reason) - 1);
