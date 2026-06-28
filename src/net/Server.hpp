@@ -100,6 +100,7 @@ public:
     std::vector<PlaceEvent> pendingPlaces;
     std::vector<ChatEvent> pendingChats;
     const World *world = nullptr;
+    bool forgeMode = false;
 
     bool start(unsigned short port = 5565);
 

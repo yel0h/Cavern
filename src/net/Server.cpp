@@ -389,6 +389,14 @@ void Server::drainClients()
                 PktBreak pk;
                 std::memcpy(&pk, buf.data(), sizeof(pk));
                 buf.erase(buf.begin(), buf.begin() + sizeof(PktBreak));
+                if (world &&
+                    World::inBounds(pk.bx, pk.by, pk.bz) &&
+                    world->getBlock(pk.bx, pk.by, pk.bz) == BlockType::Bedrock &&
+                    !isWarden(cs.id, cs.name))
+                {
+                    break;
+                }
+
                 broadcastBreakExcept(pk, cs.sock);
                 pendingBreaks.push_back({pk.bx, pk.by, pk.bz, pk.blockType});
             }
@@ -491,6 +499,11 @@ void Server::drainClients()
                     send(cs.sock, reinterpret_cast<char const *>(&ep), sizeof(ep), 0);
                     removeClient(i);
                     break;
+                }
+
+                if (forgeMode && isWarden(cs.id, cs.name) && pk.blockType == (unsigned char)BlockType::Stone)
+                {
+                    pk.blockType = (unsigned char)BlockType::Bedrock;
                 }
 
                 broadcastExcept(&pk, sizeof(pk), cs.sock);
