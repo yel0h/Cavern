@@ -325,7 +325,7 @@ void Server::drainClients()
                 }
 
                 cs.movedThisTick = true;
-                if (cs.hasPrevPos)
+                if (cs.hasPrevPos && cs.levelSentChunks >= 256)
                 {
                     float dx = pp.x - cs.prevPosX;
                     float dy = pp.y - cs.prevPosY;
@@ -526,14 +526,18 @@ void Server::sendPendingLevels()
             send(cs.sock, reinterpret_cast<char const *>(&pk), sizeof(pk), 0);
         }
 
-        if (cs.levelSentChunks == 256 && !cs.pendingBreakQueue.empty())
+        if (cs.levelSentChunks == 256)
         {
-            for (const auto &bpk : cs.pendingBreakQueue)
+            cs.hasPrevPos = false;
+            if (!cs.pendingBreakQueue.empty())
             {
-                send(cs.sock, reinterpret_cast<char const *>(&bpk), sizeof(bpk), 0);
-            }
+                for (const auto &bpk : cs.pendingBreakQueue)
+                {
+                    send(cs.sock, reinterpret_cast<char const *>(&bpk), sizeof(bpk), 0);
+                }
 
-            cs.pendingBreakQueue.clear();
+                cs.pendingBreakQueue.clear();
+            }
         }
     }
 }
