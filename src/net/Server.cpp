@@ -561,6 +561,16 @@ void Server::interpolate(float dt)
         }
 
         r.vyaw += dyaw * factor;
+        while (r.vyaw >= 360.f)
+        {
+            r.vyaw -= 360.f;
+        }
+
+        while (r.vyaw < 0.f)
+        {
+            r.vyaw += 360.f;
+        }
+
         float moved = std::sqrt(((r.vx - prevVx) * (r.vx - prevVx)) + ((r.vz - prevVz) * (r.vz - prevVz)));
         r.walkPhase += moved * 3.f;
     }
