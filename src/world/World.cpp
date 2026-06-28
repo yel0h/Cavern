@@ -258,6 +258,14 @@ void World::tickDynamic()
                 }
             }
         }
+        else if (bt == BlockType::Goldenbloom || bt == BlockType::Thornbloom || bt == BlockType::Dustshroom  || bt == BlockType::Emberscap)
+        {
+            if (getLight(wx, wy, wz) == 0)
+            {
+                setBlock(wx, wy, wz, BlockType::Air);
+                Lighting::propagateColumn(*this, wx, wz);
+            }
+        }
     }
 
     auto nearPith = [&](int x, int y, int z) -> bool
