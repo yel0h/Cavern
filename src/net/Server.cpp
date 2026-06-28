@@ -982,6 +982,60 @@ void Server::handleCommand(Server::ClientState &sender, const char *raw)
         saveServerSpawn();
         replyTo("[Server]: Spawn point set.");
     }
+    else if (_stricmp(cmd, "/teleport") == 0 || _stricmp(cmd, "/tp") == 0)
+    {
+        if (!*arg)
+        {
+            replyTo("[Server]: Usage: /teleport <name>");
+            return;
+        }
+
+        int idx = findClient(arg);
+        if (idx < 0)
+        {
+            replyTo("[Server]: Player not found.");
+            return;
+        }
+
+        float tx;
+        float ty;
+        float tz;
+        if (sender.id == 0)
+        {
+            tx = host.x;
+            ty = host.y;
+            tz = host.z;
+        }
+        else
+        {
+            bool found = false;
+            for (const auto &r : remote)
+            {
+                if (r.id == sender.id)
+                {
+                    tx = r.x;
+                    ty = r.y;
+                    tz = r.z;
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found)
+            {
+                replyTo("[Server]: Your position is unknown.");
+                return;
+            }
+        }
+
+        PktWarp wp{};
+        wp.x = tx;
+        wp.y = ty;
+        wp.z = tz;
+        send(clients[idx].sock, reinterpret_cast<char const *>(&wp), sizeof(wp), 0);
+        clients[idx].hasPrevPos = false;
+        replyTo("[Server]: Player teleported.");
+    }
     else
     {
         replyTo("[Server]: Unknown command.");
