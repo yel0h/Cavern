@@ -243,6 +243,14 @@ void Input::keyCB(GLFWwindow *, int key, int, int action, int)
 
             break;
 
+        case GLFW_KEY_B:
+            if (action == GLFW_PRESS)
+            {
+                inst->inventoryToggle = true;
+            }
+
+            break;
+
         case GLFW_KEY_TAB:
             if (!inst->chatOpen)
             {
@@ -315,6 +323,8 @@ void Input::cursorCB(GLFWwindow *, double x, double y)
         return;
     }
 
+    inst->mouseX = (float)x;
+    inst->mouseY = (float)y;
     if (inst->firstMouse)
     {
         inst->lastX = x;
@@ -345,6 +355,11 @@ void Input::mouseBtnCB(GLFWwindow *, int btn, int action, int)
 
     if (!inst->mouseCaptured)
     {
+        if (inst->inventoryOpen && btn == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
+        {
+            inst->inventoryClick = true;
+        }
+
         return;
     }
 
@@ -503,5 +518,19 @@ bool Input::getHotbarToggle()
 {
     bool temp = hotbarToggle;
     hotbarToggle = false;
+    return temp;
+}
+
+bool Input::getInventoryToggle()
+{
+    bool temp = inventoryToggle;
+    inventoryToggle = false;
+    return temp;
+}
+
+bool Input::getInventoryClick()
+{
+    bool temp = inventoryClick;
+    inventoryClick = false;
     return temp;
 }

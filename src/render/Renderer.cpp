@@ -154,6 +154,12 @@ void Renderer::shutdown()
         iconAtlas = 0;
     }
 
+    if (fullIconAtlas)
+    {
+        glDeleteTextures(1, &fullIconAtlas);
+        fullIconAtlas = 0;
+    }
+
     font.shutdown();
 }
 
@@ -923,4 +929,126 @@ void Renderer::renderFrame(const World &world, const Camera &cam, int winW, int 
     }
 
     renderDebug(winW, winH, fps, chunkUpdates, placeMode);
+}
+
+void Renderer::buildFullIconAtlas(const BlockType *hotbar, int hotbarSize)
+{
+    if (fullIconAtlas)
+    {
+        glDeleteTextures(1, &fullIconAtlas);
+        fullIconAtlas = 0;
+    }
+
+    std::vector<int> tops(hotbarSize);
+    std::vector<int> sides(hotbarSize);
+    for (int i = 0; i < hotbarSize; i++)
+    {
+        BlockType bt = hotbar[i];
+        if (bt == BlockType::Water || bt == BlockType::Lava)
+        {
+            tops[i] = -1;
+            sides[i] = -1;
+        }
+        else
+        {
+            tops[i] = (int)blockDef(bt).texTop;
+            sides[i] = (int)blockDef(bt).texSide;
+        }
+    }
+
+    fullIconAtlas = atlas.buildIconAtlas(tops.data(), sides.data(), hotbarSize);
+}
+
+void Renderer::renderInventory(int winW, int winH, BlockType selected, float mouseX, float mouseY, const BlockType *hotbar, int hotbarSize)
+{
+    if (!fullIconAtlas)
+    {
+        return;
+    }
+
+    int rows = (hotbarSize + invCols - 1) / invCols;
+    auto fw = (float)winW;
+    auto fh = (float)winH;
+    float totalW = (invCols * invSlot) + ((invCols - 1) * invGap);
+    float totalH = (rows * invSlot) + ((rows - 1) * invGap);
+    float ox = (fw - totalW) * 0.5f;
+    float oy = (fh - totalH) * 0.5f;
+    auto ndcX = [&](float sx) { return (sx / fw * 2.f) - 1.f; };
+    auto ndcY = [&](float sy) { return 1.f - (sy / fh * 2.f); };
+    auto pushQuad = [](std::vector<float> &v,
+                       float x0, float y0, float x1, float y1,
+                       float u0, float vv0, float u1, float vv1)
+    {
+        v.insert(v.end(), {
+                                  x0, y0, u0, vv1, x1, y0, u1, vv1, x1, y1, u1, vv0,
+                                  x0, y0, u0, vv1, x1, y1, u1, vv0, x0, y1, u0, vv0,
+                          });
+    };
+
+    glBindVertexArray(hudVao);
+    glBindBuffer(GL_ARRAY_BUFFER, hudVbo);
+    hudShader.use();
+    glDisable(GL_DEPTH_TEST);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    float au0;
+    float av0;
+    float au1;
+    float av1;
+    TextureAtlas::uvRect(4, au0, av0, au1, av1);
+    atlas.bind(0);
+    glUniform4f(glGetUniformLocation(hudShader.id, "uTint"), 0.f, 0.f, 0.f, 0.65f);
+    float ov[6 * 4] = {
+            -1.f, -1.f, au0, av0, 1.f, -1.f, au1, av0, 1.f, 1.f, au1, av1,
+            -1.f, -1.f, au0, av0, 1.f,  1.f, au1, av1, -1.f, 1.f, au0, av1,
+    };
+    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(ov), ov);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    std::vector<float> bgVerts;
+    std::vector<float> iconVerts;
+    std::vector<float> hlVerts;
+    for (int i = 0; i < hotbarSize; i++)
+    {
+        int col = i % invCols;
+        int row = i / invCols;
+        float sx0 = ox + (col * (invSlot + invGap));
+        float sy0 = oy + (row * (invSlot + invGap));
+        float sx1 = sx0 + invSlot;
+        float sy1 = sy0 + invSlot;
+        float nx0 = ndcX(sx0);
+        float nx1 = ndcX(sx1);
+        float ny0 = ndcY(sy1);
+        float ny1 = ndcY(sy0);
+        pushQuad(bgVerts, nx0, ny0, nx1, ny1, au0, av0, au1, av1);
+        float iu0 = (float)i / (float)hotbarSize;
+        float iu1 = (float)(i + 1) / (float)hotbarSize;
+        pushQuad(iconVerts, nx0, ny0, nx1, ny1, iu0, 0.f, iu1, 1.f);
+        bool hovered = mouseX >= sx0 && mouseX < sx1 && mouseY >= sy0 && mouseY < sy1;
+        bool isSelected = (hotbar[i] == selected);
+        if (hovered || isSelected)
+        {
+            pushQuad(hlVerts, nx0, ny0, nx1, ny1, au0, av0, au1, av1);
+        }
+    }
+
+    atlas.bind(0);
+    glUniform4f(glGetUniformLocation(hudShader.id, "uTint"), 0.f, 0.f, 0.f, 0.5f);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, (GLsizeiptr)(bgVerts.size() * sizeof(float)), bgVerts.data());
+    glDrawArrays(GL_TRIANGLES, 0, (int)(bgVerts.size() / 4));
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, fullIconAtlas);
+    glUniform4f(glGetUniformLocation(hudShader.id, "uTint"), 1.f, 1.f, 1.f, 1.f);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, (GLsizeiptr)(iconVerts.size() * sizeof(float)), iconVerts.data());
+    glDrawArrays(GL_TRIANGLES, 0, (int)(iconVerts.size() / 4));
+    if (!hlVerts.empty())
+    {
+        atlas.bind(0);
+        glUniform4f(glGetUniformLocation(hudShader.id, "uTint"), 1.f, 1.f, 1.f, 0.30f);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, (GLsizeiptr)(hlVerts.size() * sizeof(float)), hlVerts.data());
+        glDrawArrays(GL_TRIANGLES, 0, (int)(hlVerts.size() / 4));
+    }
+
+    glBindVertexArray(0);
+    glEnable(GL_DEPTH_TEST);
+    glDisable(GL_BLEND);
 }

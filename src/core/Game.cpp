@@ -24,6 +24,21 @@ void Game::setLocalName(const std::string &n)
     localName[15] = '\0';
 }
 
+static constexpr BlockType hotbar[] = {
+        BlockType::Stone, BlockType::Soil, BlockType::Pith, BlockType::Boards,
+        BlockType::Sapling, BlockType::Timber, BlockType::Glaze, BlockType::Grit,
+        BlockType::GoldBlock,
+        BlockType::WeavePale, BlockType::WeaveAsh, BlockType::WeaveSlate,
+        BlockType::WeaveRust, BlockType::WeaveBurn, BlockType::WeaveGlow,
+        BlockType::WeaveBlight, BlockType::WeaveMold, BlockType::WeaveFern,
+        BlockType::WeaveFrost, BlockType::WeaveAzure,BlockType::WeaveDeep,
+        BlockType::WeaveDusk, BlockType::WeaveMurk, BlockType::WeaveBloom,
+        BlockType::WeaveBlush,
+        BlockType::Goldenbloom, BlockType::Thornbloom,
+        BlockType::Dustshroom, BlockType::Emberscap,
+};
+static constexpr int hotbarSize = 29;
+
 static void saveSpawnFile(float x, float z)
 {
     std::ofstream f("spawn.dat", std::ios::binary);
@@ -103,6 +118,7 @@ void Game::init()
     glfwSetFramebufferSizeCallback(window, framebufferSizeCB);
     input.init(window);
     renderer.init();
+    renderer.buildFullIconAtlas(hotbar, hotbarSize);
     seed = (unsigned int)std::time(nullptr);
     if (!world.load("world.dat"))
     {
@@ -150,6 +166,7 @@ void Game::init()
 
     if (!joinIp.empty())
     {
+        player.isWarden = false;
         client = std::make_unique<Client>();
         client->setLocalName(localName);
         if (!client->connect(joinIp, 5565))
@@ -162,13 +179,6 @@ void Game::init()
         }
     }
 }
-
-static constexpr BlockType hotbar[] = {
-        BlockType::Stone, BlockType::Soil, BlockType::Pith, BlockType::Boards,
-        BlockType::Sapling, BlockType::Timber, BlockType::Glaze, BlockType::Grit
-};
-
-static constexpr int hotbarSize = 8;
 
 void Game::tick()
 {
@@ -194,6 +204,11 @@ void Game::tick()
     };
     holdRepeat(input.primaryHeld, input.primaryAction, primaryHoldTimer);
     holdRepeat(input.switchHeld, input.switchMode, switchHoldTimer);
+    if (inventoryOpen)
+    {
+        input.primaryAction = false;
+    }
+
     player.tick(0.01666667, world, input);
     if (player.lastBroken.valid)
     {
@@ -215,6 +230,16 @@ void Game::tick()
 
     if (player.lastPlaced.valid)
     {
+        if (server && server->forgeMode && player.lastPlaced.type == BlockType::Stone)
+        {
+            int bx = player.lastPlaced.bx;
+            int by = player.lastPlaced.by;
+            int bz = player.lastPlaced.bz;
+            world.setBlock(bx, by, bz, BlockType::Bedrock);
+            Lighting::propagateColumn(world, bx, bz);
+            player.lastPlaced.type = BlockType::Bedrock;
+        }
+
         auto bt = (unsigned char)player.lastPlaced.type;
         int bx = player.lastPlaced.bx;
         int by = player.lastPlaced.by;
@@ -236,7 +261,7 @@ void Game::tick()
     particles.tick(0.01666667, world);
     wanderers.tick((float)Timer::dt, world);
     world.tickDynamic();
-    for (int i = 0; i < hotbarSize; i++)
+    for (int i = 0; i < 8; i++)
     {
         if (input.getSlot(i))
         {
@@ -469,6 +494,11 @@ void Game::render()
     float aspect = (winH > 0) ? (float)winW / (float)winH : 1.f;
     glm::mat4 vp = camera.viewProjection(aspect);
     particleRenderer.render(particles.particles, vp);
+    if (inventoryOpen)
+    {
+        renderer.renderInventory(winW, winH, player.selectedBlock, input.mouseX, input.mouseY, hotbar, hotbarSize);
+    }
+
     if (paused)
     {
         renderer.renderPauseMenu(winW, winH);
@@ -521,8 +551,17 @@ void Game::run()
         glfwPollEvents();
         if (input.getPauseToggle())
         {
-            paused = !paused;
-            input.setCaptureMode(!paused);
+            if (inventoryOpen)
+            {
+                inventoryOpen = false;
+                input.inventoryOpen = false;
+                input.setCaptureMode(true);
+            }
+            else
+            {
+                paused = !paused;
+                input.setCaptureMode(!paused);
+            }
         }
 
         if (paused)
@@ -611,6 +650,43 @@ void Game::run()
                 input.chatOpen = false;
                 input.chatBuffer.clear();
                 input.setCaptureMode(true);
+            }
+
+            if (input.getInventoryToggle() && !input.chatOpen)
+            {
+                inventoryOpen = !inventoryOpen;
+                input.inventoryOpen = inventoryOpen;
+                input.setCaptureMode(!inventoryOpen);
+            }
+
+            if (inventoryOpen && input.getInventoryClick())
+            {
+                static constexpr int invCols = 6;
+                static constexpr float invSlot = 48.f;
+                static constexpr float invGap = 4.f;
+                int rows = (hotbarSize + invCols - 1) / invCols;
+                float totalW = (invCols * invSlot) + ((invCols - 1) * invGap);
+                float totalH = (rows * invSlot) + ((rows - 1) * invGap);
+                float ox = ((float)winW - totalW) * 0.5f;
+                float oy = ((float)winH - totalH) * 0.5f;
+                float mx = input.mouseX;
+                float my = input.mouseY;
+                int col = (int)((mx - ox) / (invSlot + invGap));
+                int row = (int)((my - oy) / (invSlot + invGap));
+                int idx = (row * invCols) + col;
+                if (col >= 0 && col < invCols && idx >= 0 && idx < hotbarSize)
+                {
+                    float sx = ox + (col * (invSlot + invGap));
+                    float sy = oy + (row * (invSlot + invGap));
+                    if (mx < sx + invSlot && my < sy + invSlot)
+                    {
+                        hotbarIdx = idx;
+                        player.selectedBlock = hotbar[hotbarIdx];
+                        inventoryOpen = false;
+                        input.inventoryOpen = false;
+                        input.setCaptureMode(true);
+                    }
+                }
             }
 
             player.applyMouseLook(input);

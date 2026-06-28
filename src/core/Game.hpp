@@ -47,6 +47,7 @@ private:
     int hotbarIdx = 0;
     int primaryHoldTimer = 0;
     int switchHoldTimer = 0;
+    bool inventoryOpen = false;
     bool isHost = false;
     std::string joinIp;
     char localName[16] = {};

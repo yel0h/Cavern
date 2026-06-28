@@ -41,6 +41,10 @@ public:
 
     void renderPlayerList(const std::vector<std::string> &names, int winW, int winH);
 
+    void buildFullIconAtlas(const BlockType *hotbar, int hotbarSize);
+
+    void renderInventory(int winW, int winH, BlockType selected, float mouseX, float mouseY, const BlockType *hotbar, int hotbarSize);
+
     void markAllDirty() { for (auto &m : meshes) m.free(); }
 
     void cycleFog() { fogLevel = (fogLevel + 1) % 4; }
@@ -68,7 +72,11 @@ private:
     unsigned int cloudVao = 0;
     unsigned int cloudVbo = 0;
     unsigned int iconAtlas = 0;
+    unsigned int fullIconAtlas = 0;
     Shader cloudShader;
+    static constexpr int invCols = 6;
+    static constexpr float invSlot = 48.f;
+    static constexpr float invGap = 4.f;
     int cloudVertCount = 0;
     int fogLevel = 2;
     static constexpr int maxRebuildsPerFrame = 4;

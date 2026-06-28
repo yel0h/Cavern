@@ -27,6 +27,8 @@ private:
     bool chatSubmit = false;
     bool chatCancel = false;
     bool hotbarToggle = false;
+    bool inventoryToggle = false;
+    bool inventoryClick = false;
 
     static void keyCB(GLFWwindow *, int key, int, int action, int);
 
@@ -53,6 +55,8 @@ public:
     std::string chatBuffer;
     bool tabHeld = false;
     bool inventoryOpen = false;
+    float mouseX = 0.f;
+    float mouseY = 0.f;
     bool invertY = false;
     bool primaryAction = false;
     bool primaryHeld = false;
@@ -98,5 +102,9 @@ public:
     bool getChatCancel();
 
     bool getHotbarToggle();
+
+    bool getInventoryToggle();
+
+    bool getInventoryClick();
 };
 #endif//CAVERN_INPUT_HPP
