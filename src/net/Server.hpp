@@ -30,7 +30,6 @@ private:
         unsigned long long muteUntilTick = 0;
         bool movedThisTick = false;
         float prevPosX = 0;
-        float prevPosY = 0;
         float prevPosZ = 0;
         bool hasPrevPos = false;
         unsigned long long prevPosTick = 0;

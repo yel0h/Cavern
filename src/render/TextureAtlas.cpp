@@ -418,6 +418,248 @@ void TextureAtlas::paintTile(unsigned int *pixels, int tile)
                     break;
                 }
 
+                case 19:
+                {
+                    int r = 200 + (int)((ph(x, y, 191) & 0x1F) - 16);
+                    int g = 160 + (int)((ph(x, y, 192) & 0x1F) - 16);
+                    int b = 30 + (int)((ph(x, y, 193) & 0x0F) - 8);
+                    if (ph(x, y, 194) % 5 == 0)
+                    {
+                        r = std::min(255, r + 40);
+                        g = std::min(255, g + 30);
+                        b = std::min(255, b + 10);
+                    }
+                    else if (ph(x, y, 195) % 9 == 0)
+                    {
+                        r = r * 70 / 100;
+                        g = g * 70 / 100;
+                        b = b * 70 / 100;
+                    }
+
+                    px = makePixel(r, g, b);
+                    break;
+                }
+
+                case 20:
+                {
+                    int r = 240 + (int)((ph(x, y, 201) & 0x1F) - 16);
+                    int g = 240 + (int)((ph(x, y, 202) & 0x1F) - 16);
+                    int b = 240 + (int)((ph(x, y, 203) & 0x1F) - 16);
+                    px = makePixel(r, g, b);
+                    break;
+                }
+
+                case 21:
+                {
+                    int r = 170 + (int)((ph(x, y, 211) & 0x1F) - 16);
+                    int g = 170 + (int)((ph(x, y, 212) & 0x1F) - 16);
+                    int b = 170 + (int)((ph(x, y, 213) & 0x1F) - 16);
+                    px = makePixel(r, g, b);
+                    break;
+                }
+
+                case 22:
+                {
+                    int r = 80 + (int)((ph(x, y, 221) & 0x1F) - 16);
+                    int g = 90 + (int)((ph(x, y, 222) & 0x1F) - 16);
+                    int b = 110 + (int)((ph(x, y, 223) & 0x1F) - 16);
+                    px = makePixel(r, g, b);
+                    break;
+                }
+
+                case 23:
+                {
+                    int r = 190 + (int)((ph(x, y, 231) & 0x1F) - 16);
+                    int g = 50 + (int)((ph(x, y, 232) & 0x1F) - 16);
+                    int b = 30 + (int)((ph(x, y, 233) & 0x0F) - 8);
+                    px = makePixel(r, g, b);
+                    break;
+                }
+
+                case 24:
+                {
+                    int r = 210 + (int)((ph(x, y, 241) & 0x1F) - 16);
+                    int g = 110 + (int)((ph(x, y, 242) & 0x1F) - 16);
+                    int b = 20 + (int)((ph(x, y, 243) & 0x0F) - 8);
+                    px = makePixel(r, g, b);
+                    break;
+                }
+
+                case 25:
+                {
+                    int r = 255;
+                    int g = 210 + (int)((ph(x, y, 252) & 0x1F) - 16);
+                    int b = 0 + (int)((ph(x, y, 253) & 0x0F) - 0);
+                    px = makePixel(r, g, b);
+                    break;
+                }
+
+                case 26:
+                {
+                    int r = 130 + (int)((ph(x, y, 261) & 0x1F) - 16);
+                    int g = 185 + (int)((ph(x, y, 262) & 0x1F) - 16);
+                    int b = 30 + (int)((ph(x, y, 263) & 0x0F) - 8);
+                    px = makePixel(r, g, b);
+                    break;
+                }
+
+                case 27:
+                {
+                    int r = 60 + (int)((ph(x, y, 271) & 0x1F) - 16);
+                    int g = 130 + (int)((ph(x, y, 272) & 0x1F) - 16);
+                    int b = 50 + (int)((ph(x, y, 273) & 0x0F) - 8);
+                    px = makePixel(r, g, b);
+                    break;
+                }
+
+                case 28:
+                {
+                    int r = 20 + (int)((ph(x, y, 281) & 0x0F) - 8);
+                    int g = 80 + (int)((ph(x, y, 282) & 0x1F) - 16);
+                    int b = 35 + (int)((ph(x, y, 283) & 0x0F) - 8);
+                    px = makePixel(r, g, b);
+                    break;
+                }
+
+                case 29:
+                {
+                    int r = 180 + (int)((ph(x, y, 291) & 0x1F) - 16);
+                    int g = 230 + (int)((ph(x, y, 292) & 0x1F) - 16);
+                    int b = 255;
+                    px = makePixel(r, g, b);
+                    break;
+                }
+
+                case 30:
+                {
+                    int r = 40 + (int)((ph(x, y, 301) & 0x1F) - 16);
+                    int g = 130 + (int)((ph(x, y, 302) & 0x1F) - 16);
+                    int b = 230 + (int)((ph(x, y, 303) & 0x1F) - 16);
+                    px = makePixel(r, g, b);
+                    break;
+                }
+
+                case 31:
+                {
+                    int r = 10 + (int)((ph(x, y, 311) & 0x0F) - 8);
+                    int g = 30 + (int)((ph(x, y, 312) & 0x0F) - 8);
+                    int b = 140 + (int)((ph(x, y, 313) & 0x1F) - 16);
+                    px = makePixel(r, g, b);
+                    break;
+                }
+
+                case 32:
+                {
+                    int r = 90 + (int)((ph(x, y, 321) & 0x1F) - 16);
+                    int g = 25 + (int)((ph(x, y, 322) & 0x0F) - 8);
+                    int b = 120 + (int)((ph(x, y, 323) & 0x1F) - 16);
+                    px = makePixel(r, g, b);
+                    break;
+                }
+
+                case 33:
+                {
+                    int r = 55 + (int)((ph(x, y, 331) & 0x0F) - 8);
+                    int g = 20 + (int)((ph(x, y, 332) & 0x0F) - 8);
+                    int b = 70 + (int)((ph(x, y, 333) & 0x0F) - 8);
+                    px = makePixel(r, g, b);
+                    break;
+                }
+
+                case 34:
+                {
+                    int r = 220 + (int)((ph(x, y, 341) & 0x1F) - 16);
+                    int g = 80 + (int)((ph(x, y, 342) & 0x1F) - 16);
+                    int b = 170 + (int)((ph(x, y, 343) & 0x1F) - 16);
+                    px = makePixel(r, g, b);
+                    break;
+                }
+
+                case 35:
+                {
+                    int r = 255;
+                    int g = 185 + (int)((ph(x, y, 352) & 0x1F) - 16);
+                    int b = 200 + (int)((ph(x, y, 353) & 0x1F) - 16);
+                    px = makePixel(r, g, b);
+                    break;
+                }
+
+                case 36:
+                {
+                    if (x >= 7 && x <= 8 && y >= 10)
+                    {
+                        px = 0x00000000u;
+                        break;
+                    }
+
+                    float fdx = (float)x - 7.5f;
+                    float fdy = (float)y - 7.5f;
+                    bool center = ((fdx * fdx) + (fdy * fdy) < 9.f);
+                    int r = center ? 255 : 200 + (int)((ph(x, y, 361) & 0x1F) - 16);
+                    int g = center ? 240 : 175 + (int)((ph(x, y, 362) & 0x1F) - 16);
+                    int b = center ? 30 : 0;
+                    px = makePixel(r, g, b);
+                    break;
+                }
+
+                case 37:
+                {
+                    if (x >= 7 && x <= 8 && y >= 10)
+                    {
+                        px = 0x00000000u;
+                        break;
+                    }
+
+                    float fdx = (float)x - 7.5f;
+                    float fdy = (float)y - 7.5f;
+                    bool center = ((fdx * fdx) + (fdy * fdy) < 6.f);
+                    int r = center ? 210 : 185 + (int)((ph(x, y, 371) & 0x17) - 12);
+                    int g = center ? 30 : 20 + (int)((ph(x, y, 372) & 0x0F) - 8);
+                    int b = 20;
+                    px = makePixel(r, g, b);
+                    break;
+                }
+
+                case 38:
+                {
+                    bool isCap = (y < 8);
+                    bool isStem = (x >= 6 && x <= 9 && y >= 8);
+                    if (!isCap && !isStem)
+                    {
+                        px = 0x00000000u;
+                        break;
+                    }
+
+                    int r = isCap ? 120 + (int)((ph(x, y, 381) & 0x1F) - 16) : 160;
+                    int g = isCap ? 75 + (int)((ph(x, y, 382) & 0x1F) - 16) : 120;
+                    int b = isCap ? 30 + (int)((ph(x, y, 383) & 0x0F) - 8) : 70;
+                    px = makePixel(r, g, b);
+                    break;
+                }
+
+                case 39:
+                {
+                    bool isCap = (y < 8);
+                    bool isStem = (x >= 6 && x <= 9 && y >= 8);
+                    if (!isCap && !isStem)
+                    {
+                        px = 0x00000000u;
+                        break;
+                    }
+
+                    if (isCap && ph(x, y, 392) % 7 == 0)
+                    {
+                        px = makePixel(240, 240, 240);
+                        break;
+                    }
+
+                    int r = isCap ? 160 + (int)((ph(x, y, 391) & 0x1F) - 16) : 180;
+                    int g = isCap ? 10 + (int)((ph(x, y, 393) & 0x0F) - 8) : 130;
+                    int b = isCap ? 10 : 90;
+                    px = makePixel(r, g, b);
+                    break;
+                }
+
                 default:
                     break;
             }

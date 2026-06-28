@@ -384,7 +384,7 @@ void Input::scrollCB(GLFWwindow *, double dx, double dy)
         return;
     }
 
-    inst->scrollDelta += (dy > 0.0) ? -1 : 1;
+    inst->scrollDelta += (dy > 0.0) ? 1 : -1;
 }
 
 bool Input::getPrimaryAction()

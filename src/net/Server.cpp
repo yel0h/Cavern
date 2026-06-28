@@ -343,7 +343,6 @@ void Server::drainClients()
                 }
 
                 cs.prevPosX = pp.x;
-                cs.prevPosY = pp.y;
                 cs.prevPosZ = pp.z;
                 cs.hasPrevPos = true;
                 cs.prevPosTick = serverTick;
@@ -449,7 +448,21 @@ void Server::drainClients()
                 PktPlace pk;
                 std::memcpy(&pk, buf.data(), sizeof(pk));
                 buf.erase(buf.begin(), buf.begin() + sizeof(PktPlace));
-                static constexpr unsigned char legalBlocks[] = {2, 4, 17, 7, 6, 5, 16, 12};
+                static constexpr unsigned char legalBlocks[] = {
+                        2,
+                        4,
+                        17,
+                        7,
+                        6,
+                        5,
+                        16,
+                        12,
+                        18,
+                        19, 20, 21, 22, 23, 24, 25, 26, 27,
+                        28, 29, 30, 31, 32, 33, 34,
+                        35, 36, 37, 38,
+                        8,
+                };
                 bool legalType = false;
                 for (unsigned char lb : legalBlocks)
                 {

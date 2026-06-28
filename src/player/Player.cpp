@@ -309,10 +309,13 @@ void Player::tick(float dt, World &world, Input &input)
         }
         else
         {
-            lastBroken = {true, hitBlock.bx, hitBlock.by, hitBlock.bz,
-                          world.getBlock(hitBlock.bx, hitBlock.by, hitBlock.bz)};
-            world.setBlock(hitBlock.bx, hitBlock.by, hitBlock.bz, BlockType::Air);
-            Lighting::propagateColumn(world, hitBlock.bx, hitBlock.bz);
+            BlockType target = world.getBlock(hitBlock.bx, hitBlock.by, hitBlock.bz);
+            if (target != BlockType::Bedrock || !isWarden)
+            {
+                lastBroken = {true, hitBlock.bx, hitBlock.by, hitBlock.bz, target};
+                world.setBlock(hitBlock.bx, hitBlock.by, hitBlock.bz, BlockType::Air);
+                Lighting::propagateColumn(world, hitBlock.bx, hitBlock.bz);
+            }
         }
     }
 

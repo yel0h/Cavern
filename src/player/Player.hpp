@@ -50,6 +50,7 @@ public:
     PlacedEvent lastPlaced;
     BlockType selectedBlock = BlockType::Stone;
     bool placeMode = true;
+    bool isWarden = true;
     bool underLava = false;
     bool underWater = false;
     float spawnX = 128.f;

@@ -52,6 +52,7 @@ public:
     bool chatOpen = false;
     std::string chatBuffer;
     bool tabHeld = false;
+    bool inventoryOpen = false;
     bool invertY = false;
     bool primaryAction = false;
     bool primaryHeld = false;
