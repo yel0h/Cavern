@@ -5,6 +5,7 @@
 #include <cstring>
 #include <fstream>
 #include <iostream>
+#include <thread>
 
 Game *Game::inst = nullptr;
 
@@ -25,7 +26,7 @@ void Game::setLocalName(const std::string &n)
 }
 
 static constexpr BlockType hotbar[] = {
-        BlockType::Stone, BlockType::Soil, BlockType::Pith, BlockType::Boards,
+        BlockType::Pith, BlockType::Stone, BlockType::Soil, BlockType::Boards,
         BlockType::Sapling, BlockType::Timber, BlockType::Glaze, BlockType::Grit,
         BlockType::GoldBlock,
         BlockType::WeavePale, BlockType::WeaveAsh, BlockType::WeaveSlate,
@@ -336,15 +337,20 @@ void Game::tick()
         remotePlayers = client->remote;
     }
 
-    auto spawnRemoteBreak = [&](const BreakEvent &b)
+    auto applyRemoteBreak = [&](const BreakEvent &b)
     {
         particles.spawnFromBlock(b.bx, b.by, b.bz, (BlockType)b.blockType);
+        if (World::inBounds(b.bx, b.by, b.bz))
+        {
+            world.setBlock(b.bx, b.by, b.bz, BlockType::Air);
+            Lighting::propagateColumn(world, b.bx, b.bz);
+        }
     };
     if (client)
     {
         for (const auto &b : client->pendingBreaks)
         {
-            spawnRemoteBreak(b);
+            applyRemoteBreak(b);
         }
 
         client->clearBreaks();
@@ -354,7 +360,7 @@ void Game::tick()
     {
         for (const auto &b : server->pendingBreaks)
         {
-            spawnRemoteBreak(b);
+            applyRemoteBreak(b);
         }
 
         server->clearBreaks();
@@ -703,6 +709,12 @@ void Game::run()
         render();
         static constexpr double frameBudget = 1.0 / 100.0;
         double deadline = lastFrameTime + frameBudget;
+        double remaining = deadline - glfwGetTime();
+        if (remaining > 0.002)
+        {
+            std::this_thread::sleep_for(std::chrono::duration<double>(remaining - 0.001));
+        }
+
         while (glfwGetTime() < deadline) {}
     }
 
