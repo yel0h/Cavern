@@ -325,6 +325,29 @@ void Server::drainClients()
                 }
 
                 cs.movedThisTick = true;
+                if (cs.hasPrevPos)
+                {
+                    float dx = pp.x - cs.prevPosX;
+                    float dy = pp.y - cs.prevPosY;
+                    float dz = pp.z - cs.prevPosZ;
+                    unsigned long long td = (serverTick > cs.prevPosTick) ? (serverTick - cs.prevPosTick) : 1;
+                    constexpr float maxSpeed = 20.f;
+                    float maxDist = maxSpeed * ((float)td / 60.f);
+                    if ((dx * dx) + (dy * dy) + (dz * dz) > maxDist * maxDist)
+                    {
+                        PktExpel ep{};
+                        std::strncpy(ep.reason, "Movement speed exceeded.", sizeof(ep.reason) - 1);
+                        send(cs.sock, reinterpret_cast<char const *>(&ep), sizeof(ep), 0);
+                        removeClient(i);
+                        break;
+                    }
+                }
+
+                cs.prevPosX = pp.x;
+                cs.prevPosY = pp.y;
+                cs.prevPosZ = pp.z;
+                cs.hasPrevPos = true;
+                cs.prevPosTick = serverTick;
                 pp.id = cs.id;
                 broadcastExcept(&pp, sizeof(pp), cs.sock);
                 bool found = false;
@@ -353,6 +376,7 @@ void Server::drainClients()
                     rp.vy = pp.y;
                     rp.vz = pp.z;
                     rp.vyaw = pp.yaw;
+                    rp.posInitialized = true;
                     std::strncpy(rp.name, cs.name, 16);
                     remote.push_back(rp);
                 }
