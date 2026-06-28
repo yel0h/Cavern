@@ -440,5 +440,56 @@ namespace WorldGen
                 placeTree(world, wx, sy, wz, height);
             }
         }
+
+        unsigned int plantSeed = seed + 0x50FA2301u;
+        for (int wx = 2; wx < World::BLOCK_W - 2; wx++)
+        {
+            for (int wz = 2; wz < World::BLOCK_D - 2; wz++)
+            {
+                int sy = computeSurfaceY((float)wx, (float)wz, seed);
+                if (sy > oceanLevel && world.getBlock(wx, sy, wz) == BlockType::Turf)
+                {
+                    int above = sy + 1;
+                    if (above < World::BLOCK_H && world.getBlock(wx, above, wz) == BlockType::Air)
+                    {
+                        float flN = hashNoise(wx, wz, plantSeed);
+                        if (flN > 0.97f)
+                        {
+                            BlockType flower = (hashNoise(wx + 1, wz, plantSeed) > 0.5f)
+                                                       ? BlockType::Goldenbloom : BlockType::Thornbloom;
+                            world.setBlock(wx, above, wz, flower);
+                        }
+                    }
+
+                    continue;
+                }
+
+                for (int wy = 2; wy < sy - 6; wy++)
+                {
+                    if (world.getBlock(wx, wy, wz) != BlockType::Air)
+                    {
+                        continue;
+                    }
+
+                    if (wy < 1 || !blockDef(world.getBlock(wx, wy - 1, wz)).opaque)
+                    {
+                        continue;
+                    }
+
+                    if (wy + 1 < World::BLOCK_H && world.getBlock(wx, wy + 1, wz) != BlockType::Air)
+                    {
+                        continue;
+                    }
+
+                    if (hashNoise3(wx, wy, wz, plantSeed) > 0.992f)
+                    {
+                        BlockType shroom = (hashNoise3(wx + 1, wy, wz, plantSeed) > 0.5f)
+                                                   ? BlockType::Dustshroom : BlockType::Emberscap;
+                        world.setBlock(wx, wy, wz, shroom);
+                        break;
+                    }
+                }
+            }
+        }
     }
 }
