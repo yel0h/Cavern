@@ -389,16 +389,16 @@ void Server::drainClients()
                 PktBreak pk;
                 std::memcpy(&pk, buf.data(), sizeof(pk));
                 buf.erase(buf.begin(), buf.begin() + sizeof(PktBreak));
-                if (world &&
+                bool bedrockBlocked = world &&
                     World::inBounds(pk.bx, pk.by, pk.bz) &&
                     world->getBlock(pk.bx, pk.by, pk.bz) == BlockType::Bedrock &&
-                    !isWarden(cs.id, cs.name))
-                {
-                    break;
-                }
+                    !isWarden(cs.id, cs.name);
 
-                broadcastBreakExcept(pk, cs.sock);
-                pendingBreaks.push_back({pk.bx, pk.by, pk.bz, pk.blockType});
+                if (!bedrockBlocked)
+                {
+                    broadcastBreakExcept(pk, cs.sock);
+                    pendingBreaks.push_back({pk.bx, pk.by, pk.bz, pk.blockType});
+                }
             }
             else if (t == (unsigned char)PktType::Chat)
             {
@@ -1071,6 +1071,18 @@ void Server::handleCommand(Server::ClientState &sender, const char *raw)
         }
 
         replyTo("[Server]: Player teleported.");
+    }
+    else if (_stricmp(cmd, "/forge") == 0)
+    {
+        forgeMode = !forgeMode;
+        if (forgeMode)
+        {
+            replyTo("[Server]: Forge mode ON - Stone placements become Bedrock.");
+        }
+        else
+        {
+            replyTo("[Server]: Forge mode OFF.");
+        }
     }
     else
     {
