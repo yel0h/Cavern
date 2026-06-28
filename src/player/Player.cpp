@@ -209,9 +209,7 @@ Player::RayHit Player::castRay(const World &world) const
     constexpr float maxReach = 4.5f;
     for (int i = 0; i < 50; i++)
     {
-        if (i > 0 && World::inBounds(ix, iy, iz) &&
-            blockDef(world.getBlock(ix, iy, iz)).opaque &&
-            world.getBlock(ix, iy, iz) != BlockType::Bedrock)
+        if (i > 0 && World::inBounds(ix, iy, iz) && blockDef(world.getBlock(ix, iy, iz)).opaque)
         {
             return {true, ix, iy, iz, prevX, prevY, prevZ};
         }
@@ -298,7 +296,8 @@ void Player::tick(float dt, World &world, Input &input)
             int pz = hitBlock.pz;
             BlockType toPlace = (selectedBlock == BlockType::Turf) ? BlockType::Soil : selectedBlock;
             BlockType existing = world.getBlock(px, py, pz);
-            if (World::inBounds(px, py, pz)
+            if ((toPlace != BlockType::Bedrock || isWarden)
+                && World::inBounds(px, py, pz)
                 && (existing == BlockType::Air || blockDef(existing).liquid)
                 && !overlapsPlayer(px, py, pz))
             {
@@ -310,7 +309,7 @@ void Player::tick(float dt, World &world, Input &input)
         else
         {
             BlockType target = world.getBlock(hitBlock.bx, hitBlock.by, hitBlock.bz);
-            if (target != BlockType::Bedrock || !isWarden)
+            if (target != BlockType::Bedrock || isWarden)
             {
                 lastBroken = {true, hitBlock.bx, hitBlock.by, hitBlock.bz, target};
                 world.setBlock(hitBlock.bx, hitBlock.by, hitBlock.bz, BlockType::Air);

@@ -22,7 +22,7 @@ public:
         int bz = 0;
     };
 
-    static constexpr const char *version = "0.4.5";
+    static constexpr const char *version = "0.4.6";
     int lastChunkUpdates = 0;
 
     void init();

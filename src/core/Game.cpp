@@ -273,7 +273,7 @@ void Game::tick()
     int scrollDelta = input.getScrollDelta();
     if (scrollDelta != 0)
     {
-        hotbarIdx = (((hotbarIdx + scrollDelta) % hotbarSize) + hotbarSize) % hotbarSize;
+        hotbarIdx = (((hotbarIdx + scrollDelta) % 8) + 8) % 8;
     }
 
     player.selectedBlock = hotbar[hotbarIdx];
@@ -487,7 +487,7 @@ void Game::render()
 
     renderer.renderFrame(world, camera, winW, winH,
                          hl, (float)glfwGetTime(),
-                         hotbarSize, hotbarIdx,
+                         8, hotbarIdx,
                          fps, chunks, player.placeMode,
                          player.underLava, player.underWater, hotbarOpen);
     wandererRenderer.render(wanderers, camera, winW, winH, (float)glfwGetTime());
