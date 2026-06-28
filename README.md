@@ -1,7 +1,7 @@
 # Cavern
 Cavern is a simple voxel sandbox game with multiplayer support written in C++ using OpenGL shaders.
 
-<img width="856" height="512" alt="image" src="https://github.com/user-attachments/assets/ab195551-15dd-4bd4-b0af-df3144fd83f5" />
+<img width="856" height="512" alt="image" src="https://github.com/user-attachments/assets/4fc81417-fc30-4496-a1a9-7d2fd65a43c5" />
 
 ## Running
 To start the game in singleplayer, simply run `Cavern.exe`.
@@ -38,6 +38,7 @@ To join a server, run `Cavern.exe --join <ip_to_join>`.
 - `/expel <name>` - expel player from server
 - `/say <message>` - send public message (equivalent to using the chat function)
 - `/setspawn` - set server's spawnpoint to current location
+- `/teleport <name>` or `/tp <name>` - teleport player to your position
 
 ## Technical Details
 The current world block data is saved in the world.dat file, either manually (see Controls) or automatically upon exiting the game. Additional world saves can be created in 5 slots, each of which exists as a save_\<id\>.dat file. Wanderers are saved in wanderers.dat, while the player's spawnpoint is stored in spawn.dat. When a spawnpoint is set on a server, it's saved in the server_spawn.dat file. Upon starting, the server outputs arguments that can be used by other players to join in externalurl.txt. It also provides a list of players that are currently online in logged-in.txt.
