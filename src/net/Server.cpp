@@ -330,8 +330,8 @@ void Server::drainClients()
                     float dx = pp.x - cs.prevPosX;
                     float dy = pp.y - cs.prevPosY;
                     float dz = pp.z - cs.prevPosZ;
-                    unsigned long long td = (serverTick > cs.prevPosTick) ? (serverTick - cs.prevPosTick) : 1;
-                    constexpr float maxSpeed = 20.f;
+                    unsigned long long td = std::max(serverTick - cs.prevPosTick, 2ull);
+                    constexpr float maxSpeed = 50.f;
                     float maxDist = maxSpeed * ((float)td / 60.f);
                     if ((dx * dx) + (dy * dy) + (dz * dz) > maxDist * maxDist)
                     {
