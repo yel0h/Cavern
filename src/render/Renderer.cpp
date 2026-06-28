@@ -397,7 +397,7 @@ void Renderer::initHUD()
 void Renderer::initIconAtlas()
 {
     static constexpr BlockType hotbar[] = {
-            BlockType::Stone, BlockType::Soil, BlockType::Pith, BlockType::Boards,
+            BlockType::Pith, BlockType::Stone, BlockType::Soil, BlockType::Boards,
             BlockType::Sapling, BlockType::Timber, BlockType::Glaze, BlockType::Grit
     };
     static constexpr int size = 8;
@@ -701,7 +701,6 @@ void Renderer::renderPlayerNames(const std::vector<RemotePlayer> &players, const
     txtShader.setInt("uFont", 1);
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, font.texId);
-    txtShader.setVec3("uColor", 1.f, 1.f, 0.f);
     glDisable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -729,6 +728,9 @@ void Renderer::renderPlayerNames(const std::vector<RemotePlayer> &players, const
         float sy = (1.f - ((ndc.y * 0.5f) + 0.5f)) * (float)winH;
         auto nameW = (float)(std::strlen(p.name) * Font::CHAR_W * scale);
         sx -= nameW * 0.5f;
+        txtShader.setVec3("uColor", 0.f, 0.f, 0.f);
+        drawText(p.name, sx + 2.f, sy + 2.f, scale, winW, winH);
+        txtShader.setVec3("uColor", 1.f, 1.f, 1.f);
         drawText(p.name, sx, sy, scale, winW, winH);
     }
 

@@ -60,7 +60,7 @@ inline constexpr BlockDef blockDefs[39] = {
         {true, false, false, 5, 5, 5},
         {true, false, false, 3, 3, 3},
         {true, false, false, 6, 6, 6},
-        {false, true, false, 7, 7, 7},
+        {false, false, false, 7, 7, 7},
         {true, false, false, 8, 8, 8},
         {true, false, false, 9, 9, 9},
         {false, false, true, 10, 10, 10},
@@ -70,7 +70,7 @@ inline constexpr BlockDef blockDefs[39] = {
         {true, false, false, 14, 14, 14},
         {true, false, false, 15, 15, 15},
         {true, false, false, 16, 16, 16},
-        {false, true, false, 17, 17, 17},
+        {false, false, false, 17, 17, 17},
         {true, false, false, 18, 18, 18},
         {true, false, false, 19, 19, 19},
         {true, false, false, 20, 20, 20},
@@ -89,10 +89,10 @@ inline constexpr BlockDef blockDefs[39] = {
         {true, false, false, 33, 33, 33},
         {true, false, false, 34, 34, 34},
         {true, false, false, 35, 35, 35},
-        {false, true, false, 36, 36, 36},
-        {false, true, false, 37, 37, 37},
-        {false, true, false, 38, 38, 38},
-        {false, true, false, 39, 39, 39},
+        {false, false, false, 36, 36, 36},
+        {false, false, false, 37, 37, 37},
+        {false, false, false, 38, 38, 38},
+        {false, false, false, 39, 39, 39},
 };
 
 inline constexpr const BlockDef &blockDef(BlockType t)
