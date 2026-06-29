@@ -388,6 +388,7 @@ void Renderer::renderCrosshair(int winW, int winH)
 void Renderer::initHUD()
 {
     hudShader.build(hudVertSrc, hudFragSrc);
+    hudTintLoc = glGetUniformLocation(hudShader.id, "uTint");
     glGenVertexArrays(1, &hudVao);
     glGenBuffers(1, &hudVbo);
     glBindVertexArray(hudVao);
