@@ -355,9 +355,22 @@ void Input::mouseBtnCB(GLFWwindow *, int btn, int action, int)
 
     if (!inst->mouseCaptured)
     {
-        if (inst->inventoryOpen && btn == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
+        if (inst->inventoryOpen)
         {
-            inst->inventoryClick = true;
+            if (btn == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
+            {
+                inst->inventoryClick = true;
+            }
+
+            if (btn == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE)
+            {
+                inst->primaryHeld = false;
+            }
+
+            if (btn == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_RELEASE)
+            {
+                inst->switchHeld = false;
+            }
         }
 
         return;
@@ -394,7 +407,12 @@ void Input::mouseBtnCB(GLFWwindow *, int btn, int action, int)
 
 void Input::scrollCB(GLFWwindow *, double dx, double dy)
 {
-    if (!inst || !inst->mouseCaptured)
+    if (!inst)
+    {
+        return;
+    }
+
+    if (!inst->mouseCaptured && !inst->inventoryOpen)
     {
         return;
     }
