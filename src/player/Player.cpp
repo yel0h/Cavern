@@ -206,7 +206,7 @@ Player::RayHit Player::castRay(const World &world) const
     int prevX = ix;
     int prevY = iy;
     int prevZ = iz;
-    constexpr float maxReach = 4.5f;
+    constexpr float maxReach = 6.0f;
     for (int i = 0; i < 50; i++)
     {
         if (i > 0 && World::inBounds(ix, iy, iz) && blockDef(world.getBlock(ix, iy, iz)).opaque)

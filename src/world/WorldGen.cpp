@@ -81,13 +81,13 @@ namespace WorldGen
         return value;
     }
 
-    static float fbm3(float wx, float wy, float wz, unsigned int seed)
+    static float fbm3(float wx, float wy, float wz, unsigned int seed, int octaves = 3)
     {
         float scale = 1.f / 48.f;
         float value = 0.f;
         float amp = 0.5f;
         float freq = 1.f;
-        for (int oct = 0; oct < 3; oct++)
+        for (int oct = 0; oct < octaves; oct++)
         {
             value += (smoothNoise3(wx * scale * freq, wy * scale * freq, wz * scale * freq,
                                    seed + (unsigned int)(oct * 7919)) - 0.5f) * amp;
@@ -321,7 +321,7 @@ namespace WorldGen
                     auto depth = (float)(sy - wy);
                     float bias = std::clamp(depth / 32.f, 0.f, 1.f);
                     float threshold = 0.18f - (bias * 0.10f);
-                    float n = fbm3((float)wx, (float)wy, (float)wz, seed + 0x9E3779B9u);
+                    float n = fbm3((float)wx, (float)wy, (float)wz, seed + 0x9E3779B9u, 4);
                     if (std::abs(n) < threshold)
                     {
                         world.setBlock(wx, wy, wz, BlockType::Air);
