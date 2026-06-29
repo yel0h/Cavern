@@ -301,9 +301,15 @@ void Renderer::initOutline()
     glBindVertexArray(0);
 }
 
-void Renderer::renderOutline(const Renderer::HighlightBlock &hl, const float *vp)
+void Renderer::renderOutline(const Renderer::HighlightBlock &hl, const float *vp, const World &world)
 {
     if (!hl.valid)
+    {
+        return;
+    }
+
+    BlockType hlBlock = world.getBlock(hl.bx, hl.by, hl.bz);
+    if (blockDef(hlBlock).transparent && !blockDef(hlBlock).liquid && world.getLight(hl.bx, hl.by, hl.bz) == 0)
     {
         return;
     }
@@ -474,12 +480,12 @@ void Renderer::renderHUD(int winW, int winH, int hotbarSize, int hotbarIdx)
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     hudShader.setInt("uAtlas", 0);
     atlas.bind(0);
-    glUniform4f(glGetUniformLocation(hudShader.id, "uTint"), 0.f, 0.f, 0.f, 0.55f);
+    glUniform4f(hudTintLoc, 0.f, 0.f, 0.f, 0.55f);
     glBufferSubData(GL_ARRAY_BUFFER, 0, (GLsizeiptr)(bgVerts.size() * sizeof(float)), bgVerts.data());
     glDrawArrays(GL_TRIANGLES, 0, (int)(bgVerts.size() / 4));
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, iconAtlas);
-    glUniform4f(glGetUniformLocation(hudShader.id, "uTint"), 1.f, 1.f, 1.f, 1.f);
+    glUniform4f(hudTintLoc, 1.f, 1.f, 1.f, 1.f);
     glBufferSubData(GL_ARRAY_BUFFER, 0, (GLsizeiptr)(iconVerts.size() * sizeof(float)), iconVerts.data());
     glDrawArrays(GL_TRIANGLES, 0, (int)(iconVerts.size() / 4));
     if (hotbarIdx < 8)
@@ -496,7 +502,7 @@ void Renderer::renderHUD(int winW, int winH, int hotbarSize, int hotbarIdx)
         float av1;
         TextureAtlas::uvRect(4, au0, av0, au1, av1);
         atlas.bind(0);
-        glUniform4f(glGetUniformLocation(hudShader.id, "uTint"), 1.f, 1.f, 1.f, 0.35f);
+        glUniform4f(hudTintLoc, 1.f, 1.f, 1.f, 0.35f);
         float sel[6 * 4];
         float *p = sel;
         auto quad = [&](float x0, float y0, float x1, float y1)
@@ -952,7 +958,7 @@ void Renderer::renderFrame(const World &world, const Camera &cam, int winW, int 
     glDisable(GL_BLEND);
     renderClouds(glm::value_ptr(vp), time);
     renderHighlight(hl, glm::value_ptr(vp), time, world);
-    renderOutline(hl, glm::value_ptr(vp));
+    renderOutline(hl, glm::value_ptr(vp), world);
     renderCrosshair(winW, winH);
     if (showHotbar)
     {
@@ -1028,7 +1034,7 @@ void Renderer::renderInventory(int winW, int winH, BlockType selected, float mou
     float av1;
     TextureAtlas::uvRect(4, au0, av0, au1, av1);
     atlas.bind(0);
-    glUniform4f(glGetUniformLocation(hudShader.id, "uTint"), 0.f, 0.f, 0.f, 0.65f);
+    glUniform4f(hudTintLoc, 0.5f, 0.5f, 0.5f, 0.65f);
     float ov[6 * 4] = {
             -1.f, -1.f, au0, av0, 1.f, -1.f, au1, av0, 1.f, 1.f, au1, av1,
             -1.f, -1.f, au0, av0, 1.f,  1.f, au1, av1, -1.f, 1.f, au0, av1,
@@ -1063,18 +1069,18 @@ void Renderer::renderInventory(int winW, int winH, BlockType selected, float mou
     }
 
     atlas.bind(0);
-    glUniform4f(glGetUniformLocation(hudShader.id, "uTint"), 0.f, 0.f, 0.f, 0.5f);
+    glUniform4f(hudTintLoc, 0.f, 0.f, 0.f, 0.5f);
     glBufferSubData(GL_ARRAY_BUFFER, 0, (GLsizeiptr)(bgVerts.size() * sizeof(float)), bgVerts.data());
     glDrawArrays(GL_TRIANGLES, 0, (int)(bgVerts.size() / 4));
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, fullIconAtlas);
-    glUniform4f(glGetUniformLocation(hudShader.id, "uTint"), 1.f, 1.f, 1.f, 1.f);
+    glUniform4f(hudTintLoc, 1.f, 1.f, 1.f, 1.f);
     glBufferSubData(GL_ARRAY_BUFFER, 0, (GLsizeiptr)(iconVerts.size() * sizeof(float)), iconVerts.data());
     glDrawArrays(GL_TRIANGLES, 0, (int)(iconVerts.size() / 4));
     if (!hlVerts.empty())
     {
         atlas.bind(0);
-        glUniform4f(glGetUniformLocation(hudShader.id, "uTint"), 1.f, 1.f, 1.f, 0.30f);
+        glUniform4f(hudTintLoc, 1.f, 1.f, 1.f, 0.30f);
         glBufferSubData(GL_ARRAY_BUFFER, 0, (GLsizeiptr)(hlVerts.size() * sizeof(float)), hlVerts.data());
         glDrawArrays(GL_TRIANGLES, 0, (int)(hlVerts.size() / 4));
     }

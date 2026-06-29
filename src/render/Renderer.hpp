@@ -79,6 +79,7 @@ private:
     static constexpr float invGap = 4.f;
     int cloudVertCount = 0;
     int fogLevel = 2;
+    int hudTintLoc = -1;
     static constexpr int maxRebuildsPerFrame = 4;
     static constexpr const char *vertSrc = R"(
 #version 330 core
@@ -295,7 +296,7 @@ void main()
 
     void initOutline();
 
-    void renderOutline(const HighlightBlock &hl, const float *vp);
+    void renderOutline(const HighlightBlock &hl, const float *vp, const World &world);
 
     void initCrosshair();
 
