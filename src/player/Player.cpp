@@ -207,13 +207,15 @@ Player::RayHit Player::castRay(const World &world) const
     int prevY = iy;
     int prevZ = iz;
     constexpr float maxReach = 6.0f;
-    for (int i = 0; i < 50; i++)
+    bool firstStep = true;
+    while (true)
     {
-        if (i > 0 && World::inBounds(ix, iy, iz) && blockDef(world.getBlock(ix, iy, iz)).opaque)
+        if (!firstStep && World::inBounds(ix, iy, iz) && blockDef(world.getBlock(ix, iy, iz)).opaque)
         {
             return {true, ix, iy, iz, prevX, prevY, prevZ};
         }
 
+        firstStep = false;
         prevX = ix;
         prevY = iy;
         prevZ = iz;

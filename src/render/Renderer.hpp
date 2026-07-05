@@ -80,7 +80,7 @@ private:
     int cloudVertCount = 0;
     int fogLevel = 2;
     int hudTintLoc = -1;
-    static constexpr int maxRebuildsPerFrame = 4;
+    static constexpr int maxRebuildsPerFrame = 16;
     static constexpr const char *vertSrc = R"(
 #version 330 core
 layout(location=0) in vec3 aPos;
