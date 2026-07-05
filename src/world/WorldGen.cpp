@@ -185,7 +185,7 @@ namespace WorldGen
         unsigned int rng = seed ^ (unsigned int)(cx * 73856093 ^ cy * 2097143 ^ cz * 19349663);
         for (int k = 0; k < blobSize; k++)
         {
-            rng = (rng * 1664525u) + 1013904223u;
+            rng = (rng * 2246822519u) + 3266489917u;
             int dir = (int)(rng % 6);
             int nx = bx + ddx[dir];
             int ny = by + ddy[dir];

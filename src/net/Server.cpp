@@ -578,23 +578,10 @@ void Server::interpolate(float dt)
         r.vy += (r.y - r.vy) * factor;
         r.vz += (r.z - r.vz) * factor;
         float dyaw = r.yaw - r.vyaw;
-        while (dyaw > 180.f)
-        {
-            dyaw -= 360.f;
-        }
-
-        while (dyaw < -180.f)
-        {
-            dyaw += 360.f;
-        }
-
+        dyaw = dyaw - (360.f * std::floor((dyaw + 180.f) / 360.f));
         r.vyaw += dyaw * factor;
-        while (r.vyaw >= 360.f)
-        {
-            r.vyaw -= 360.f;
-        }
-
-        while (r.vyaw < 0.f)
+        r.vyaw = std::fmod(r.vyaw, 360.f);
+        if (r.vyaw < 0.f)
         {
             r.vyaw += 360.f;
         }
