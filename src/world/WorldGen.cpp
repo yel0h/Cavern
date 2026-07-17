@@ -18,9 +18,9 @@ namespace WorldGen
 
     static float hashNoise3(int ix, int iy, int iz, unsigned int seed)
     {
-        unsigned int h = (unsigned int)((ix * 2654435761u) + (iy * 3674653429u) + (iz * 805459861u)) ^ seed;
+        unsigned int h = (unsigned int)((ix * 2718406627u) + (iy * 3674653429u) + (iz * 805459861u)) ^ seed;
         h ^= h >> 16;
-        h *= 0x45d9f3bu;
+        h *= 0x6b2e47bbu;
         h ^= h >> 16;
         return (float) (h & 0xFFFF) / 65535.f;
     }
