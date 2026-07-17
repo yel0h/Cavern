@@ -391,8 +391,6 @@ void Audio::submitOnce(void *voice, const std::vector<short> &buf)
     }
 
     auto *v = static_cast<IXAudio2SourceVoice *>(voice);
-    v->Stop(0);
-    v->FlushSourceBuffers();
     XAUDIO2_BUFFER xb = {};
     xb.AudioBytes = (unsigned int)(buf.size() * sizeof(short));
     xb.pAudioData = reinterpret_cast<const unsigned char *>(buf.data());
@@ -413,8 +411,8 @@ void Audio::startMusic(int track)
     }
 
     XAUDIO2_BUFFER xb = {};
-    xb.AudioBytes = (UINT32)(buf.size() * sizeof(short));
-    xb.pAudioData = reinterpret_cast<const BYTE*>(buf.data());
+    xb.AudioBytes = (unsigned int)(buf.size() * sizeof(short));
+    xb.pAudioData = reinterpret_cast<const unsigned char *>(buf.data());
     xb.Flags = XAUDIO2_END_OF_STREAM;
     mv->SubmitSourceBuffer(&xb);
     mv->Start(0);
