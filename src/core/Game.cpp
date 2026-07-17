@@ -117,6 +117,7 @@ void Game::init()
     }
 
     glfwSetFramebufferSizeCallback(window, framebufferSizeCB);
+    audio.init();
     input.init(window);
     renderer.init();
     renderer.buildFullIconAtlas(hotbar, hotbarSize);
@@ -211,8 +212,14 @@ void Game::tick()
     }
 
     player.tick(0.01666667, world, input);
+    if ((player.justLanded || player.footstepReady) && player.blockBelow != BlockType::Air)
+    {
+        audio.playFootstep(Audio::blockSound(player.blockBelow));
+    }
+
     if (player.lastBroken.valid)
     {
+        audio.playBreak(Audio::blockSound(player.lastBroken.type));
         particles.spawnFromBlock(player.lastBroken.bx, player.lastBroken.by, player.lastBroken.bz, player.lastBroken.type);
         auto bt = (unsigned char)player.lastBroken.type;
         int bx = player.lastBroken.bx;
@@ -706,8 +713,9 @@ void Game::run()
             }
         }
 
+        audio.tickMusic();
         render();
-        static constexpr double frameBudget = 1.0 / 100.0;
+        static constexpr double frameBudget = 1.0 / 200.0;
         double deadline = lastFrameTime + frameBudget;
         double remaining = deadline - glfwGetTime();
         if (remaining > 0.002)
@@ -737,6 +745,7 @@ void Game::shutdown()
 
     world.save("world.dat");
     wanderers.save("wanderers.dat");
+    audio.shutdown();
     renderer.shutdown();
     wandererRenderer.shutdown();
     particleRenderer.shutdown();

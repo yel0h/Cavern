@@ -388,12 +388,34 @@ void Player::tick(float dt, World &world, Input &input)
         velocity.y = std::max(velocity.y + (Physics::gravity * dt), Physics::terminalVelocity);
     }
 
+    bool prevOnGround = onGround;
     onGround = false;
     resolveAABB(position, velocity * dt, world, onGround);
     if (onGround)
     {
         velocity.y = 0.f;
     }
+
+    justLanded = (!prevOnGround && onGround);
+    footstepReady = false;
+    float hspd = std::sqrt((velocity.x * velocity.x) + (velocity.z * velocity.z));
+    if (onGround && hspd > 2.f)
+    {
+        if (--footstepTimer <= 0)
+        {
+            footstepTimer = 18;
+            footstepReady = true;
+        }
+    }
+    else
+    {
+        footstepTimer = 0;
+    }
+
+    int fsbx = (int)std::floor(position.x);
+    int fsby = (int)std::floor(position.y) - 1;
+    int fsbz = (int)std::floor(position.z);
+    blockBelow = World::inBounds(fsbx, fsby, fsbz) ? world.getBlock(fsbx, fsby, fsbz) : BlockType::Bedrock;
 }
 
 void Player::respawn()

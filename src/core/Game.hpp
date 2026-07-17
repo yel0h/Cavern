@@ -2,6 +2,7 @@
 #define CAVERN_GAME_HPP
 #include "Input.hpp"
 #include "Timer.hpp"
+#include "src/audio/Audio.hpp"
 #include "src/entity/ParticleManager.hpp"
 #include "src/entity/WandererManager.hpp"
 #include "src/net/NetTypes.hpp"
@@ -19,6 +20,7 @@ class Game
 {
 private:
     GLFWwindow* window = nullptr;
+    Audio audio;
     Input input;
     Timer timer;
     World world;

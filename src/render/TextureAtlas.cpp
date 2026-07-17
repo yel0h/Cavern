@@ -218,8 +218,8 @@ void TextureAtlas::paintTile(unsigned int *pixels, int tile)
 
                 case 10:
                 {
-                    int base = 48 + (int)((ph(x, y, 101) & 0x1F) - 16);
-                    int r = base + 30;
+                    int base = 85 + (int)((ph(x, y, 101) & 0x1F) - 16);
+                    int r = base + 20;
                     int g = base / 5;
                     int b = base / 10;
                     if (ph(x, y, 103) % 7 == 0)

@@ -609,7 +609,7 @@ void Renderer::renderDebug(int winW, int winH, int fps, int chunkUpdates, bool p
     constexpr int verScale = 3;
     drawText(version, 4.f, 4.f, verScale, winW, winH);
     char buf[64];
-    std::snprintf(buf, sizeof(buf), "FPS: %d  CHUNKS: %d  View: %d", fps, chunkUpdates, fogLevel);
+    std::snprintf(buf, sizeof(buf), "CHUNKS: %d  View: %d", chunkUpdates, fogLevel);
     float statsY = 4.f + (Font::CHAR_H * verScale) + 4.f;
     drawText(buf, 4.f, statsY, 1, winW, winH);
     constexpr int modeScale = 2;

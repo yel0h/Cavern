@@ -53,6 +53,9 @@ public:
     bool isWarden = true;
     bool underLava = false;
     bool underWater = false;
+    bool justLanded = false;
+    bool footstepReady = false;
+    BlockType blockBelow = BlockType::Air;
     float spawnX = 128.f;
     float spawnZ = 128.f;
 
@@ -71,6 +74,8 @@ public:
     void loadSpawn(float x, float z);
 
 private:
+    int footstepTimer = 0;
+
     [[nodiscard]] static bool isBlockSolid(const World &world, int wx, int wy, int wz) ;
 
     [[nodiscard]] RayHit castRay(const World &world) const;

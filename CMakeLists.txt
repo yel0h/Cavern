@@ -63,6 +63,8 @@ add_executable(Cavern src/main.cpp
         src/net/Server.hpp
         src/net/Client.cpp
         src/net/Client.hpp
+        src/audio/Audio.cpp
+        src/audio/Audio.hpp
 )
 target_include_directories(Cavern PRIVATE ${CMAKE_SOURCE_DIR})
 target_compile_definitions(Cavern PRIVATE GLFW_INCLUDE_NONE)
