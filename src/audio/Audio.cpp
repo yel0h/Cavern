@@ -606,6 +606,12 @@ void Audio::shutdown()
         static_cast<IXAudio2 *>(xaudio)->Release();
         xaudio = nullptr;
     }
+
+    if (xaDll)
+    {
+        FreeLibrary(static_cast<HMODULE>(xaDll));
+        xaDll = nullptr;
+    }
 }
 
 void Audio::playFootstep(Audio::SoundSet s)
