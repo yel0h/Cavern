@@ -20,6 +20,7 @@ private:
     bool newLevel = false;
     bool jumpPressed = false;
     bool pauseToggle = false;
+    bool muteToggle = false;
     bool respawn = false;
     bool funcKey[10] = {};
     int scrollDelta = 0;
@@ -106,5 +107,7 @@ public:
     bool getInventoryToggle();
 
     bool getInventoryClick();
+
+    bool getMuteToggle();
 };
 #endif//CAVERN_INPUT_HPP

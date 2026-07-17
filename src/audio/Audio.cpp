@@ -656,3 +656,14 @@ void Audio::tickMusic()
         startMusic(musicTrack);
     }
 }
+
+void Audio::toggleMute()
+{
+    if (!audioOk)
+    {
+        return;
+    }
+
+    muted = !muted;
+    static_cast<IXAudio2MasteringVoice *>(master)->SetVolume(muted ? 0.0f : 1.0f);
+}

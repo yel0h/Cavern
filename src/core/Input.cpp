@@ -267,6 +267,14 @@ void Input::keyCB(GLFWwindow *, int key, int, int action, int)
 
             break;
 
+        case GLFW_KEY_M:
+            if (action == GLFW_PRESS)
+            {
+                inst->muteToggle = true;
+            }
+
+            break;
+
         case GLFW_KEY_ESCAPE:
             if (action == GLFW_PRESS)
             {
@@ -550,5 +558,12 @@ bool Input::getInventoryClick()
 {
     bool temp = inventoryClick;
     inventoryClick = false;
+    return temp;
+}
+
+bool Input::getMuteToggle()
+{
+    bool temp = muteToggle;
+    muteToggle = false;
     return temp;
 }

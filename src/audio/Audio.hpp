@@ -20,8 +20,10 @@ public:
 
     void tickMusic();
 
+    void toggleMute();
+
 private:
-    static constexpr int sampleRate = 22050;
+    static constexpr int sampleRate = 44100;
     static constexpr int variants = 4;
     static constexpr int musicTracks = 4;
     static constexpr int sfxVoices = 4;
@@ -39,6 +41,7 @@ private:
     int stepVar[5] = {};
     int breakVar[5] = {};
     bool audioOk = false;
+    bool muted = false;
 
     static void synthStep(SoundSet s, int v, std::vector<short> &out);
 

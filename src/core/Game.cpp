@@ -577,6 +577,11 @@ void Game::run()
             }
         }
 
+        if (input.getMuteToggle())
+        {
+            audio.toggleMute();
+        }
+
         if (paused)
         {
             for (int i = 0; i < 5; i++)
