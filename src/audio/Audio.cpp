@@ -475,6 +475,11 @@ Audio::SoundSet Audio::blockSound(BlockType t)
 
 void Audio::init()
 {
+    if (SUCCEEDED(CoInitializeEx(nullptr, COINIT_MULTITHREADED)))
+    {
+        comInit = true;
+    }
+
     typedef HRESULT (WINAPI *PFN_XAudio2Create)(IXAudio2 **, unsigned int, XAUDIO2_PROCESSOR);
     HMODULE dll = LoadLibraryA("XAudio2_9.dll");
     if (!dll)
@@ -513,6 +518,8 @@ void Audio::init()
         std::cerr << "Audio: CreateMasteringVoice failed" << std::endl;
         xa->Release();
         xaudio = nullptr;
+        FreeLibrary(dll);
+        xaDll = nullptr;
         return;
     }
 
@@ -523,10 +530,17 @@ void Audio::init()
         if (!sfx[i])
         {
             std::cerr << "Audio: CreateSourceVoice failed (sfx " << i << ')' << std::endl;
+            for (int j = 0; j < i; j++)
+            {
+                static_cast<IXAudio2SourceVoice *>(sfx[j])->DestroyVoice();
+            }
+
             iMaster->DestroyVoice();
             xa->Release();
             master = nullptr;
             xaudio = nullptr;
+            FreeLibrary(dll);
+            xaDll = nullptr;
             return;
         }
     }
@@ -544,6 +558,8 @@ void Audio::init()
         xa->Release();
         master = nullptr;
         xaudio = nullptr;
+        FreeLibrary(dll);
+        xaDll = nullptr;
         return;
     }
 
@@ -610,32 +626,59 @@ void Audio::shutdown()
         FreeLibrary(static_cast<HMODULE>(xaDll));
         xaDll = nullptr;
     }
+
+    if (comInit)
+    {
+        CoUninitialize();
+        comInit = false;
+    }
 }
 
-void Audio::playFootstep(Audio::SoundSet s)
+void Audio::queueFootstep(Audio::SoundSet s)
 {
     if (!audioOk || s == SoundSet::None)
     {
         return;
     }
 
-    int idx = (int)s;
-    int v = stepVar[idx];
-    stepVar[idx] = (v + 1) % variants;
-    submitOnce(pickSfxVoice(), stepBuf[idx][v]);
+    pendingQueue.push_back({s, false});
 }
 
-void Audio::playBreak(Audio::SoundSet s)
+void Audio::queueBreak(Audio::SoundSet s)
 {
     if (!audioOk || s == SoundSet::None)
     {
         return;
     }
 
-    int idx = (int)s;
-    int v = breakVar[idx];
-    breakVar[idx] = (v + 1) % variants;
-    submitOnce(pickSfxVoice(), breakBuf[idx][v]);
+    pendingQueue.push_back({s, true});
+}
+
+void Audio::flushSounds()
+{
+    if (!audioOk)
+    {
+        return;
+    }
+
+    for (auto &ps : pendingQueue)
+    {
+        int idx = (int)ps.s;
+        if (ps.isBreak)
+        {
+            int v = breakVar[idx];
+            breakVar[idx] = (v + 1) % variants;
+            submitOnce(pickSfxVoice(), breakBuf[idx][v]);
+        }
+        else
+        {
+            int v = stepVar[idx];
+            stepVar[idx] = (v + 1) % variants;
+            submitOnce(pickSfxVoice(), stepBuf[idx][v]);
+        }
+    }
+
+    pendingQueue.clear();
 }
 
 void Audio::tickMusic()

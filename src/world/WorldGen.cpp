@@ -321,7 +321,7 @@ namespace WorldGen
                     auto depth = (float)(sy - wy);
                     float bias = std::clamp(depth / 32.f, 0.f, 1.f);
                     float threshold = 0.18f - (bias * 0.10f);
-                    float n = fbm3((float)wx, (float)wy, (float)wz, seed + 0x9E3779B9u, 4);
+                    float n = fbm3((float)wx, (float)wy, (float)wz, seed + 0xD7C59F3Bu, 4);
                     if (std::abs(n) < threshold)
                     {
                         world.setBlock(wx, wy, wz, BlockType::Air);
@@ -330,7 +330,7 @@ namespace WorldGen
             }
         }
 
-        unsigned int lavaSeed = seed + 0xDEADBEEFu;
+        unsigned int lavaSeed = seed + 0xA87C3D5Fu;
         for (int wx = 1; wx < World::BLOCK_W - 1; wx++)
         {
             for (int wz = 1; wz < World::BLOCK_D - 1; wz++)
@@ -370,17 +370,17 @@ namespace WorldGen
             unsigned int oreSeed = seed + ore.seedOff;
             for (int n = 0; n < ore.centres; n++)
             {
-                unsigned int h = oreSeed ^ (unsigned int)(n * 2654435761u);
+                unsigned int h = oreSeed ^ (unsigned int)(n * 3741225937u);
                 h ^= h >> 16;
-                h *= 0x45d9f3bu;
+                h *= 0x6b2e47bbu;
                 h ^= h >> 16;
                 int cx = 1 + (int)(h % (unsigned int)(World::BLOCK_W - 2));
                 h ^= h >> 16;
-                h *= 0x45d9f3bu;
+                h *= 0x6b2e47bbu;
                 h ^= h >> 16;
                 int cz = 1 + (int)(h % (unsigned int)(World::BLOCK_D - 2));
                 h ^= h >> 16;
-                h *= 0x45d9f3bu;
+                h *= 0x6b2e47bbu;
                 h ^= h >> 16;
                 int cy = 2 + (int)(h % (unsigned int)(ore.maxY - 2));
                 if (world.getBlock(cx, cy, cz) != BlockType::Stone)
@@ -393,7 +393,7 @@ namespace WorldGen
             }
         }
 
-        unsigned int treeSeed = seed + 0xABCDEF01u;
+        unsigned int treeSeed = seed + 0xE4F28B63u;
         for (int wx = 2; wx < World::BLOCK_W - 2; wx++)
         {
             for (int wz = 2; wz < World::BLOCK_D - 2; wz++)

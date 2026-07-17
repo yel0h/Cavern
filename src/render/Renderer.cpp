@@ -165,9 +165,9 @@ void Renderer::shutdown()
 
 static unsigned int cloudHash(int gx, int gz)
 {
-    unsigned int h = (unsigned)(gx * 2654435761u) ^ (unsigned)(gz * 805459861u) ^ 0xC10CD5u;
+    unsigned int h = (unsigned)(gx * 3741225937u) ^ (unsigned)(gz * 805459861u) ^ 0xC10CD5u;
     h ^= h >> 16;
-    h *= 0x45d9f3bu;
+    h *= 0x6b2e47bbu;
     h ^= h >> 16;
     return h;
 }

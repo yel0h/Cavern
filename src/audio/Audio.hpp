@@ -14,9 +14,11 @@ public:
 
     void shutdown();
 
-    void playFootstep(SoundSet s);
+    void queueFootstep(SoundSet s);
 
-    void playBreak(SoundSet s);
+    void queueBreak(SoundSet s);
+
+    void flushSounds();
 
     void tickMusic();
 
@@ -36,12 +38,21 @@ private:
     std::vector<short> breakBuf[5][variants];
     std::vector<short> clickBuf;
     std::vector<short> musicBuf[musicTracks];
+
+    struct PendingSound
+    {
+        SoundSet s;
+        bool isBreak;
+    };
+
+    std::vector<PendingSound> pendingQueue;
     int musicTrack = 0;
     int sfxNext = 0;
     int stepVar[5] = {};
     int breakVar[5] = {};
     bool audioOk = false;
     bool muted = false;
+    bool comInit = false;
 
     static void synthStep(SoundSet s, int v, std::vector<short> &out);
 

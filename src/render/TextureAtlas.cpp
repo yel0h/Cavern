@@ -4,7 +4,7 @@
 
 unsigned int TextureAtlas::ph(int x, int y, int tile)
 {
-    return (unsigned int)(x * 2654435761u) ^ (unsigned int)(y * 805459861u) ^ (unsigned int)(tile * 1234567u);
+    return (unsigned int)(x * 3741225937u) ^ (unsigned int)(y * 805459861u) ^ (unsigned int)(tile * 1234567u);
 }
 
 unsigned int TextureAtlas::makePixel(int r, int g, int b)

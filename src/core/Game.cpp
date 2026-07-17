@@ -214,12 +214,12 @@ void Game::tick()
     player.tick(0.01666667, world, input);
     if ((player.justLanded || player.footstepReady) && player.blockBelow != BlockType::Air)
     {
-        audio.playFootstep(Audio::blockSound(player.blockBelow));
+        audio.queueFootstep(Audio::blockSound(player.blockBelow));
     }
 
     if (player.lastBroken.valid)
     {
-        audio.playBreak(Audio::blockSound(player.lastBroken.type));
+        audio.queueBreak(Audio::blockSound(player.lastBroken.type));
         particles.spawnFromBlock(player.lastBroken.bx, player.lastBroken.by, player.lastBroken.bz, player.lastBroken.type);
         auto bt = (unsigned char)player.lastBroken.type;
         int bx = player.lastBroken.bx;
@@ -444,6 +444,8 @@ void Game::tick()
 
         server->clearChats();
     }
+
+    audio.flushSounds();
 }
 
 void Game::generateNewLevel()
