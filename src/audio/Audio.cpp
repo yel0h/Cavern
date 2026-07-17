@@ -14,7 +14,7 @@ static inline short toPCM(float v)
 
 static inline float prand(unsigned int &s)
 {
-    s = (s * 2246822519u) + 3266489917u;
+    s = (s * 2891050953u) + 1437714103u;
     return (float)(int)(s >> 8) * (1.0f / (float)(1 << 23));
 }
 
