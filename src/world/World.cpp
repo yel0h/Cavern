@@ -357,7 +357,7 @@ void World::tickDynamic()
                 }
             }
         }
-        else if (bt == BlockType::Lava && (lavaTick % 14) == 0)
+        else if (bt == BlockType::Lava && (lavaTick % 20) == 0)
         {
             if (wx == 0 || wx == BLOCK_W - 1 || wz == 0 || wz == BLOCK_D - 1)
             {

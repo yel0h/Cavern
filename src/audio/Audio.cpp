@@ -300,7 +300,7 @@ void Audio::synthMusic(int track, std::vector<short> &out)
     }
 
     float tremoloRate = 0.07f + ((float)track * 0.007f);
-    unsigned int seed = 0xDEAD0000u + (unsigned int)track * 0xBEEFu;
+    unsigned int seed = 0xC8B47F2Eu + ((unsigned int)track * 0x6E37u);
     float noisePrev = 0.0f;
     float noiseAlpha = std::exp(-2.0f * pi * 60.0f / (float)sampleRate);
     const auto sr = (float)sampleRate;
@@ -401,6 +401,7 @@ void Audio::submitOnce(void *voice, const std::vector<short> &buf)
 
 void Audio::startMusic(int track)
 {
+    musicPrequeued = false;
     auto *mv = static_cast<IXAudio2SourceVoice *>(music);
     mv->Stop(0);
     mv->FlushSourceBuffers();
@@ -695,6 +696,25 @@ void Audio::tickMusic()
     {
         musicTrack = (musicTrack + 1) % musicTracks;
         startMusic(musicTrack);
+    }
+    else if (st.BuffersQueued == 1 && !musicPrequeued)
+    {
+        musicTrack = (musicTrack + 1) % musicTracks;
+        const auto &buf = musicBuf[musicTrack];
+        if (!buf.empty())
+        {
+            XAUDIO2_BUFFER xb = {};
+            xb.AudioBytes = (unsigned int)(buf.size() * sizeof(short));
+            xb.pAudioData = reinterpret_cast<const unsigned char *>(buf.data());
+            xb.Flags = XAUDIO2_END_OF_STREAM;
+            mv->SubmitSourceBuffer(&xb);
+            mv->Start(0);
+            musicPrequeued = true;
+        }
+    }
+    else if (st.BuffersQueued >= 2)
+    {
+        musicPrequeued = false;
     }
 }
 

@@ -53,6 +53,7 @@ private:
     bool audioOk = false;
     bool muted = false;
     bool comInit = false;
+    bool musicPrequeued = false;
 
     static void synthStep(SoundSet s, int v, std::vector<short> &out);
 
