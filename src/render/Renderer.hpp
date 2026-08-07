@@ -23,7 +23,7 @@ public:
         int bz = 0;
     };
 
-    static constexpr const char *version = "0.4.9";
+    static constexpr const char *version = "0.4.10";
     int lastChunkUpdates = 0;
     int fogLevel = 2;
     bool showFps = true;
