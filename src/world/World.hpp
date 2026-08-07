@@ -13,6 +13,8 @@ private:
 
     void absorbLiquids(int wx, int wy, int wz);
 
+    void reactivateAdjacentStillLiquids(int wx, int wy, int wz);
+
 public:
     static constexpr int CHUNKS_X = 16;
     static constexpr int CHUNKS_Z = 16;

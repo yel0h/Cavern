@@ -117,6 +117,30 @@ void World::setBlock(int wx, int wy, int wz, BlockType t)
     {
         absorbLiquids(wx, wy, wz);
     }
+
+    reactivateAdjacentStillLiquids(wx, wy, wz);
+}
+
+void World::reactivateAdjacentStillLiquids(int wx, int wy, int wz)
+{
+    static const int dx[6] = {1, -1, 0, 0, 0, 0};
+    static const int dy[6] = {0, 0, 1, -1, 0, 0};
+    static const int dz[6] = {0, 0, 0, 0, 1, -1};
+    for (int i = 0; i < 6; i++)
+    {
+        int nx = wx + dx[i];
+        int ny = wy + dy[i];
+        int nz = wz + dz[i];
+        BlockType nb = getBlock(nx, ny, nz);
+        if (nb == BlockType::WaterStill)
+        {
+            setBlock(nx, ny, nz, BlockType::Water);
+        }
+        else if (nb == BlockType::LavaStill)
+        {
+            setBlock(nx, ny, nz, BlockType::Lava);
+        }
+    }
 }
 
 void World::absorbLiquids(int ox, int oy, int oz)
@@ -136,7 +160,7 @@ void World::absorbLiquids(int ox, int oy, int oz)
                 }
 
                 BlockType bt = getBlock(wx, wy, wz);
-                if (bt == BlockType::Water || bt == BlockType::Lava)
+                if (blockDef(bt).liquid)
                 {
                     setBlock(wx, wy, wz, BlockType::Air);
                     Lighting::propagateColumn(*this, wx, wz);
@@ -216,7 +240,7 @@ void World::tickDynamic()
             if (below >= 0)
             {
                 BlockType blw = getBlock(wx, below, wz);
-                if (blw == BlockType::Water || blw == BlockType::Lava)
+                if (blockDef(blw).liquid)
                 {
                     setBlock(wx, wy, wz, BlockType::Air);
                     Lighting::propagateColumn(*this, wx, wz);
@@ -307,7 +331,7 @@ void World::tickDynamic()
 
                     continue;
                 }
-                else if (below == BlockType::Lava)
+                else if (isLavaLike(below))
                 {
                     setBlock(wx, wy - 1, wz, BlockType::Stone);
                     Lighting::propagateColumn(*this, wx, wz);
@@ -343,7 +367,7 @@ void World::tickDynamic()
 
                     break;
                 }
-                else if (nb == BlockType::Lava)
+                else if (isLavaLike(nb))
                 {
                     setBlock(nx, wy, nz, BlockType::Stone);
                     Lighting::propagateColumn(*this, nx, nz);
@@ -377,7 +401,7 @@ void World::tickDynamic()
 
                     continue;
                 }
-                else if (below == BlockType::Water)
+                else if (isWaterLike(below))
                 {
                     setBlock(wx, wy - 1, wz, BlockType::Stone);
                     Lighting::propagateColumn(*this, wx, wz);
@@ -418,7 +442,7 @@ void World::tickDynamic()
 
                     break;
                 }
-                else if (nb == BlockType::Water)
+                else if (isWaterLike(nb))
                 {
                     setBlock(nx, wy, nz, BlockType::Stone);
                     Lighting::propagateColumn(*this, nx, nz);
@@ -445,20 +469,31 @@ void World::tickDynamic()
             continue;
         }
 
-        if (wy == 0 || getBlock(wx, wy - 1, wz) != BlockType::Air)
+        if (wy == 0)
         {
             continue;
         }
 
-        int dest = wy - 1;
-        while (dest > 0 && getBlock(wx, dest - 1, wz) == BlockType::Air)
+        BlockType below = getBlock(wx, wy - 1, wz);
+        if (below == BlockType::Air)
         {
-            dest--;
-        }
+            int dest = wy - 1;
+            while (dest > 0 && getBlock(wx, dest - 1, wz) == BlockType::Air)
+            {
+                dest--;
+            }
 
-        setBlock(wx, wy,   wz, BlockType::Air);
-        setBlock(wx, dest, wz, bt);
-        Lighting::propagateColumn(*this, wx, wz);
+            setBlock(wx, wy, wz, BlockType::Air);
+            setBlock(wx, dest, wz, bt);
+            Lighting::propagateColumn(*this, wx, wz);
+        }
+        else if (isWaterLike(below) || isLavaLike(below))
+        {
+            BlockType displacedStill = isWaterLike(below) ? BlockType::WaterStill : BlockType::LavaStill;
+            setBlock(wx, wy - 1, wz, bt);
+            setBlock(wx, wy, wz, displacedStill);
+            Lighting::propagateColumn(*this, wx, wz);
+        }
     }
 }
 

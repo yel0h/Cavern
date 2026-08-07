@@ -41,6 +41,8 @@ enum class BlockType : unsigned char
     Thornbloom = 36,
     Dustshroom = 37,
     Emberscap = 38,
+    LavaStill = 39,
+    WaterStill = 40,
 };
 
 struct BlockDef
@@ -53,7 +55,7 @@ struct BlockDef
     unsigned char texBottom;
 };
 
-inline constexpr BlockDef blockDefs[39] = {
+inline constexpr BlockDef blockDefs[41] = {
         {false, true, false, 0, 0, 0},
         {true, false, false, 1, 2, 3},
         {true, false, false, 4, 4, 4},
@@ -93,10 +95,22 @@ inline constexpr BlockDef blockDefs[39] = {
         {false, false, false, 37, 37, 37},
         {false, false, false, 38, 38, 38},
         {false, false, false, 39, 39, 39},
+        {false, false, true, 10, 10, 10},
+        {false, true, true, 11, 11, 11},
 };
 
 inline constexpr const BlockDef &blockDef(BlockType t)
 {
     return blockDefs[static_cast<unsigned char>(t)];
+}
+
+inline constexpr bool isLavaLike(BlockType t)
+{
+    return t == BlockType::Lava || t == BlockType::LavaStill;
+}
+
+inline constexpr bool isWaterLike(BlockType t)
+{
+    return t == BlockType::Water || t == BlockType::WaterStill;
 }
 #endif//CAVERN_GAME_BLOCK_HPP
