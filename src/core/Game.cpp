@@ -94,6 +94,7 @@ void Game::toggleFullscreen()
 void Game::init()
 {
     inst = this;
+    settings.load();
     if (!glfwInit())
     {
         throw std::runtime_error("glfwInit failed");
@@ -118,8 +119,26 @@ void Game::init()
 
     glfwSetFramebufferSizeCallback(window, framebufferSizeCB);
     audio.init();
+    audio.setSfxEnabled(settings.soundEnabled);
+    audio.setMusicEnabled(settings.musicEnabled);
     input.init(window);
+    input.bindForward = settings.keyForward;
+    input.bindBackward = settings.keyBackward;
+    input.bindLeft = settings.keyLeft;
+    input.bindRight = settings.keyRight;
+    input.bindJump = settings.keyJump;
+    input.bindRespawn = settings.keyRespawn;
+    input.bindSave = settings.keySave;
+    input.bindSpawnCrawler = settings.keySpawnWanderer;
+    input.bindCycleFog = settings.keyCycleFog;
+    input.bindNewLevel = settings.keyNewLevel;
+    input.bindFullscreen = settings.keyFullscreen;
+    input.bindChat = settings.keyChat;
+    input.bindInventory = settings.keyInventory;
+    input.invertY = settings.invertMouse;
     renderer.init();
+    renderer.setFogLevel(settings.renderDistance);
+    renderer.showFps = settings.showFps;
     renderer.buildFullIconAtlas(hotbar, hotbarSize);
     seed = (unsigned int)std::time(nullptr);
     if (!world.load("world.dat"))
@@ -514,9 +533,13 @@ void Game::render()
         renderer.renderInventory(winW, winH, player.selectedBlock, input.mouseX, input.mouseY, hotbar, hotbarSize);
     }
 
-    if (paused)
+    if (screen == ScreenState::Paused)
     {
-        renderer.renderPauseMenu(winW, winH);
+        renderer.renderPauseMenu(winW, winH, input.mouseX, input.mouseY);
+    }
+    else if (screen == ScreenState::Options)
+    {
+        renderer.renderOptionsMenu(winW, winH, input.mouseX, input.mouseY, input.captureNextKey ? pendingBindAction : -1, settings);
     }
 
     renderer.renderChat(chatMessages, input.chatOpen, input.chatBuffer, winW, winH);
@@ -529,7 +552,7 @@ void Game::render()
             playerNames.emplace_back(r.name);
         }
 
-        renderer.renderPlayerList(playerNames, winW, winH);
+        renderer.renderPlayerList(playerNames, winW, winH, input.mouseX, input.mouseY, input.chatOpen);
     }
 
     glfwSwapBuffers(window);
@@ -563,6 +586,7 @@ void Game::run()
         }
 
         input.beginFrame();
+        input.menuActive = (screen != ScreenState::World);
         glfwPollEvents();
         if (input.getPauseToggle())
         {
@@ -572,19 +596,23 @@ void Game::run()
                 input.inventoryOpen = false;
                 input.setCaptureMode(true);
             }
+            else if (screen == ScreenState::Options)
+            {
+                screen = ScreenState::Paused;
+            }
+            else if (screen == ScreenState::Paused)
+            {
+                screen = ScreenState::World;
+                input.setCaptureMode(true);
+            }
             else
             {
-                paused = !paused;
-                input.setCaptureMode(!paused);
+                screen = ScreenState::Paused;
+                input.setCaptureMode(false);
             }
         }
 
-        if (input.getMuteToggle())
-        {
-            audio.toggleMute();
-        }
-
-        if (paused)
+        if (screen == ScreenState::Paused)
         {
             for (int i = 0; i < 5; i++)
             {
@@ -611,8 +639,174 @@ void Game::run()
             if (input.getNewLevel())
             {
                 generateNewLevel();
-                paused = false;
+                screen = ScreenState::World;
                 input.setCaptureMode(true);
+            }
+
+            if (input.getMenuClick())
+            {
+                constexpr float btnW = 200.f, btnH = 32.f;
+                constexpr int s = 3;
+                float lineH = (Font::CHAR_H * s) + 6.f;
+                float startY = (float)winH * 0.35f;
+                float bx0 = ((float)winW * 0.5f) - (btnW * 0.5f);
+                float bx1 = bx0 + btnW;
+                float by0 = startY + (lineH * 6.5f);
+                float by1 = by0 + btnH;
+                if (input.mouseX >= bx0 && input.mouseX < bx1 && input.mouseY >= by0 && input.mouseY < by1)
+                {
+                    screen = ScreenState::Options;
+                }
+            }
+        }
+        else if (screen == ScreenState::Options)
+        {
+            if (input.capturedKey != -1)
+            {
+                if (input.capturedKey != -2 && pendingBindAction >= 0)
+                {
+                    int key = input.capturedKey;
+                    switch (pendingBindAction)
+                    {
+                        case 0:
+                            settings.keyForward = key;
+                            input.bindForward = key;
+                            break;
+
+                        case 1:
+                            settings.keyBackward = key;
+                            input.bindBackward = key;
+                            break;
+
+                        case 2:
+                            settings.keyLeft = key;
+                            input.bindLeft = key;
+                            break;
+
+                        case 3:
+                            settings.keyRight = key;
+                            input.bindRight = key;
+                            break;
+
+                        case 4:
+                            settings.keyJump = key;
+                            input.bindJump = key;
+                            break;
+
+                        case 5:
+                            settings.keyRespawn = key;
+                            input.bindRespawn = key;
+                            break;
+
+                        case 6:
+                            settings.keySave = key;
+                            input.bindSave = key;
+                            break;
+
+                        case 7:
+                            settings.keySpawnWanderer = key;
+                            input.bindSpawnCrawler = key;
+                            break;
+
+                        case 8:
+                            settings.keyCycleFog = key;
+                            input.bindCycleFog = key;
+                            break;
+
+                        case 9:
+                            settings.keyNewLevel = key;
+                            input.bindNewLevel = key;
+                            break;
+
+                        case 10:
+                            settings.keyFullscreen = key;
+                            input.bindFullscreen = key;
+                            break;
+
+                        case 11:
+                            settings.keyChat = key;
+                            input.bindChat = key;
+                            break;
+
+                        case 12:
+                            settings.keyInventory = key;
+                            input.bindInventory = key;
+                            break;
+                    }
+
+                    settings.save();
+                }
+
+                input.capturedKey = -1;
+                pendingBindAction = -1;
+            }
+
+            if (input.getMenuClick() && !input.captureNextKey)
+            {
+                constexpr float startY = 30.f;
+                constexpr float rowH = 24.f;
+                constexpr float rowGap = 6.f;
+                constexpr float step = rowH + rowGap;
+                constexpr float colW = 300.f;
+                constexpr float colGap = 20.f;
+                float colLeftX = ((float)winW * 0.5f) - (colGap * 0.5f) - colW;
+                float colRightX = ((float)winW * 0.5f) + (colGap * 0.5f);
+                float mx = input.mouseX;
+                float my = input.mouseY;
+                if (mx >= colLeftX && mx < colLeftX + colW)
+                {
+                    int row = (int)((my - startY) / step);
+                    if (row >= 0 && row < 13 && my < startY + (row * step) + rowH)
+                    {
+                        input.captureNextKey = true;
+                        pendingBindAction = row;
+                    }
+                }
+                else if (mx >= colRightX && mx < colRightX + colW)
+                {
+                    int row = (int)((my - startY) / step);
+                    if (row >= 0 && row < 6 && my < startY + (row * step) + rowH)
+                    {
+                        switch (row)
+                        {
+                            case 0:
+                                renderer.cycleFog();
+                                settings.renderDistance = renderer.fogLevel;
+                                settings.save();
+                                break;
+
+                            case 1:
+                                settings.invertMouse = !settings.invertMouse;
+                                input.invertY = settings.invertMouse;
+                                settings.save();
+                                break;
+
+                            case 2:
+                                settings.soundEnabled = !settings.soundEnabled;
+                                audio.setSfxEnabled(settings.soundEnabled);
+                                settings.save();
+                                break;
+
+                            case 3:
+                                settings.musicEnabled = !settings.musicEnabled;
+                                audio.setMusicEnabled(settings.musicEnabled);
+                                settings.save();
+                                break;
+
+                            case 4:
+                                settings.showFps = !settings.showFps;
+                                renderer.showFps = settings.showFps;
+                                settings.save();
+                                break;
+
+                            case 5:
+                                screen = ScreenState::Paused;
+
+                            default:
+                                break;
+                        }
+                    }
+                }
             }
         }
         else
@@ -627,6 +821,37 @@ void Game::run()
                 input.chatOpen = !input.chatOpen;
                 input.chatBuffer.clear();
                 input.setCaptureMode(!input.chatOpen);
+            }
+
+            if (input.chatOpen && input.getTabListClick())
+            {
+                std::vector<std::string> playerNames;
+                playerNames.emplace_back(localName[0] ? localName : "Player");
+                for (const auto &r : remotePlayers)
+                {
+                    playerNames.emplace_back(r.name);
+                }
+
+                constexpr int s = 2;
+                constexpr float lineH = (Font::CHAR_H * s) + 4.f;
+                float rowY = 20.f + lineH;
+                for (const auto &n : playerNames)
+                {
+                    auto nw = (float)(n.size() * Font::CHAR_W * s);
+                    float rx0 = (((float)winW - nw) * 0.5f) - 4.f;
+                    float rx1 = rx0 + nw + 8.f;
+                    if (input.mouseX >= rx0 && input.mouseX < rx1 && input.mouseY >= rowY && input.mouseY < rowY + lineH)
+                    {
+                        if (input.chatBuffer.size() + n.size() + 1 < 127)
+                        {
+                            input.chatBuffer += n + " ";
+                        }
+
+                        break;
+                    }
+
+                    rowY += lineH;
+                }
             }
 
             if (input.getChatSubmit() && !input.chatBuffer.empty())

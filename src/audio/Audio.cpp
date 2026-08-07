@@ -718,13 +718,27 @@ void Audio::tickMusic()
     }
 }
 
-void Audio::toggleMute()
+void Audio::setSfxEnabled(bool enabled)
 {
+    sfxEnabled = enabled;
     if (!audioOk)
     {
         return;
     }
 
-    muted = !muted;
-    static_cast<IXAudio2MasteringVoice *>(master)->SetVolume(muted ? 0.0f : 1.0f);
+    for (auto &i : sfx)
+    {
+        static_cast<IXAudio2SourceVoice *>(i)->SetVolume(enabled ? 1.0f : 0.0f);
+    }
+}
+
+void Audio::setMusicEnabled(bool enabled)
+{
+    musicEnabled = enabled;
+    if (!audioOk || !music)
+    {
+        return;
+    }
+
+    static_cast<IXAudio2SourceVoice *>(music)->SetVolume(enabled ? 1.0f : 0.0f);
 }

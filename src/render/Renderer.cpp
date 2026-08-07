@@ -784,11 +784,49 @@ void Renderer::renderChat(const std::vector<std::string> &msgs, bool chatOpen, c
     glDisable(GL_BLEND);
 }
 
-void Renderer::renderPlayerList(const std::vector<std::string> &names, int winW, int winH)
+void Renderer::renderPlayerList(const std::vector<std::string> &names, int winW, int winH, float mouseX, float mouseY, bool clickable)
 {
     if (names.empty())
     {
         return;
+    }
+
+    constexpr int s = 2;
+    constexpr float lineH = (Font::CHAR_H * s) + 4.f;
+    char header[32];
+    std::snprintf(header, sizeof(header), "Players: %d", (int)names.size());
+    auto headerW = (float)(std::strlen(header) * Font::CHAR_W * s);
+    float textX = ((float)winW - headerW) * 0.5f;
+    float textY = 20.f;
+    if (clickable)
+    {
+        float rowY = textY + lineH;
+        for (const auto &n : names)
+        {
+            auto nw = (float)(n.size() * Font::CHAR_W * s);
+            float rx0 = (((float)winW - nw) * 0.5f) - 4.f;
+            float rx1 = rx0 + nw + 8.f;
+            if (mouseX >= rx0 && mouseX < rx1 && mouseY >= rowY && mouseY < rowY + lineH)
+            {
+                _2dShader.use();
+                glBindVertexArray(xhVao);
+                glBindBuffer(GL_ARRAY_BUFFER, xhVbo);
+                float nx0 = (rx0 / (float)winW * 2.f) - 1.f;
+                float nx1 = (rx1 / (float)winW * 2.f) - 1.f;
+                float ny0 = 1.f - ((rowY + lineH) / (float)winH * 2.f);
+                float ny1 = 1.f - (rowY / (float)winH * 2.f);
+                float hv[12] = {nx0,ny0, nx1,ny0, nx1,ny1, nx0,ny0, nx1,ny1, nx0,ny1};
+                glDisable(GL_DEPTH_TEST);
+                glEnable(GL_BLEND);
+                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+                glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(hv), hv);
+                glDrawArrays(GL_TRIANGLES, 0, 6);
+                glBindVertexArray(0);
+                break;
+            }
+
+            rowY += lineH;
+        }
     }
 
     txtShader.use();
@@ -798,13 +836,6 @@ void Renderer::renderPlayerList(const std::vector<std::string> &names, int winW,
     glDisable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    constexpr int s = 2;
-    constexpr float lineH = (Font::CHAR_H * s) + 4.f;
-    char header[32];
-    std::snprintf(header, sizeof(header), "Players: %d", (int)names.size());
-    auto headerW = (float)(std::strlen(header) * Font::CHAR_W * s);
-    float textX = ((float)winW - headerW) * 0.5f;
-    float textY = 20.f;
     txtShader.setVec3("uColor", 1.f, 1.f, 0.3f);
     drawText(header, textX, textY, s, winW, winH);
     textY += lineH;
@@ -820,7 +851,92 @@ void Renderer::renderPlayerList(const std::vector<std::string> &names, int winW,
     glDisable(GL_BLEND);
 }
 
-void Renderer::renderPauseMenu(int winW, int winH)
+void Renderer::drawButton(float x0, float y0, float x1, float y1, bool hovered, bool on, const char *label, int winW, int winH)
+{
+    auto fw = (float)winW;
+    auto fh = (float)winH;
+    auto ndcX = [&](float sx) { return (sx / fw * 2.f) - 1.f; };
+    auto ndcY = [&](float sy) { return 1.f - (sy / fh * 2.f); };
+    auto pushQuad = [](std::vector<float> &v,
+                       float qx0, float qy0, float qx1, float qy1,
+                       float u0, float vv0, float u1, float vv1)
+    {
+        v.insert(v.end(), {
+                                  qx0, qy0, u0, vv1, qx1, qy0, u1, vv1, qx1, qy1, u1, vv0,
+                                  qx0, qy0, u0, vv1, qx1, qy1, u1, vv0, qx0, qy1, u0, vv0,
+                          });
+    };
+
+    float au0;
+    float av0;
+    float au1;
+    float av1;
+    TextureAtlas::uvRect(4, au0, av0, au1, av1);
+    glBindVertexArray(hudVao);
+    glBindBuffer(GL_ARRAY_BUFFER, hudVbo);
+    hudShader.use();
+    atlas.bind(0);
+    glDisable(GL_DEPTH_TEST);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    {
+        std::vector<float> v;
+        pushQuad(v, ndcX(x0 - 2.f), ndcY(y1 + 2.f), ndcX(x1 + 2.f), ndcY(y0 - 2.f), au0, av0, au1, av1);
+        glUniform4f(hudTintLoc, 0.08f, 0.09f, 0.12f, 0.92f);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, (GLsizeiptr)(v.size() * sizeof(float)), v.data());
+        glDrawArrays(GL_TRIANGLES, 0, (int)(v.size() / 4));
+    }
+
+    {
+        std::vector<float> v;
+        pushQuad(v, ndcX(x0), ndcY(y1), ndcX(x1), ndcY(y0), au0, av0, au1, av1);
+        if (on)
+        {
+            glUniform4f(hudTintLoc, 0.55f, 0.42f, 0.15f, 0.92f);
+        }
+        else
+        {
+            glUniform4f(hudTintLoc, 0.20f, 0.22f, 0.28f, 0.88f);
+        }
+
+        glBufferSubData(GL_ARRAY_BUFFER, 0, (GLsizeiptr)(v.size() * sizeof(float)), v.data());
+        glDrawArrays(GL_TRIANGLES, 0, (int)(v.size() / 4));
+    }
+
+    if (hovered)
+    {
+        std::vector<float> v;
+        pushQuad(v, ndcX(x0), ndcY(y1), ndcX(x1), ndcY(y0), au0, av0, au1, av1);
+        glUniform4f(hudTintLoc, 0.85f, 0.85f, 0.90f, 0.25f);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, (GLsizeiptr)(v.size() * sizeof(float)), v.data());
+        glDrawArrays(GL_TRIANGLES, 0, (int)(v.size() / 4));
+    }
+
+    glBindVertexArray(0);
+    txtShader.use();
+    txtShader.setInt("uFont", 1);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, font.texId);
+    constexpr int s = 1;
+    float labelW = (float)std::strlen(label) * Font::CHAR_W * s;
+    float labelH = Font::CHAR_H * s;
+    float lx = ((x0 + x1) * 0.5f) - (labelW * 0.5f);
+    float ly = ((y0 + y1) * 0.5f) - (labelH * 0.5f);
+    if (on)
+    {
+        txtShader.setVec3("uColor", 0.05f, 0.05f, 0.05f);
+    }
+    else
+    {
+        txtShader.setVec3("uColor", 1.f, 1.f, 1.f);
+    }
+
+    drawText(label, lx, ly, s, winW, winH);
+    glEnable(GL_DEPTH_TEST);
+    glDisable(GL_BLEND);
+}
+
+void Renderer::renderPauseMenu(int winW, int winH, float mouseX, float mouseY)
 {
     float overlayVerts[12] = {
             -1.f, -1.f, 1.f, -1.f, 1.f, 1.f,
@@ -857,8 +973,226 @@ void Renderer::renderPauseMenu(int winW, int winH)
     drawLine("N        New World", startY + (lineH * 3), 1.f, 1.f, 1.f);
     drawLine("F1-F5    Save slot", startY + (lineH * 4), 1.f, 1.f, 1.f);
     drawLine("F6-F10   Load slot", startY + (lineH * 5), 1.f, 1.f, 1.f);
+    constexpr float btnW = 200.f;
+    constexpr float btnH = 32.f;
+    float bx0 = ((float)winW * 0.5f) - (btnW * 0.5f);
+    float bx1 = bx0 + btnW;
+    float by0 = startY + (lineH * 6.5f);
+    float by1 = by0 + btnH;
+    bool hovered = mouseX >= bx0 && mouseX < bx1 && mouseY >= by0 && mouseY < by1;
+    drawButton(bx0, by0, bx1, by1, hovered, false, "OPTIONS", winW, winH);
     glEnable(GL_DEPTH_TEST);
     glDisable(GL_BLEND);
+}
+
+static std::string keyName(int key)
+{
+    switch (key)
+    {
+        case GLFW_KEY_SPACE:
+            return "SPACE";
+
+        case GLFW_KEY_ENTER:
+            return "ENTER";
+
+        case GLFW_KEY_TAB:
+            return "TAB";
+
+        case GLFW_KEY_ESCAPE:
+            return "ESCAPE";
+
+        case GLFW_KEY_BACKSPACE:
+            return "BACKSPACE";
+
+        case GLFW_KEY_LEFT_SHIFT:
+            return "L-SHIFT";
+
+        case GLFW_KEY_RIGHT_SHIFT:
+            return "R-SHIFT";
+
+        case GLFW_KEY_LEFT_CONTROL:
+            return "L-CTRL";
+
+        case GLFW_KEY_RIGHT_CONTROL:
+            return "R-CTRL";
+
+        case GLFW_KEY_LEFT_ALT:
+            return "L-ALT";
+
+        case GLFW_KEY_RIGHT_ALT:
+            return "R-ALT";
+
+        case GLFW_KEY_UP:
+            return "UP";
+
+        case GLFW_KEY_DOWN:
+            return "DOWN";
+
+        case GLFW_KEY_LEFT:
+            return "LEFT";
+
+        case GLFW_KEY_RIGHT:
+            return "RIGHT";
+
+        case GLFW_KEY_F1:
+            return "F1";
+
+        case GLFW_KEY_F2:
+            return "F2";
+
+        case GLFW_KEY_F3:
+            return "F3";
+
+        case GLFW_KEY_F4:
+            return "F4";
+
+        case GLFW_KEY_F5:
+            return "F5";
+
+        case GLFW_KEY_F6:
+            return "F6";
+
+        case GLFW_KEY_F7:
+            return "F7";
+
+        case GLFW_KEY_F8:
+            return "F8";
+
+        case GLFW_KEY_F9:
+            return "F9";
+
+        case GLFW_KEY_F10:
+            return "F10";
+
+        case GLFW_KEY_F11:
+            return "F11";
+
+        case GLFW_KEY_F12:
+            return "F12";
+
+        default:
+            break;
+    }
+
+    const char *nm = glfwGetKeyName(key, 0);
+    if (nm && nm[0])
+    {
+        std::string s(nm);
+        for (auto &c : s)
+        {
+            c = (char)std::toupper((unsigned char)c);
+        }
+
+        return s;
+    }
+
+    return "?";
+}
+
+static const char *fogLevelNames[4] = {"TINY", "SHORT", "NORMAL", "FAR"};
+
+void Renderer::renderOptionsMenu(int winW, int winH, float mouseX, float mouseY, int pendingRow, const Settings &s)
+{
+    constexpr float startY = 30.f;
+    constexpr float rowH = 24.f;
+    constexpr float rowGap = 6.f;
+    constexpr float step = rowH + rowGap;
+    constexpr float colW = 300.f;
+    constexpr float colGap = 20.f;
+    float colLeftX = ((float)winW * 0.5f) - (colGap * 0.5f) - colW;
+    float colRightX = ((float)winW * 0.5f) + (colGap * 0.5f);
+    txtShader.use();
+    txtShader.setInt("uFont", 1);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, font.texId);
+    glDisable(GL_DEPTH_TEST);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    constexpr int titleS = 2;
+    const char *title = "OPTIONS";
+    float titleW = (float)std::strlen(title) * Font::CHAR_W * titleS;
+    txtShader.setVec3("uColor", 1.f, 1.f, 0.3f);
+    drawText(title, ((float)winW * 0.5f) - (titleW * 0.5f), 4.f, titleS, winW, winH);
+    glEnable(GL_DEPTH_TEST);
+    glDisable(GL_BLEND);
+
+    struct Row
+    {
+        const char *label;
+        std::string value;
+    };
+
+    Row leftRows[13] = {
+            {"Forward", keyName(s.keyForward)},
+            {"Backward", keyName(s.keyBackward)},
+            {"Left", keyName(s.keyLeft)},
+            {"Right", keyName(s.keyRight)},
+            {"Jump", keyName(s.keyJump)},
+            {"Respawn", keyName(s.keyRespawn)},
+            {"Set Spawn", keyName(s.keySave)},
+            {"Spawn Wanderer", keyName(s.keySpawnWanderer)},
+            {"Fog Cycle", keyName(s.keyCycleFog)},
+            {"New World", keyName(s.keyNewLevel)},
+            {"Fullscreen", keyName(s.keyFullscreen)},
+            {"Chat", keyName(s.keyChat)},
+            {"Inventory", keyName(s.keyInventory)},
+    };
+    for (int i = 0; i < 13; i++)
+    {
+        float y0 = startY + (i * step);
+        float y1 = y0 + rowH;
+        float x0 = colLeftX;
+        float x1 = colLeftX + colW;
+        bool hovered = mouseX >= x0 && mouseX < x1 && mouseY >= y0 && mouseY < y1;
+        char buf[48];
+        if (pendingRow == i)
+        {
+            std::snprintf(buf, sizeof(buf), "%s: Press a key...", leftRows[i].label);
+        }
+        else
+        {
+            std::snprintf(buf, sizeof(buf), "%s: %s", leftRows[i].label, leftRows[i].value.c_str());
+        }
+
+        drawButton(x0, y0, x1, y1, hovered, pendingRow == i, buf, winW, winH);
+    }
+
+    struct ToggleRow
+    {
+        const char *label;
+        bool on;
+        std::string value;
+    };
+
+    char distBuf[16];
+    std::snprintf(distBuf, sizeof(distBuf), "%s", fogLevelNames[s.renderDistance % 4]);
+    ToggleRow rightRows[6] = {
+            {"Render Distance", false, distBuf},
+            {"Invert Mouse", s.invertMouse, s.invertMouse ? "ON" : "OFF"},
+            {"Sound Effects", s.soundEnabled, s.soundEnabled ? "ON" : "OFF"},
+            {"Music", s.musicEnabled, s.musicEnabled ? "ON" : "OFF"},
+            {"Show FPS", s.showFps, s.showFps ? "ON" : "OFF"},
+            {"Back", false, ""},
+    };
+    for (int j = 0; j < 6; j++)
+    {
+        float y0 = startY + (j * step);
+        float y1 = y0 + rowH;
+        float x0 = colRightX;
+        float x1 = colRightX + colW;
+        bool hovered = mouseX >= x0 && mouseX < x1 && mouseY >= y0 && mouseY < y1;
+        char buf[48];
+        if (rightRows[j].value.empty())
+        {
+            std::snprintf(buf, sizeof(buf), "%s", rightRows[j].label);
+        }
+        else
+        {
+            std::snprintf(buf, sizeof(buf), "%s: %s", rightRows[j].label, rightRows[j].value.c_str());
+        }
+
+        drawButton(x0, y0, x1, y1, hovered, rightRows[j].on, buf, winW, winH);
+    }
 }
 
 void Renderer::renderFrame(const World &world, const Camera &cam, int winW, int winH, const Renderer::HighlightBlock &hl, float time, int hotbarSize, int hotbarIdx, int fps, int chunkUpdates, bool placeMode, bool underLava, bool underWater, bool showHotbar)
@@ -966,7 +1300,10 @@ void Renderer::renderFrame(const World &world, const Camera &cam, int winW, int 
         renderHUD(winW, winH, hotbarSize, hotbarIdx);
     }
 
-    renderDebug(winW, winH, fps, chunkUpdates, placeMode);
+    if (showFps)
+    {
+        renderDebug(winW, winH, fps, chunkUpdates, placeMode);
+    }
 }
 
 void Renderer::buildFullIconAtlas(const BlockType *hotbar, int hotbarSize)

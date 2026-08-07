@@ -5,6 +5,7 @@
 #include "Font.hpp"
 #include "Shader.hpp"
 #include "TextureAtlas.hpp"
+#include "src/core/Settings.hpp"
 #include "src/net/NetTypes.hpp"
 #include "src/world/Block.hpp"
 #include <array>
@@ -24,6 +25,8 @@ public:
 
     static constexpr const char *version = "0.4.9";
     int lastChunkUpdates = 0;
+    int fogLevel = 2;
+    bool showFps = true;
 
     void init();
 
@@ -33,21 +36,25 @@ public:
 
     void renderGenerating(int winW, int winH);
 
-    void renderPauseMenu(int winW, int winH);
+    void renderPauseMenu(int winW, int winH, float mouseX, float mouseY);
 
     void renderPlayerNames(const std::vector<RemotePlayer> &players, const Camera &cam, int winW, int winH);
 
     void renderChat(const std::vector<std::string> &msgs, bool chatOpen, const std::string &buffer, int winW, int winH);
 
-    void renderPlayerList(const std::vector<std::string> &names, int winW, int winH);
+    void renderPlayerList(const std::vector<std::string> &names, int winW, int winH, float mouseX, float mouseY, bool clickable);
 
     void buildFullIconAtlas(const BlockType *hotbar, int hotbarSize);
 
     void renderInventory(int winW, int winH, BlockType selected, float mouseX, float mouseY, const BlockType *hotbar, int hotbarSize);
 
+    void renderOptionsMenu(int winW, int winH, float mouseX, float mouseY, int pendingRow, const Settings &settings);
+
     void markAllDirty() { for (auto &m : meshes) m.free(); }
 
     void cycleFog() { fogLevel = (fogLevel + 1) % 4; }
+
+    void setFogLevel(int level) { fogLevel = level % 4; }
 
 private:
     Shader shader;
@@ -78,7 +85,6 @@ private:
     static constexpr float invSlot = 48.f;
     static constexpr float invGap = 4.f;
     int cloudVertCount = 0;
-    int fogLevel = 2;
     int hudTintLoc = -1;
     static constexpr int maxRebuildsPerFrame = 16;
     static constexpr const char *vertSrc = R"(
@@ -313,5 +319,7 @@ void main()
     void drawText(const char *text, float px, float py, int scale, int winW, int winH) const;
 
     void renderDebug(int winW, int winH, int fps, int chunkUpdates, bool placeMode);
+
+    void drawButton(float x0, float y0, float x1, float y1, bool hovered, bool on, const char *label, int winW, int winH);
 };
 #endif//CAVERN_RENDERER_HPP

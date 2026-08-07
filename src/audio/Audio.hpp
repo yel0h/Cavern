@@ -22,7 +22,9 @@ public:
 
     void tickMusic();
 
-    void toggleMute();
+    void setSfxEnabled(bool enabled);
+
+    void setMusicEnabled(bool enabled);
 
 private:
     static constexpr int sampleRate = 44100;
@@ -51,7 +53,8 @@ private:
     int stepVar[5] = {};
     int breakVar[5] = {};
     bool audioOk = false;
-    bool muted = false;
+    bool sfxEnabled = true;
+    bool musicEnabled = true;
     bool comInit = false;
     bool musicPrequeued = false;
 

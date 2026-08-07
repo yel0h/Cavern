@@ -64,6 +64,17 @@ void Input::keyCB(GLFWwindow *, int key, int, int action, int)
         return;
     }
 
+    if (inst->captureNextKey)
+    {
+        if (action == GLFW_PRESS)
+        {
+            inst->capturedKey = (key == GLFW_KEY_ESCAPE) ? -2 : key;
+            inst->captureNextKey = false;
+        }
+
+        return;
+    }
+
     if (inst->chatOpen)
     {
         if (action == GLFW_PRESS || action == GLFW_REPEAT)
@@ -84,61 +95,95 @@ void Input::keyCB(GLFWwindow *, int key, int, int action, int)
             }
         }
 
+        if (key == GLFW_KEY_TAB)
+        {
+            if (action == GLFW_PRESS)
+            {
+                inst->tabHeld = true;
+            }
+
+            if (action == GLFW_RELEASE)
+            {
+                inst->tabHeld = false;
+            }
+        }
+
         return;
     }
 
     bool pressed = (action != GLFW_RELEASE);
+    bool justPressed  = (action == GLFW_PRESS);
+    if (key == inst->bindForward)
+    {
+        inst->forward = pressed;
+    }
+
+    if (key == inst->bindBackward)
+    {
+        inst->backward = pressed;
+    }
+
+    if (key == inst->bindLeft)
+    {
+        inst->left = pressed;
+    }
+
+    if (key == inst->bindRight)
+    {
+        inst->right = pressed;
+    }
+
+    if (key == inst->bindJump)
+    {
+        inst->jump = pressed;
+        if (justPressed)
+        {
+            inst->jumpPressed = true;
+        }
+    }
+
+    if (justPressed && key == inst->bindRespawn)
+    {
+        inst->respawn = true;
+    }
+
+    if (justPressed && key == inst->bindSave)
+    {
+        inst->save = true;
+    }
+
+    if (justPressed && key == inst->bindSpawnCrawler)
+    {
+        inst->spawnMob = true;
+    }
+
+    if (justPressed && key == inst->bindCycleFog)
+    {
+        inst->cycleFog = true;
+    }
+
+    if (justPressed && key == inst->bindNewLevel)
+    {
+        inst->newLevel = true;
+    }
+
+    if (justPressed && key == inst->bindFullscreen)
+    {
+        inst->toggleFullscreen = true;
+    }
+
+    if (justPressed && key == inst->bindChat)
+    {
+        inst->chatToggle = true;
+    }
+
+    if (justPressed && key == inst->bindInventory)
+    {
+        inst->inventoryToggle = true;
+    }
+
     switch (key)
     {
-        case GLFW_KEY_W:
-            inst->forward = pressed;
-            break;
-
-        case GLFW_KEY_S:
-            inst->backward = pressed;
-            break;
-
-        case GLFW_KEY_A:
-            inst->left = pressed;
-            break;
-
-        case GLFW_KEY_D:
-            inst->right = pressed;
-            break;
-
-        case GLFW_KEY_SPACE:
-            inst->jump = pressed;
-            if (action == GLFW_PRESS)
-            {
-                inst->jumpPressed = true;
-            }
-
-            break;
-
-        case GLFW_KEY_R:
-            if (action == GLFW_PRESS)
-            {
-                inst->respawn = true;
-            }
-
-            break;
-
-        case GLFW_KEY_ENTER:
-            if (action == GLFW_PRESS)
-            {
-                inst->save = true;
-            }
-
-            break;
-
-        case GLFW_KEY_G:
-            if (action == GLFW_PRESS)
-            {
-                inst->spawnMob = true;
-            }
-
-            break;
-
         case GLFW_KEY_1:
             if (action == GLFW_PRESS)
             {
@@ -203,74 +248,15 @@ void Input::keyCB(GLFWwindow *, int key, int, int action, int)
 
             break;
 
-        case GLFW_KEY_F:
-            if (action == GLFW_PRESS)
-            {
-                inst->cycleFog = true;
-            }
-
-            break;
-
-        case GLFW_KEY_N:
-            if (action == GLFW_PRESS)
-            {
-                inst->newLevel = true;
-            }
-
-            break;
-
-        case GLFW_KEY_F11:
-            if (action == GLFW_PRESS)
-            {
-                inst->toggleFullscreen = true;
-            }
-
-            break;
-
-        case GLFW_KEY_Y:
-            if (action == GLFW_PRESS)
-            {
-                inst->invertY = !inst->invertY;
-            }
-
-            break;
-
-        case GLFW_KEY_T:
-            if (action == GLFW_PRESS)
-            {
-                inst->chatToggle = true;
-            }
-
-            break;
-
-        case GLFW_KEY_B:
-            if (action == GLFW_PRESS)
-            {
-                inst->inventoryToggle = true;
-            }
-
-            break;
-
         case GLFW_KEY_TAB:
-            if (!inst->chatOpen)
-            {
-                if (action == GLFW_PRESS)
-                {
-                    inst->tabHeld = true;
-                }
-
-                if (action == GLFW_RELEASE)
-                {
-                    inst->tabHeld = false;
-                }
-            }
-
-            break;
-
-        case GLFW_KEY_M:
             if (action == GLFW_PRESS)
             {
-                inst->muteToggle = true;
+                inst->tabHeld = true;
+            }
+
+            if (action == GLFW_RELEASE)
+            {
+                inst->tabHeld = false;
             }
 
             break;
@@ -379,6 +365,28 @@ void Input::mouseBtnCB(GLFWwindow *, int btn, int action, int)
             {
                 inst->switchHeld = false;
             }
+
+            return;
+        }
+
+        if (inst->menuActive)
+        {
+            if (btn == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
+            {
+                inst->menuClick = true;
+            }
+
+            return;
+        }
+
+        if (inst->chatOpen && inst->tabHeld)
+        {
+            if (btn == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
+            {
+                inst->tabListClick = true;
+            }
+
+            return;
         }
 
         return;
@@ -561,9 +569,16 @@ bool Input::getInventoryClick()
     return temp;
 }
 
-bool Input::getMuteToggle()
+bool Input::getMenuClick()
 {
-    bool temp = muteToggle;
-    muteToggle = false;
+    bool temp = menuClick;
+    menuClick = false;
+    return temp;
+}
+
+bool Input::getTabListClick()
+{
+    bool temp = tabListClick;
+    tabListClick = false;
     return temp;
 }

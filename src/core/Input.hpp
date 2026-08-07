@@ -20,7 +20,6 @@ private:
     bool newLevel = false;
     bool jumpPressed = false;
     bool pauseToggle = false;
-    bool muteToggle = false;
     bool respawn = false;
     bool funcKey[10] = {};
     int scrollDelta = 0;
@@ -30,6 +29,8 @@ private:
     bool hotbarToggle = false;
     bool inventoryToggle = false;
     bool inventoryClick = false;
+    bool menuClick = false;
+    bool tabListClick = false;
 
     static void keyCB(GLFWwindow *, int key, int, int action, int);
 
@@ -49,6 +50,22 @@ public:
     bool left = false;
     bool right = false;
     bool jump = false;
+    int bindForward = GLFW_KEY_W;
+    int bindBackward = GLFW_KEY_S;
+    int bindLeft = GLFW_KEY_A;
+    int bindRight = GLFW_KEY_D;
+    int bindJump = GLFW_KEY_SPACE;
+    int bindRespawn = GLFW_KEY_R;
+    int bindSave = GLFW_KEY_ENTER;
+    int bindSpawnCrawler = GLFW_KEY_G;
+    int bindCycleFog = GLFW_KEY_F;
+    int bindNewLevel = GLFW_KEY_N;
+    int bindFullscreen = GLFW_KEY_F11;
+    int bindChat = GLFW_KEY_T;
+    int bindInventory = GLFW_KEY_B;
+    bool captureNextKey = false;
+    int capturedKey = -1;
+    bool menuActive = false;
     float mouseDX = 0.f;
     float mouseDY = 0.f;
     bool mouseCaptured = true;
@@ -108,6 +125,8 @@ public:
 
     bool getInventoryClick();
 
-    bool getMuteToggle();
+    bool getMenuClick();
+
+    bool getTabListClick();
 };
 #endif//CAVERN_INPUT_HPP

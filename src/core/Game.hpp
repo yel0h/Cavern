@@ -18,10 +18,29 @@ class Client;
 
 class Game
 {
+public:
+    enum class ScreenState
+    {
+        World,
+        Paused,
+        Options
+    };
+
+    Game();
+
+    ~Game();
+
+    void run();
+
+    void setNetMode(bool host, const std::string &sJoinIp);
+
+    void setLocalName(const std::string &n);
+
 private:
     GLFWwindow* window = nullptr;
     Audio audio;
     Input input;
+    Settings settings;
     Timer timer;
     World world;
     Renderer renderer;
@@ -35,7 +54,8 @@ private:
     int winH = 480;
     bool glfwInitialized = false;
     bool isFullscreen = false;
-    bool paused = false;
+    ScreenState screen = ScreenState::World;
+    int pendingBindAction = -1;
     int storedX = 0;
     int storedY = 0;
     int storedW = 854;
@@ -73,16 +93,5 @@ private:
     void generateNewLevel();
 
     static void framebufferSizeCB(GLFWwindow *w, int width, int height);
-
-public:
-    Game();
-
-    ~Game();
-
-    void run();
-
-    void setNetMode(bool host, const std::string &sJoinIp);
-
-    void setLocalName(const std::string &n);
 };
 #endif//CAVERN_GAME_HPP
