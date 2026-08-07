@@ -273,9 +273,9 @@ void Player::tick(float dt, World &world, Input &input)
     int ez = (int)std::floor(position.z);
     BlockType feetBlock = World::inBounds(fx, fy, fz) ? world.getBlock(fx, fy, fz) : BlockType::Air;
     BlockType eyeBlock = World::inBounds(ex, ey, ez) ? world.getBlock(ex, ey, ez) : BlockType::Air;
-    underLava = (eyeBlock == BlockType::Lava);
-    underWater = (eyeBlock == BlockType::Water);
-    bool inLiquid = (feetBlock == BlockType::Water || feetBlock == BlockType::Lava);
+    underLava = isLavaLike(eyeBlock);
+    underWater = isWaterLike(eyeBlock);
+    bool inLiquid = blockDef(feetBlock).liquid;
     if (isBlockSolid(world, fx, fy, fz))
     {
         position.y += 5.0f;
