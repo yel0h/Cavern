@@ -62,7 +62,7 @@ BlockType World::getBlock(int wx, int wy, int wz) const
     return c->get(wx % Chunk::WIDTH, wy, wz % Chunk::DEPTH);
 }
 
-void World::setBlock(int wx, int wy, int wz, BlockType t)
+void World::setBlockRaw(int wx, int wy, int wz, BlockType t)
 {
     if (!inBounds(wx, wy, wz))
     {
@@ -73,7 +73,7 @@ void World::setBlock(int wx, int wy, int wz, BlockType t)
     int cz = wz / Chunk::DEPTH;
     int lx = wx % Chunk::WIDTH;
     int lz = wz % Chunk::DEPTH;
-    Chunk* c = getChunk(cx, cz);
+    Chunk *c = getChunk(cx, cz);
     if (!c)
     {
         return;
@@ -112,7 +112,11 @@ void World::setBlock(int wx, int wy, int wz, BlockType t)
             n->dirty = true;
         }
     }
+}
 
+void World::setBlock(int wx, int wy, int wz, BlockType t)
+{
+    setBlockRaw(wx, wy, wz, t);
     if (t == BlockType::Pith)
     {
         absorbLiquids(wx, wy, wz);
@@ -126,19 +130,34 @@ void World::reactivateAdjacentStillLiquids(int wx, int wy, int wz)
     static const int dx[6] = {1, -1, 0, 0, 0, 0};
     static const int dy[6] = {0, 0, 1, -1, 0, 0};
     static const int dz[6] = {0, 0, 0, 0, 1, -1};
-    for (int i = 0; i < 6; i++)
+    std::vector<std::array<int, 3>> pending;
+    pending.push_back({wx, wy, wz});
+    while (!pending.empty())
     {
-        int nx = wx + dx[i];
-        int ny = wy + dy[i];
-        int nz = wz + dz[i];
-        BlockType nb = getBlock(nx, ny, nz);
-        if (nb == BlockType::WaterStill)
+        auto [cx, cy, cz] = pending.back();
+        pending.pop_back();
+        for (int i = 0; i < 6; i++)
         {
-            setBlock(nx, ny, nz, BlockType::Water);
-        }
-        else if (nb == BlockType::LavaStill)
-        {
-            setBlock(nx, ny, nz, BlockType::Lava);
+            int nx = cx + dx[i];
+            int ny = cy + dy[i];
+            int nz = cz + dz[i];
+            BlockType nb = getBlock(nx, ny, nz);
+            BlockType flowing;
+            if (nb == BlockType::WaterStill)
+            {
+                flowing = BlockType::Water;
+            }
+            else if (nb == BlockType::LavaStill)
+            {
+                flowing = BlockType::Lava;
+            }
+            else
+            {
+                continue;
+            }
+
+            setBlockRaw(nx, ny, nz, flowing);
+            pending.push_back({nx, ny, nz});
         }
     }
 }

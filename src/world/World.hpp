@@ -15,6 +15,8 @@ private:
 
     void reactivateAdjacentStillLiquids(int wx, int wy, int wz);
 
+    void setBlockRaw(int wx, int wy, int wz, BlockType t);
+
 public:
     static constexpr int CHUNKS_X = 16;
     static constexpr int CHUNKS_Z = 16;
