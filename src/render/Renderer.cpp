@@ -1215,9 +1215,9 @@ void Renderer::renderFrame(const World &world, const Camera &cam, int winW, int 
     {
         cFogNear = fogNear[fogLevel];
         cFogFar = fogFar[fogLevel];
-        fogR = 1.0f;
-        fogG = 1.0f;
-        fogB = 1.0f;
+        fogR = 0.78f;
+        fogG = 0.80f;
+        fogB = 0.82f;
     }
 
     glViewport(0, 0, winW, winH);
