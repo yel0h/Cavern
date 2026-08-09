@@ -67,7 +67,6 @@ public:
 
 private:
     Shader shader;
-    Shader hlShader;
     Shader olShader;
     Shader _2dShader;
     Shader hudShader;
@@ -75,8 +74,6 @@ private:
     TextureAtlas atlas;
     Font font;
     std::array<ChunkMesh, 256> meshes;
-    unsigned int hlVao = 0;
-    unsigned int hlVbo = 0;
     unsigned int olVao = 0;
     unsigned int olVbo = 0;
     unsigned int xhVao = 0;
@@ -172,7 +169,7 @@ void main()
     fragColor = vec4(final, alpha);
 }
 )";
-    static constexpr const char *hlVertSrc = R"(
+    static constexpr const char *boxVertSrc = R"(
 #version 330 core
 layout(location=0) in vec3 aPos;
 
@@ -181,18 +178,6 @@ uniform mat4 uMVP;
 void main()
 {
     gl_Position = uMVP * vec4(aPos, 1.0);
-}
-)";
-    static constexpr const char *hlFragSrc = R"(
-#version 330 core
-uniform float uTime;
-
-out vec4 fragColor;
-
-void main()
-{
-    float a = 0.25 + (0.25 * abs(sin(uTime * 5.0)));
-    fragColor = vec4(1.0, 1.0, 1.0, a);
 }
 )";
     static constexpr const char *olFragSrc = R"(
@@ -304,10 +289,6 @@ void main()
     void initClouds();
 
     void renderClouds(const float *vp, float time);
-
-    void initHighlight();
-
-    void renderHighlight(const HighlightBlock &hl, const float *vp, float time, const World &world);
 
     void initOutline();
 

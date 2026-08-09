@@ -1114,7 +1114,25 @@ void Game::run()
             }
 
             player.applyMouseLook(input);
-            camera.position = player.eyePos();
+            float yr = glm::radians(player.yaw);
+            float pr = glm::radians(player.pitch);
+            glm::vec3 fwd{std::cos(pr) * std::sin(yr), std::sin(pr), -std::cos(pr) * std::cos(yr)};
+            glm::vec3 eye = player.eyePos();
+            if (settings.viewBobbing)
+            {
+                float hspd = std::sqrt((player.velocity.x * player.velocity.x) + (player.velocity.z * player.velocity.z));
+                if (player.onGround && hspd > 0.5f)
+                {
+                    bobPhase += hspd * 0.045f;
+                }
+
+                float bobAmt = std::min(hspd / 6.f, 1.f);
+                eye.y += std::sin(bobPhase) * 0.05f * bobAmt;
+            }
+
+            constexpr float kPivotForward = 0.06f;
+            eye += fwd * kPivotForward;
+            camera.position = eye;
             camera.yaw = player.yaw;
             camera.pitch = player.pitch;
             int ticks = timer.advance();

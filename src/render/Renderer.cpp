@@ -57,7 +57,6 @@ void Renderer::init()
 {
     shader.build(vertSrc, fragSrc);
     atlas.build();
-    initHighlight();
     initOutline();
     initCrosshair();
     initHUD();
@@ -74,18 +73,6 @@ void Renderer::shutdown()
     for (auto &m : meshes)
     {
         m.free();
-    }
-
-    if (hlVao)
-    {
-        glDeleteVertexArrays(1, &hlVao);
-        hlVao = 0;
-    }
-
-    if (hlVbo)
-    {
-        glDeleteBuffers(1, &hlVbo);
-        hlVbo = 0;
     }
 
     if (olVao)
@@ -230,67 +217,9 @@ void Renderer::renderClouds(const float *vp, float time)
     glEnable(GL_CULL_FACE);
 }
 
-void Renderer::initHighlight()
-{
-    hlShader.build(hlVertSrc, hlFragSrc);
-    glGenVertexArrays(1, &hlVao);
-    glGenBuffers(1, &hlVbo);
-    glBindVertexArray(hlVao);
-    glBindBuffer(GL_ARRAY_BUFFER, hlVbo);
-    glBufferData(GL_ARRAY_BUFFER, 6 * 4 * 3 * sizeof(float), nullptr, GL_DYNAMIC_DRAW);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr);
-    glBindVertexArray(0);
-}
-
-void Renderer::renderHighlight(const Renderer::HighlightBlock &hl, const float *vp, float time, const World &world)
-{
-    if (!hl.valid)
-    {
-        return;
-    }
-
-    BlockType hlBlock = world.getBlock(hl.bx, hl.by, hl.bz);
-    if (blockDef(hlBlock).transparent && !blockDef(hlBlock).liquid && world.getLight(hl.bx, hl.by, hl.bz) == 0)
-    {
-        return;
-    }
-
-    float verts[6][4][3];
-    for (int f = 0; f < 6; f++)
-    {
-        const auto &corners = faceCorners[f];
-        for (int i = 0; i < 4; i++)
-        {
-            verts[f][i][0] = (float)hl.bx + corners[i][0];
-            verts[f][i][1] = (float)hl.by + corners[i][1];
-            verts[f][i][2] = (float)hl.bz + corners[i][2];
-        }
-    }
-
-    glBindBuffer(GL_ARRAY_BUFFER, hlVbo);
-    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(verts), verts);
-    hlShader.use();
-    hlShader.setMat4("uMVP", vp);
-    hlShader.setFloat("uTime", time);
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glEnable(GL_POLYGON_OFFSET_FILL);
-    glPolygonOffset(-1.0f, -1.0f);
-    glBindVertexArray(hlVao);
-    for (int f = 0; f < 6; f++)
-    {
-        glDrawArrays(GL_TRIANGLE_FAN, f * 4, 4);
-    }
-
-    glBindVertexArray(0);
-    glDisable(GL_POLYGON_OFFSET_FILL);
-    glDisable(GL_BLEND);
-}
-
 void Renderer::initOutline()
 {
-    olShader.build(hlVertSrc, olFragSrc);
+    olShader.build(boxVertSrc, olFragSrc);
     glGenVertexArrays(1, &olVao);
     glGenBuffers(1, &olVbo);
     glBindVertexArray(olVao);
@@ -1355,7 +1284,6 @@ void Renderer::renderFrame(const World &world, const Camera &cam, int winW, int 
     glDepthMask(GL_TRUE);
     glDisable(GL_BLEND);
     renderClouds(glm::value_ptr(vp), time);
-    renderHighlight(hl, glm::value_ptr(vp), time, world);
     renderOutline(hl, glm::value_ptr(vp), world);
     renderCrosshair(winW, winH);
     if (showHotbar)

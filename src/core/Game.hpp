@@ -42,7 +42,7 @@ public:
     void setLocalName(const std::string &n);
 
 private:
-    GLFWwindow* window = nullptr;
+    GLFWwindow *window = nullptr;
     Audio audio;
     Input input;
     Settings settings;
@@ -61,6 +61,7 @@ private:
     ProjectileManager projectiles;
     std::vector<int> hotbarCounts;
     int score = 0;
+    float bobPhase = 0.f;
     int winW = 854;
     int winH = 480;
     bool glfwInitialized = false;
