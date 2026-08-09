@@ -206,7 +206,7 @@ Player::RayHit Player::castRay(const World &world) const
     int prevX = ix;
     int prevY = iy;
     int prevZ = iz;
-    constexpr float maxReach = 6.0f;
+    constexpr float maxReach = 5.0f;
     bool firstStep = true;
     while (true)
     {
@@ -390,6 +390,22 @@ void Player::tick(float dt, World &world, Input &input)
         {
             velocity.x += (move.x - velocity.x) * Physics::airControl;
             velocity.z += (move.z - velocity.z) * Physics::airControl;
+        }
+
+        if (onGround && glm::length(move) > 0.001f)
+        {
+            glm::vec3 dir = glm::normalize(move);
+            float aheadDist = (Physics::width * 0.5f) + 0.3f;
+            int aheadX = (int)std::floor(position.x + (dir.x * aheadDist));
+            int aheadZ = (int)std::floor(position.z + (dir.z * aheadDist));
+            int footY = (int)std::floor(position.y);
+            bool blockedAtFoot = world.inBounds(aheadX, footY, aheadZ) && blockDef(world.getBlock(aheadX, footY, aheadZ)).opaque;
+            bool clearAboveFoot = !(world.inBounds(aheadX, footY + 1, aheadZ) && blockDef(world.getBlock(aheadX, footY + 1, aheadZ)).opaque);
+            bool clearHeadroom = !(world.inBounds(aheadX, footY + 2, aheadZ) && blockDef(world.getBlock(aheadX, footY + 2, aheadZ)).opaque);
+            if (blockedAtFoot && clearAboveFoot && clearHeadroom)
+            {
+                velocity.y = Physics::jump;
+            }
         }
 
         if (input.getJumpPressed() && onGround)

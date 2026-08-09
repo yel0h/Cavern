@@ -653,6 +653,15 @@ void Game::generateNewLevel()
     std::remove("mobs.dat");
 }
 
+void Game::restartLevel()
+{
+    player.respawn();
+    mobs.reset();
+    mobs.spawn(world);
+    std::remove("mobs.dat");
+    score = 0;
+}
+
 void Game::render()
 {
     Renderer::HighlightBlock hl;
@@ -744,7 +753,7 @@ void Game::run()
         input.beginFrame();
         input.menuActive = (screen != ScreenState::World);
         glfwPollEvents();
-        if (input.getPauseToggle())
+        if (input.getPauseToggle() && screen != ScreenState::Dead)
         {
             if (inventoryOpen)
             {
@@ -968,6 +977,15 @@ void Game::run()
                         }
                     }
                 }
+            }
+        }
+        else if (screen == ScreenState::Dead)
+        {
+            if (input.getMenuClick())
+            {
+                restartLevel();
+                screen = ScreenState::World;
+                input.setCaptureMode(true);
             }
         }
         else

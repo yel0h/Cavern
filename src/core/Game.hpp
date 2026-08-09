@@ -103,6 +103,8 @@ private:
 
     void generateNewLevel();
 
+    void restartLevel();
+
     static void framebufferSizeCB(GLFWwindow *w, int width, int height);
 };
 #endif//CAVERN_GAME_HPP
