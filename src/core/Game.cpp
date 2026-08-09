@@ -544,6 +544,9 @@ void Game::generateNewLevel()
     player.respawn();
     wanderers.reset();
     std::remove("wanderers.dat");
+    mobs.reset();
+    mobs.spawn(world);
+    std::remove("mobs.dat");
 }
 
 void Game::render()
@@ -1020,10 +1023,12 @@ void Game::shutdown()
 
     world.save("world.dat");
     wanderers.save("wanderers.dat");
+    mobs.save("mobs.dat");
     audio.shutdown();
     renderer.shutdown();
     wandererRenderer.shutdown();
     particleRenderer.shutdown();
+    mobRenderer.shutdown();
     if (window)
     {
         glfwDestroyWindow(window);

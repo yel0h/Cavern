@@ -27,6 +27,8 @@ public:
 
     void spawn(const World &world);
 
+    void reset() { mobs.clear(); }
+
     void tick(float dt, World &world, Player &player, ParticleManager &particles);
 
     bool save(const char *path) const;
