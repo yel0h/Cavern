@@ -41,7 +41,7 @@ public:
 
     void setLight(int wx, int wy, int wz, unsigned char v);
 
-    void generate(unsigned int seed);
+    void generate(unsigned int seed, int activeExtent = BLOCK_W);
 
     void tickDynamic();
 

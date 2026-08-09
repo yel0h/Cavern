@@ -4,6 +4,6 @@ class World;
 
 namespace WorldGen
 {
-    void generate(World &world, unsigned int seed);
+    void generate(World &world, unsigned int seed, int activeExtent = 256);
 }
 #endif//CAVERN_WORLDGEN_HPP

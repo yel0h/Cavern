@@ -21,6 +21,7 @@ private:
     bool newLevel = false;
     bool jumpPressed = false;
     bool pauseToggle = false;
+    bool worldSizeCycle = false;
     bool funcKey[10] = {};
     int scrollDelta = 0;
     bool chatToggle = false;
@@ -124,5 +125,7 @@ public:
     bool getThrowBolt();
 
     bool getPlaceSign();
+
+    bool getWorldSizeCycle();
 };
 #endif//CAVERN_INPUT_HPP

@@ -269,6 +269,14 @@ void Input::keyCB(GLFWwindow *, int key, int, int action, int)
 
             break;
 
+        case GLFW_KEY_P:
+            if (action == GLFW_PRESS)
+            {
+                inst->worldSizeCycle = true;
+            }
+
+            break;
+
         case GLFW_KEY_F1:
         case GLFW_KEY_F2:
         case GLFW_KEY_F3:
@@ -566,5 +574,12 @@ bool Input::getPlaceSign()
 {
     bool temp = placeSign;
     placeSign = false;
+    return temp;
+}
+
+bool Input::getWorldSizeCycle()
+{
+    bool temp = worldSizeCycle;
+    worldSizeCycle = false;
     return temp;
 }

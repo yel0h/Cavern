@@ -221,9 +221,9 @@ void World::setLight(int wx, int wy, int wz, unsigned char v)
     c->setLight(wx % Chunk::WIDTH, wy, wz % Chunk::DEPTH, v);
 }
 
-void World::generate(unsigned int seed)
+void World::generate(unsigned int seed, int activeExtent)
 {
-    WorldGen::generate(*this, seed);
+    WorldGen::generate(*this, seed, activeExtent);
     Lighting::propagate(*this);
     for (auto &c : chunks)
     {

@@ -206,7 +206,7 @@ namespace WorldGen
         }
     }
 
-    void generate(World &world, unsigned int seed)
+    void generate(World &world, unsigned int seed, int activeExtent)
     {
         for (int wx = 0; wx < World::BLOCK_W; wx++)
         {
@@ -487,6 +487,27 @@ namespace WorldGen
                                                    ? BlockType::Dustshroom : BlockType::Emberscap;
                         world.setBlock(wx, wy, wz, shroom);
                         break;
+                    }
+                }
+            }
+        }
+
+        if (activeExtent < World::BLOCK_W)
+        {
+            int margin = (World::BLOCK_W - activeExtent) / 2;
+            for (int wx = 0; wx < World::BLOCK_W; wx++)
+            {
+                for (int wz = 0; wz < World::BLOCK_D; wz++)
+                {
+                    bool outside = wx < margin || wx >= World::BLOCK_W - margin || wz < margin || wz >= World::BLOCK_D - margin;
+                    if (!outside)
+                    {
+                        continue;
+                    }
+
+                    for (int wy = 0; wy < World::BLOCK_H; wy++)
+                    {
+                        world.setBlock(wx, wy, wz, BlockType::Bedrock);
                     }
                 }
             }

@@ -39,6 +39,8 @@ static constexpr BlockType hotbar[] = {
         BlockType::Dustshroom, BlockType::Emberscap,
 };
 static constexpr int hotbarSize = 29;
+static constexpr int worldSizes[3] = {128, 192, 256};
+static constexpr const char *worldSizeNames[3] = {"SMALL", "NORMAL", "LARGE"};
 
 static int hotbarIndexFor(BlockType t)
 {
@@ -456,6 +458,12 @@ void Game::tick()
     if (input.getCycleFog())
     {
         renderer.cycleFog();
+    }
+
+    if (input.getWorldSizeCycle())
+    {
+        worldSizeIdx = (worldSizeIdx + 1) % 3;
+        std::cout << "New-world size set to " << worldSizeNames[worldSizeIdx] << " (" << worldSizes[worldSizeIdx] << ") -- takes effect on next New World (N)" << std::endl;
     }
 
     if (input.getNewLevel())
