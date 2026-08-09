@@ -647,9 +647,9 @@ void Game::generateNewLevel()
         }
     }
 
-    std::cout << "Generating new world (seed "<< seed <<")..." << std::endl;
+    std::cout << "Generating new " << worldSizeNames[worldSizeIdx] << " world (seed "<< seed <<")..." << std::endl;
     auto t0 = glfwGetTime();
-    world.generate(seed);
+    world.generate(seed, worldSizes[worldSizeIdx]);
     std::cout << "World generated in " << glfwGetTime() - t0 << " s" << std::endl;
     renderer.markAllDirty();
     player.resetSpawn();
