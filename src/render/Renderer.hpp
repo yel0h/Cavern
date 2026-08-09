@@ -38,7 +38,8 @@ public:
                      int hotbarSize, int hotbarIdx,
                      int fps, int chunkUpdates, bool placeMode,
                      bool underLava, bool underWater, bool showHotbar,
-                     int vitality, int maxVitality);
+                     int vitality, int maxVitality,
+                     const std::vector<int> &hotbarCounts);
 
     void renderVitality(int vitality, int maxVitality, int winW, int winH);
 
@@ -308,7 +309,7 @@ void main()
 
     void initIconAtlas();
 
-    void renderHUD(int winW, int winH, int hotbarSize, int hotbarIdx);
+    void renderHUD(int winW, int winH, int hotbarSize, int hotbarIdx, const std::vector<int> &hotbarCounts);
 
     void initText();
 

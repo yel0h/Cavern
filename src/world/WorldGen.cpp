@@ -352,13 +352,30 @@ namespace WorldGen
                 for (int wy = 2; wy <= sy - 4; wy++)
                 {
                     auto depth = (float)(sy - wy);
-                    float bias = std::clamp(depth / 32.f, 0.f, 1.f);
-                    float threshold = 0.18f - (bias * 0.10f);
-                    float n = fbm3((float)wx, (float)wy, (float)wz, seed + 0xD7C59F3Bu, 4);
+                    float depthNorm = std::clamp(depth / 40.f, 0.f, 1.f);
+                    float threshold = 0.09f + (depthNorm * 0.20f);
+                    int octaves = (depthNorm > 0.5f) ? 3 : 4;
+                    float n = fbm3((float)wx, (float)wy, (float)wz, seed + 0xD7C59F3Bu, octaves);
                     if (std::abs(n) < threshold)
                     {
                         world.setBlock(wx, wy, wz, BlockType::Air);
                     }
+                }
+            }
+        }
+
+        for (int wx = 1; wx < World::BLOCK_W - 1; wx++)
+        {
+            for (int wz = 1; wz < World::BLOCK_D - 1; wz++)
+            {
+                for (int wy = 1; wy <= 4; wy++)
+                {
+                    if (world.getBlock(wx, wy, wz) != BlockType::Air)
+                    {
+                        continue;
+                    }
+                    
+                    world.setBlock(wx, wy, wz, BlockType::Lava);
                 }
             }
         }

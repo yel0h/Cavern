@@ -64,7 +64,6 @@ private:
     std::vector<int> hotbarCounts;
     int score = 0;
     float bobPhase = 0.f;
-    int worldSizeIdx = 2;
     int winW = 854;
     int winH = 480;
     bool glfwInitialized = false;

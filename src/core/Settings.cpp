@@ -93,6 +93,10 @@ bool Settings::load(const char *path)
         {
             renderDistance = ival;
         }
+        else if (key == "worldSizeIdx")
+        {
+            worldSizeIdx = ival;
+        }
         else if (key == "invertMouse")
         {
             invertMouse = bval;
@@ -140,6 +144,7 @@ bool Settings::save(const char *path) const
     f << "keyThrowBolt=" << keyThrowBolt << '\n';
     f << "keyPlaceSign=" << keyPlaceSign << '\n';
     f << "renderDistance=" << renderDistance << '\n';
+    f << "worldSizeIdx=" << worldSizeIdx << '\n';
     f << "invertMouse=" << (invertMouse ? 1 : 0) << '\n';
     f << "soundEnabled=" << (soundEnabled ? 1 : 0) << '\n';
     f << "musicEnabled=" << (musicEnabled ? 1 : 0) << '\n';

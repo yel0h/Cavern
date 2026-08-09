@@ -18,6 +18,7 @@ struct Settings
     int keyThrowBolt = GLFW_KEY_V;
     int keyPlaceSign = GLFW_KEY_H;
     int renderDistance = 2;
+    int worldSizeIdx = 2;
     bool invertMouse = false;
     bool soundEnabled = true;
     bool musicEnabled = true;

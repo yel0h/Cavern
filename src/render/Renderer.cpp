@@ -358,7 +358,7 @@ void Renderer::initIconAtlas()
     iconAtlas = atlas.buildIconAtlas(tops, sides, size);
 }
 
-void Renderer::renderHUD(int winW, int winH, int hotbarSize, int hotbarIdx)
+void Renderer::renderHUD(int winW, int winH, int hotbarSize, int hotbarIdx, const std::vector<int> &hotbarCounts)
 {
     static constexpr float slot = 40.f;
     static constexpr float gap = 2.f;
@@ -466,6 +466,30 @@ void Renderer::renderHUD(int winW, int winH, int hotbarSize, int hotbarIdx)
         quad(nx0, ny0, nx1, ny1);
         glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(sel), sel);
         glDrawArrays(GL_TRIANGLES, 0, 6);
+    }
+
+    txtShader.use();
+    txtShader.setInt("uFont", 1);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, font.texId);
+    txtShader.setVec3("uColor", 1.f, 1.f, 1.f);
+    constexpr int countScale = 1;
+    constexpr float countMargin = 2.f;
+    float cw = Font::CHAR_W * countScale;
+    float ch = Font::CHAR_H * countScale;
+    for (int i = 0; i < hotbarSize && i < (int)hotbarCounts.size(); i++)
+    {
+        if (hotbarCounts[i] <= 0)
+        {
+            continue;
+        }
+        float sx1 = barX0 + (i * (slot + gap)) + slot;
+        float sy0 = barY0;
+        char buf[16];
+        std::snprintf(buf, sizeof(buf), "%d", hotbarCounts[i]);
+        float tx = sx1 - countMargin - (cw * (float)std::strlen(buf));
+        float ty = (fh - sy0) - countMargin - ch;
+        drawText(buf, tx, ty, countScale, winW, winH);
     }
 
     glBindVertexArray(0);
@@ -1139,6 +1163,7 @@ static std::string keyName(int key)
 }
 
 static const char *fogLevelNames[4] = {"TINY", "SHORT", "NORMAL", "FAR"};
+static const char *worldSizeNames[3] = {"SMALL", "NORMAL", "LARGE"};
 
 void Renderer::renderOptionsMenu(int winW, int winH, float mouseX, float mouseY, int pendingRow, const Settings &s)
 {
@@ -1215,8 +1240,9 @@ void Renderer::renderOptionsMenu(int winW, int winH, float mouseX, float mouseY,
 
     char distBuf[16];
     std::snprintf(distBuf, sizeof(distBuf), "%s", fogLevelNames[s.renderDistance % 4]);
-    ToggleRow rightRows[7] = {
+    ToggleRow rightRows[8] = {
             {"Render Distance", false, distBuf},
+            {"World Size", false, worldSizeNames[s.worldSizeIdx % 3]},
             {"Invert Mouse", s.invertMouse, s.invertMouse ? "ON" : "OFF"},
             {"Sound Effects", s.soundEnabled, s.soundEnabled ? "ON" : "OFF"},
             {"Music", s.musicEnabled, s.musicEnabled ? "ON" : "OFF"},
@@ -1224,7 +1250,7 @@ void Renderer::renderOptionsMenu(int winW, int winH, float mouseX, float mouseY,
             {"View Bobbing", s.viewBobbing, s.viewBobbing ? "ON" : "OFF"},
             {"Back", false, ""},
     };
-    for (int j = 0; j < 7; j++)
+    for (int j = 0; j < 8; j++)
     {
         float y0 = startY + (j * step);
         float y1 = y0 + rowH;
@@ -1245,7 +1271,7 @@ void Renderer::renderOptionsMenu(int winW, int winH, float mouseX, float mouseY,
     }
 }
 
-void Renderer::renderFrame(const World &world, const Camera &cam, int winW, int winH, const Renderer::HighlightBlock &hl, float time, int hotbarSize, int hotbarIdx, int fps, int chunkUpdates, bool placeMode, bool underLava, bool underWater, bool showHotbar, int vitality, int maxVitality)
+void Renderer::renderFrame(const World &world, const Camera &cam, int winW, int winH, const Renderer::HighlightBlock &hl, float time, int hotbarSize, int hotbarIdx, int fps, int chunkUpdates, bool placeMode, bool underLava, bool underWater, bool showHotbar, int vitality, int maxVitality, const std::vector<int> &hotbarCounts)
 {
     rebuildDirty(world, cam.position);
     float cFogNear;
@@ -1346,7 +1372,7 @@ void Renderer::renderFrame(const World &world, const Camera &cam, int winW, int 
     renderCrosshair(winW, winH);
     if (showHotbar)
     {
-        renderHUD(winW, winH, hotbarSize, hotbarIdx);
+        renderHUD(winW, winH, hotbarSize, hotbarIdx, hotbarCounts);
     }
 
     renderVitality(vitality, maxVitality, winW, winH);

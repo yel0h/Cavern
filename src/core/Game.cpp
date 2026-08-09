@@ -470,8 +470,8 @@ void Game::tick()
 
     if (input.getWorldSizeCycle())
     {
-        worldSizeIdx = (worldSizeIdx + 1) % 3;
-        std::cout << "New-world size set to " << worldSizeNames[worldSizeIdx] << " (" << worldSizes[worldSizeIdx] << ") -- takes effect on next New World (N)" << std::endl;
+        settings.worldSizeIdx = (settings.worldSizeIdx + 1) % 3;
+        std::cout << "New-world size set to " << worldSizeNames[settings.worldSizeIdx] << " (" << worldSizes[settings.worldSizeIdx] << ") -- takes effect on next New World (N)" << std::endl;
     }
 
     if (input.getNewLevel())
@@ -655,9 +655,9 @@ void Game::generateNewLevel()
         }
     }
 
-    std::cout << "Generating new " << worldSizeNames[worldSizeIdx] << " world (seed "<< seed <<")..." << std::endl;
+    std::cout << "Generating new " << worldSizeNames[settings.worldSizeIdx] << " world (seed "<< seed <<")..." << std::endl;
     auto t0 = glfwGetTime();
-    world.generate(seed, worldSizes[worldSizeIdx]);
+    world.generate(seed, worldSizes[settings.worldSizeIdx]);
     std::cout << "World generated in " << glfwGetTime() - t0 << " s" << std::endl;
     renderer.markAllDirty();
     player.resetSpawn();
@@ -693,7 +693,7 @@ void Game::render()
                          8, hotbarIdx,
                          fps, chunks, player.placeMode,
                          player.underLava, player.underWater, hotbarOpen,
-                         player.vitality, Player::maxVitality);
+                         player.vitality, Player::maxVitality, hotbarCounts);
     wandererRenderer.render(wanderers, camera, winW, winH, (float)glfwGetTime());
     mobRenderer.render(mobs, camera, winW, winH, (float)glfwGetTime());
     if (!remotePlayers.empty())
@@ -949,7 +949,7 @@ void Game::run()
                 else if (mx >= colRightX && mx < colRightX + colW)
                 {
                     int row = (int)((my - startY) / step);
-                    if (row >= 0 && row < 7 && my < startY + (row * step) + rowH)
+                    if (row >= 0 && row < 8 && my < startY + (row * step) + rowH)
                     {
                         switch (row)
                         {
@@ -960,35 +960,40 @@ void Game::run()
                                 break;
 
                             case 1:
+                                settings.worldSizeIdx = (settings.worldSizeIdx + 1) % 3;
+                                settings.save();
+                                break;
+
+                            case 2:
                                 settings.invertMouse = !settings.invertMouse;
                                 input.invertY = settings.invertMouse;
                                 settings.save();
                                 break;
 
-                            case 2:
+                            case 3:
                                 settings.soundEnabled = !settings.soundEnabled;
                                 audio.setSfxEnabled(settings.soundEnabled);
                                 settings.save();
                                 break;
 
-                            case 3:
+                            case 4:
                                 settings.musicEnabled = !settings.musicEnabled;
                                 audio.setMusicEnabled(settings.musicEnabled);
                                 settings.save();
                                 break;
 
-                            case 4:
+                            case 5:
                                 settings.showFps = !settings.showFps;
                                 renderer.showFps = settings.showFps;
                                 settings.save();
                                 break;
 
-                            case 5:
+                            case 6:
                                 settings.viewBobbing = !settings.viewBobbing;
                                 settings.save();
                                 break;
 
-                            case 6:
+                            case 7:
                                 screen = ScreenState::Paused;
 
                             default:
