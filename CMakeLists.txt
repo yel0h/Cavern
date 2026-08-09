@@ -72,6 +72,12 @@ add_executable(Cavern src/main.cpp
         src/entity/MobManager.hpp
         src/render/MobRenderer.cpp
         src/render/MobRenderer.hpp
+        src/entity/ItemDrop.hpp
+        src/entity/ItemDropManager.cpp
+        src/entity/ItemDropManager.hpp
+        src/entity/Bolt.hpp
+        src/entity/ProjectileManager.cpp
+        src/entity/ProjectileManager.hpp
 )
 target_include_directories(Cavern PRIVATE ${CMAKE_SOURCE_DIR})
 target_compile_definitions(Cavern PRIVATE GLFW_INCLUDE_NONE)

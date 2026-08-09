@@ -40,6 +40,61 @@ static constexpr BlockType hotbar[] = {
 };
 static constexpr int hotbarSize = 29;
 
+static int hotbarIndexFor(BlockType t)
+{
+    for (int i = 0; i < hotbarSize; i++)
+    {
+        if (hotbar[i] == t)
+        {
+            return i;
+        }
+    }
+
+    return -1;
+}
+
+static bool blockDropFor(BlockType t, BlockType &outType, int &outCount)
+{
+    static std::mt19937 mt{std::random_device()()};
+    static std::uniform_int_distribution<int> timberDist(3, 5);
+    static std::uniform_int_distribution<int> saplingDist(0, 9);
+    switch (t)
+    {
+        case BlockType::Air:
+        case BlockType::Bedrock:
+        case BlockType::Lava:
+        case BlockType::LavaStill:
+        case BlockType::Water:
+        case BlockType::WaterStill:
+            return false;
+
+        case BlockType::Turf:
+            outType = BlockType::Soil;
+            outCount = 1;
+            return true;
+
+        case BlockType::Timber:
+            outType = BlockType::Boards;
+            outCount = timberDist(mt);
+            return true;
+
+        case BlockType::Sapling:
+            if (saplingDist(mt) != 0)
+            {
+                return false;
+            }
+
+            outType = BlockType::Sapling;
+            outCount = 1;
+            return true;
+
+        default:
+            outType = t;
+            outCount = 1;
+            return true;
+    }
+}
+
 static void saveSpawnFile(float x, float z)
 {
     std::ofstream f("spawn.dat", std::ios::binary);
@@ -135,11 +190,14 @@ void Game::init()
     input.bindFullscreen = settings.keyFullscreen;
     input.bindChat = settings.keyChat;
     input.bindInventory = settings.keyInventory;
+    input.bindThrowBolt = settings.keyThrowBolt;
+    input.bindPlaceSign = settings.keyPlaceSign;
     input.invertY = settings.invertMouse;
     renderer.init();
     renderer.setFogLevel(settings.renderDistance);
     renderer.showFps = settings.showFps;
     renderer.buildFullIconAtlas(hotbar, hotbarSize);
+    hotbarCounts.assign(hotbarSize, 0);
     seed = (unsigned int)std::time(nullptr);
     if (!world.load("world.dat"))
     {
@@ -280,6 +338,14 @@ void Game::tick()
     {
         audio.queueBreak(Audio::blockSound(player.lastBroken.type));
         particles.spawnFromBlock(player.lastBroken.bx, player.lastBroken.by, player.lastBroken.bz, player.lastBroken.type);
+        BlockType dropType;
+        int dropCount;
+        if (blockDropFor(player.lastBroken.type, dropType, dropCount))
+        {
+            glm::vec3 dropPos{player.lastBroken.bx + 0.5f, player.lastBroken.by + 0.3f, player.lastBroken.bz + 0.5f};
+            itemDrops.spawn(dropPos, dropType, dropCount);
+        }
+
         auto bt = (unsigned char)player.lastBroken.type;
         int bx = player.lastBroken.bx;
         int by = player.lastBroken.by;
@@ -329,6 +395,48 @@ void Game::tick()
     wanderers.tick((float)Timer::dt, world);
     mobs.tick((float)Timer::dt, world, player, particles);
     world.tickDynamic();
+    if (input.getThrowBolt() && !inventoryOpen && !player.isDown)
+    {
+        float yr = glm::radians(player.yaw);
+        float pr = glm::radians(player.pitch);
+        glm::vec3 dir{std::cos(pr) * std::sin(yr), std::sin(pr), -std::cos(pr) * std::cos(yr)};
+        projectiles.spawn(player.eyePos(), dir);
+    }
+
+    std::vector<MobType> kills;
+    projectiles.tick(0.01666667, world, mobs, kills);
+    for (MobType t : kills)
+    {
+        switch (t)
+        {
+            case MobType::Snout:
+                score += 15;
+                break;
+
+            case MobType::Boneshade:
+                score += 75;
+                break;
+
+            case MobType::Grubbin:
+                score += 75;
+                break;
+
+            case MobType::Fumewretch:
+                score += 180;
+                break;
+        }
+    }
+
+    itemDrops.tick(0.01666667, world, player.position);
+    for (const PickupEvent &ev : itemDrops.drainPickups())
+    {
+        int idx = hotbarIndexFor(ev.type);
+        if (idx >= 0)
+        {
+            hotbarCounts[idx] += ev.count;
+        }
+    }
+
     for (int i = 0; i < 8; i++)
     {
         if (input.getSlot(i))
@@ -574,6 +682,8 @@ void Game::render()
     float aspect = (winH > 0) ? (float)winW / (float)winH : 1.f;
     glm::mat4 vp = camera.viewProjection(aspect);
     particleRenderer.render(particles.particles, vp);
+    particleRenderer.renderDrops(itemDrops.drops, vp);
+    particleRenderer.renderBolts(projectiles.bolts, vp);
     if (inventoryOpen)
     {
         renderer.renderInventory(winW, winH, player.selectedBlock, input.mouseX, input.mouseY, hotbar, hotbarSize);

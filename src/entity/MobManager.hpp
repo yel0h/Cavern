@@ -16,9 +16,9 @@ private:
 
     void pickWanderDir(Mob &m);
 
-    static int surfaceY(const World &world, int wx, int wz) ;
+    static int surfaceY(const World &world, int wx, int wz);
 
-    static int maxVitalityFor(MobType t) ;
+    static int maxVitalityFor(MobType t);
 
     static void explode(Mob &m, World &world, ParticleManager &particles);
 
@@ -36,5 +36,7 @@ public:
     bool load(const char *path);
 
     bool attack(const glm::vec3 &eye, const glm::vec3 &forward, float reach, int damage, bool &killed, MobType &killedType);
+
+    bool damageMobAt(const glm::vec3 &point, float radius, int damage, bool &killed, MobType &killedType);
 };
 #endif//CAVERN_MOBMANAGER_HPP

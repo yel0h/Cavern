@@ -1,5 +1,7 @@
 #include "ParticleRenderer.hpp"
 #include "../entity/ParticleManager.hpp"
+#include "../entity/ItemDrop.hpp"
+#include "../entity/Bolt.hpp"
 #include <glm/gtc/type_ptr.hpp>
 
 void ParticleRenderer::init()
@@ -55,7 +57,66 @@ void ParticleRenderer::render(const std::vector<BlockParticle> &particles, const
     glBufferData(GL_ARRAY_BUFFER, (GLsizeiptr)(data.size() * sizeof(float)), data.data(), GL_STREAM_DRAW);
     shader.use();
     shader.setMat4("uMVP", glm::value_ptr(vp));
+    shader.setFloat("uPointSize", 4.0f);
     glBindVertexArray(vao);
     glDrawArrays(GL_POINTS, 0, (int)particles.size());
+    glBindVertexArray(0);
+}
+
+void ParticleRenderer::renderDrops(const std::vector<ItemDrop> &drops, const glm::mat4 &vp)
+{
+    if (drops.empty())
+    {
+        return;
+    }
+
+    std::vector<float> data;
+    data.reserve(drops.size() * 6);
+    for (const auto &d : drops)
+    {
+        data.push_back(d.position.x);
+        data.push_back(d.position.y);
+        data.push_back(d.position.z);
+        data.push_back(d.r);
+        data.push_back(d.g);
+        data.push_back(d.b);
+    }
+
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, (GLsizeiptr) (data.size() * sizeof(float)), data.data(), GL_STREAM_DRAW);
+    shader.use();
+    shader.setMat4("uMVP", glm::value_ptr(vp));
+    shader.setFloat("uPointSize", 9.0f);
+    glBindVertexArray(vao);
+    glDrawArrays(GL_POINTS, 0, (GLsizei) drops.size());
+    glBindVertexArray(0);
+}
+
+void ParticleRenderer::renderBolts(const std::vector<Bolt> &bolts, const glm::mat4 &vp)
+{
+    if (bolts.empty())
+    {
+        return;
+    }
+
+    std::vector<float> data;
+    data.reserve(bolts.size() * 6);
+    for (const auto &b: bolts)
+    {
+        data.push_back(b.position.x);
+        data.push_back(b.position.y);
+        data.push_back(b.position.z);
+        data.push_back(0.85f);
+        data.push_back(0.80f);
+        data.push_back(0.30f);
+    }
+
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, (GLsizeiptr)(data.size() * sizeof(float)), data.data(), GL_STREAM_DRAW);
+    shader.use();
+    shader.setMat4("uMVP", glm::value_ptr(vp));
+    shader.setFloat("uPointSize", 6.0f);
+    glBindVertexArray(vao);
+    glDrawArrays(GL_POINTS, 0, (int)bolts.size());
     glBindVertexArray(0);
 }

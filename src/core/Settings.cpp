@@ -89,6 +89,14 @@ bool Settings::load(const char *path)
         {
             keyInventory = ival;
         }
+        else if (key == "keyThrowBolt")
+        {
+            keyThrowBolt = ival;
+        }
+        else if (key == "keyPlaceSign")
+        {
+            keyPlaceSign = ival;
+        }
         else if (key == "renderDistance")
         {
             renderDistance = ival;
@@ -135,6 +143,8 @@ bool Settings::save(const char *path) const
     f << "keyFullscreen=" << keyFullscreen << '\n';
     f << "keyChat=" << keyChat << '\n';
     f << "keyInventory=" << keyInventory << '\n';
+    f << "keyThrowBolt=" << keyThrowBolt << '\n';
+    f << "keyPlaceSign=" << keyPlaceSign << '\n';
     f << "renderDistance=" << renderDistance << '\n';
     f << "invertMouse=" << (invertMouse ? 1 : 0) << '\n';
     f << "soundEnabled=" << (soundEnabled ? 1 : 0) << '\n';

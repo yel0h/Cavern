@@ -323,6 +323,37 @@ bool MobManager::attack(const glm::vec3 &eye, const glm::vec3 &forward, float re
     return true;
 }
 
+bool MobManager::damageMobAt(const glm::vec3 &point, float radius, int damage, bool &killed, MobType &killedType)
+{
+    killed = false;
+    Mob *best = nullptr;
+    float bestDist = radius;
+    for (auto &m : mobs)
+    {
+        glm::vec3 center = m.position + glm::vec3(0.f, 0.25f, 0.f);
+        float dist = glm::length(center - point);
+        if (dist < bestDist)
+        {
+            bestDist = dist;
+            best = &m;
+        }
+    }
+
+    if (!best)
+    {
+        return false;
+    }
+
+    best->vitality -= damage;
+    if (best->vitality <= 0)
+    {
+        killed = true;
+        killedType = best->type;
+    }
+
+    return true;
+}
+
 bool MobManager::save(const char *path) const
 {
     std::ofstream f(path, std::ios::binary);

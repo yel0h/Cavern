@@ -17,6 +17,8 @@ struct Settings
     int keyFullscreen = GLFW_KEY_F11;
     int keyChat = GLFW_KEY_T;
     int keyInventory = GLFW_KEY_B;
+    int keyThrowBolt = GLFW_KEY_V;
+    int keyPlaceSign = GLFW_KEY_H;
     int renderDistance = 2;
     bool invertMouse = false;
     bool soundEnabled = true;

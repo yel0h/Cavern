@@ -14,6 +14,8 @@ private:
     static Input *inst;
     bool save = false;
     bool spawnMob = false;
+    bool throwBolt = false;
+    bool placeSign = false;
     bool slot[8] = {};
     bool toggleFullscreen = false;
     bool cycleFog = false;
@@ -63,6 +65,8 @@ public:
     int bindFullscreen = GLFW_KEY_F11;
     int bindChat = GLFW_KEY_T;
     int bindInventory = GLFW_KEY_B;
+    int bindThrowBolt = GLFW_KEY_V;
+    int bindPlaceSign = GLFW_KEY_H;
     bool captureNextKey = false;
     int capturedKey = -1;
     bool menuActive = false;
@@ -128,5 +132,9 @@ public:
     bool getMenuClick();
 
     bool getTabListClick();
+
+    bool getThrowBolt();
+
+    bool getPlaceSign();
 };
 #endif//CAVERN_INPUT_HPP

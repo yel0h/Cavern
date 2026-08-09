@@ -182,6 +182,16 @@ void Input::keyCB(GLFWwindow *, int key, int, int action, int)
         inst->inventoryToggle = true;
     }
 
+    if (justPressed && key == inst->bindThrowBolt)
+    {
+        inst->throwBolt = true;
+    }
+
+    if (justPressed && key == inst->bindPlaceSign)
+    {
+        inst->placeSign = true;
+    }
+
     switch (key)
     {
         case GLFW_KEY_1:
@@ -580,5 +590,19 @@ bool Input::getTabListClick()
 {
     bool temp = tabListClick;
     tabListClick = false;
+    return temp;
+}
+
+bool Input::getThrowBolt()
+{
+    bool temp = throwBolt;
+    throwBolt = false;
+    return temp;
+}
+
+bool Input::getPlaceSign()
+{
+    bool temp = placeSign;
+    placeSign = false;
     return temp;
 }

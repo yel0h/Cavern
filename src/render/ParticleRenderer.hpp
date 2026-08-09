@@ -5,6 +5,8 @@
 #include <vector>
 
 struct BlockParticle;
+struct ItemDrop;
+struct Bolt;
 
 class ParticleRenderer
 {
@@ -18,13 +20,14 @@ layout(location=0) in vec3 aPos;
 layout(location=1) in vec3 aColor;
 
 uniform mat4 uMVP;
+uniform float uPointSize;
 
 out vec3 vColor;
 
 void main()
 {
     gl_Position = uMVP * vec4(aPos, 1.0);
-    gl_PointSize = 4.0;
+    gl_PointSize = uPointSize;
     vColor = aColor;
 }
 )";
@@ -46,5 +49,9 @@ public:
     void shutdown();
 
     void render(const std::vector<BlockParticle> &particles, const glm::mat4 &vp);
+
+    void renderDrops(const std::vector<ItemDrop> &drops, const glm::mat4 &vp);
+
+    void renderBolts(const std::vector<Bolt> &bolts, const glm::mat4 &vp);
 };
 #endif//CAVERN_PARTICLERENDERER_HPP

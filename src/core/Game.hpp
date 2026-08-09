@@ -3,8 +3,10 @@
 #include "Input.hpp"
 #include "Timer.hpp"
 #include "src/audio/Audio.hpp"
+#include "src/entity/ItemDropManager.hpp"
 #include "src/entity/MobManager.hpp"
 #include "src/entity/ParticleManager.hpp"
+#include "src/entity/ProjectileManager.hpp"
 #include "src/entity/WandererManager.hpp"
 #include "src/net/NetTypes.hpp"
 #include "src/player/Player.hpp"
@@ -54,6 +56,9 @@ private:
     ParticleRenderer particleRenderer;
     MobManager mobs;
     MobRenderer mobRenderer;
+    ItemDropManager itemDrops;
+    ProjectileManager projectiles;
+    std::vector<int> hotbarCounts;
     int score = 0;
     int winW = 854;
     int winH = 480;
