@@ -287,6 +287,39 @@ namespace WorldGen
             }
         }
 
+        constexpr int cellSize = 10;
+        constexpr int lift = 6;
+        unsigned int cliffSeed = seed + 0x3C11F2Au;
+        for (int wx = 1; wx < World::BLOCK_W - 1; wx++)
+        {
+            for (int wz = 1; wz < World::BLOCK_D - 1; wz++)
+            {
+                int sy = computeSurfaceY((float)wx, (float)wz, seed);
+                if (sy <= oceanLevel)
+                {
+                    continue;
+                }
+
+                float plateauN = hashNoise(wx / cellSize, wz / cellSize, cliffSeed);
+                if (plateauN <= 0.72f)
+                {
+                    continue;
+                }
+
+                int newSy = std::min(sy + lift, World::BLOCK_H - 4);
+                for (int wy = sy + 1; wy <= newSy; wy++)
+                {
+                    world.setBlock(wx, wy, wz, BlockType::Stone);
+                }
+
+                world.setBlock(wx, newSy, wz, BlockType::Turf);
+                if (world.getBlock(wx, sy, wz) == BlockType::Turf)
+                {
+                    world.setBlock(wx, sy, wz, BlockType::Stone);
+                }
+            }
+        }
+
         for (int wx = 1; wx < World::BLOCK_W - 1; wx++)
         {
             for (int wz = 1; wz < World::BLOCK_D - 1; wz++)
