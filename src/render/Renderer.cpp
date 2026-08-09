@@ -1013,6 +1013,40 @@ void Renderer::renderPauseMenu(int winW, int winH, float mouseX, float mouseY)
     glDisable(GL_BLEND);
 }
 
+void Renderer::renderDeathScreen(int winW, int winH, float mouseX, float mouseY, int score)
+{
+    glDisable(GL_DEPTH_TEST);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    txtShader.use();
+    txtShader.setInt("uFont", 1);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, font.texId);
+    constexpr int s = 4;
+    float lineH = (Font::CHAR_H * s) + 6.f;
+    float startY = (float)winH * 0.3f;
+    auto drawLine = [&](const char *text, float y, int scale, float r, float g, float b)
+    {
+        float w = std::strlen(text) * Font::CHAR_W * scale;
+        txtShader.setVec3("uColor", r, g, b);
+        drawText(text, ((float)winW * 0.5f) - (w * 0.5f), y, scale, winW, winH);
+    };
+    drawLine("BURIED", startY, s, 0.85f, 0.2f, 0.15f);
+    char scoreBuf[32];
+    std::snprintf(scoreBuf, sizeof(scoreBuf), "SCORE: %d", score);
+    drawLine(scoreBuf, startY + (lineH * 1.6f), 2, 1.f, 1.f, 1.f);
+    constexpr float btnW = 260.f;
+    constexpr float btnH = 32.f;
+    float bx0 = ((float)winW * 0.5f) - (btnW * 0.5f);
+    float bx1 = bx0 + btnW;
+    float by0 = startY + (lineH * 3.2f);
+    float by1 = by0 + btnH;
+    bool hovered = mouseX >= bx0 && mouseX < bx1 && mouseY >= by0 && mouseY < by1;
+    drawButton(bx0, by0, bx1, by1, hovered, false, "START A NEW DESCENT", winW, winH);
+    glEnable(GL_DEPTH_TEST);
+    glDisable(GL_BLEND);
+}
+
 static std::string keyName(int key)
 {
     switch (key)

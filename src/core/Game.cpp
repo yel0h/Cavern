@@ -327,6 +327,12 @@ void Game::tick()
     }
 
     player.tick(0.01666667, world, input);
+    if (player.isDown && screen == ScreenState::World)
+    {
+        screen = ScreenState::Dead;
+        input.setCaptureMode(false);
+    }
+
     if ((player.justLanded || player.footstepReady) && player.blockBelow != BlockType::Air)
     {
         audio.queueFootstep(Audio::blockSound(player.blockBelow));
@@ -686,6 +692,10 @@ void Game::render()
     else if (screen == ScreenState::Options)
     {
         renderer.renderOptionsMenu(winW, winH, input.mouseX, input.mouseY, input.captureNextKey ? pendingBindAction : -1, settings);
+    }
+    else if (screen == ScreenState::Dead)
+    {
+        renderer.renderDeathScreen(winW, winH, input.mouseX, input.mouseY, score);
     }
 
     renderer.renderChat(chatMessages, input.chatOpen, input.chatBuffer, winW, winH);

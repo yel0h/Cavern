@@ -45,6 +45,8 @@ public:
 
     void renderPauseMenu(int winW, int winH, float mouseX, float mouseY);
 
+    void renderDeathScreen(int winW, int winH, float mouseX, float mouseY, int score);
+
     void renderPlayerNames(const std::vector<RemotePlayer> &players, const Camera &cam, int winW, int winH);
 
     void renderChat(const std::vector<std::string> &msgs, bool chatOpen, const std::string &buffer, int winW, int winH);

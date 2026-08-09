@@ -27,7 +27,8 @@ public:
     {
         World,
         Paused,
-        Options
+        Options,
+        Dead
     };
 
     Game();
