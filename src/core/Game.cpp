@@ -155,9 +155,15 @@ void Game::init()
 
     wandererRenderer.init();
     particleRenderer.init();
+    mobRenderer.init();
     if (!wanderers.load("wanderers.dat"))
     {
         wanderers.spawn(world);
+    }
+
+    if (!mobs.load("mobs.dat"))
+    {
+        mobs.spawn(world);
     }
 
     float sx, sz;
@@ -230,6 +236,40 @@ void Game::tick()
         input.primaryAction = false;
     }
 
+    if (input.primaryAction && !player.placeMode && !inventoryOpen && !player.isDown)
+    {
+        constexpr int fistDamage = 2;
+        constexpr float attackReach = 4.5f;
+        glm::vec3 eye = player.eyePos();
+        float yr = glm::radians(player.yaw);
+        float pr = glm::radians(player.pitch);
+        glm::vec3 forward{std::cos(pr) * std::sin(yr), std::sin(pr), -std::cos(pr) * std::cos(yr)};
+        bool killed = false;
+        MobType killedType{};
+        if (mobs.attack(eye, forward, attackReach, fistDamage, killed, killedType))
+        {
+            input.primaryAction = false;
+            if (killed)
+            {
+                switch (killedType)
+                {
+                    case MobType::Snout:
+                        score += 15;
+                        break;
+
+                    case MobType::Boneshade:
+                    case MobType::Grubbin:
+                        score += 75;
+                        break;
+
+                    case MobType::Fumewretch:
+                        score += 180;
+                        break;
+                }
+            }
+        }
+    }
+
     player.tick(0.01666667, world, input);
     if ((player.justLanded || player.footstepReady) && player.blockBelow != BlockType::Air)
     {
@@ -287,6 +327,7 @@ void Game::tick()
 
     particles.tick(0.01666667, world);
     wanderers.tick((float)Timer::dt, world);
+    mobs.tick((float)Timer::dt, world, player, particles);
     world.tickDynamic();
     for (int i = 0; i < 8; i++)
     {
@@ -520,6 +561,7 @@ void Game::render()
                          player.underLava, player.underWater, hotbarOpen,
                          player.vitality, Player::maxVitality);
     wandererRenderer.render(wanderers, camera, winW, winH, (float)glfwGetTime());
+    mobRenderer.render(mobs, camera, winW, winH, (float)glfwGetTime());
     if (!remotePlayers.empty())
     {
         wandererRenderer.renderRemotePlayers(remotePlayers, camera, winW, winH);

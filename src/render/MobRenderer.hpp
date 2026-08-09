@@ -1,13 +1,11 @@
-#ifndef CAVERN_WANDERERRENDERER_HPP
-#define CAVERN_WANDERERRENDERER_HPP
+#ifndef CAVERN_MOBRENDERER_HPP
+#define CAVERN_MOBRENDERER_HPP
 #include "Shader.hpp"
-#include "src/net/NetTypes.hpp"
 #include <vector>
-
-class WandererManager;
+class MobManager;
 class Camera;
 
-class WandererRenderer
+class MobRenderer
 {
 private:
     Shader shader;
@@ -26,6 +24,22 @@ private:
     };
 
     std::vector<MobVertex> verts;
+
+    void addBox(float x0, float y0, float z0,
+                float x1, float y1, float z1,
+                float br, float bg, float bb,
+                float light,
+                float yawDeg, float wx, float wy, float wz,
+                float pvtX, float pvtY, float pvtZ, float rotAngle);
+
+    void buildSnout(float wx, float wy, float wz, float yawDeg, float legA, float legB, float light);
+
+    void buildBoneshade(float wx, float wy, float wz, float yawDeg, float armA, float legA, float light);
+
+    void buildGrubbin(float wx, float wy, float wz, float yawDeg, float armA, float legA, float light);
+
+    void buildFumewretch(float wx, float wy, float wz, float yawDeg, float bob, float flashAmt, float light);
+
     static constexpr const char *vertSrc = R"(
 #version 330 core
 layout(location=0) in vec3 aPos;
@@ -53,6 +67,7 @@ void main()
     vFogFactor = clamp((fogFar - eyeDist) / (fogFar - fogNear), 0.0, 1.0);
 }
 )";
+
     static constexpr const char *fragSrc = R"(
 #version 330 core
 in vec3 vColor;
@@ -76,22 +91,11 @@ void main()
 }
 )";
 
-    void buildMobMesh(float wx, float wy, float wz, float yawDeg, float frontLegAngle, float rearLegAngle, float light);
-
-    void addBox(float x0, float y0, float z0,
-                float x1, float y1, float z1,
-                float br, float bg, float bb,
-                float light,
-                float yawDeg, float wx, float wy, float wz,
-                float pvtX, float pvtY, float pvtZ, float rotAngle);
-
 public:
     void init();
 
     void shutdown();
 
-    void render(const WandererManager &mgr, const Camera &cam, int winW, int winH, float time);
-
-    void renderRemotePlayers(const std::vector<RemotePlayer> &players, const Camera &cam, int winW, int winH);
+    void render(const MobManager &mgr, const Camera &cam, int winW, int winH, float time);
 };
-#endif//CAVERN_WANDERERRENDERER_HPP
+#endif//CAVERN_MOBRENDERER_HPP

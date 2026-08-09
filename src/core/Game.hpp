@@ -3,10 +3,12 @@
 #include "Input.hpp"
 #include "Timer.hpp"
 #include "src/audio/Audio.hpp"
+#include "src/entity/MobManager.hpp"
 #include "src/entity/ParticleManager.hpp"
 #include "src/entity/WandererManager.hpp"
 #include "src/net/NetTypes.hpp"
 #include "src/player/Player.hpp"
+#include "src/render/MobRenderer.hpp"
 #include "src/render/ParticleRenderer.hpp"
 #include "src/render/Renderer.hpp"
 #include "src/render/WandererRenderer.hpp"
@@ -50,6 +52,9 @@ private:
     WandererRenderer wandererRenderer;
     ParticleManager particles;
     ParticleRenderer particleRenderer;
+    MobManager mobs;
+    MobRenderer mobRenderer;
+    int score = 0;
     int winW = 854;
     int winH = 480;
     bool glfwInitialized = false;

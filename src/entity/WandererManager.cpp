@@ -155,7 +155,7 @@ bool WandererManager::load(const char *path)
     }
 
     wanderers.clear();
-    std::uniform_int_distribution<int> dist(40, 119);
+    static std::uniform_int_distribution<int> dist(40, 119);
     for (unsigned int i = 0; i < lCount; i++)
     {
         Wanderer wd{};

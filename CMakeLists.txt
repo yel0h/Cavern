@@ -67,6 +67,11 @@ add_executable(Cavern src/main.cpp
         src/audio/Audio.hpp
         src/core/Settings.cpp
         src/core/Settings.hpp
+        src/entity/Mob.hpp
+        src/entity/MobManager.cpp
+        src/entity/MobManager.hpp
+        src/render/MobRenderer.cpp
+        src/render/MobRenderer.hpp
 )
 target_include_directories(Cavern PRIVATE ${CMAKE_SOURCE_DIR})
 target_compile_definitions(Cavern PRIVATE GLFW_INCLUDE_NONE)
