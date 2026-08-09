@@ -56,6 +56,10 @@ public:
     bool justLanded = false;
     bool footstepReady = false;
     BlockType blockBelow = BlockType::Air;
+    static constexpr int maxVitality = 16;
+    int vitality = maxVitality;
+    bool isDown = false;
+    float damageFlashT = 0.f;
     float spawnX = 128.f;
     float spawnZ = 128.f;
 
@@ -67,6 +71,8 @@ public:
 
     void respawn();
 
+    void applyDamage(int amount);
+
     void resetSpawn();
 
     void setSpawn();
@@ -75,6 +81,9 @@ public:
 
 private:
     int footstepTimer = 0;
+    float fallPeakY = 0.f;
+    float breath = 6.f;
+    float drownTimer = 0.f;
 
     [[nodiscard]] static bool isBlockSolid(const World &world, int wx, int wy, int wz) ;
 

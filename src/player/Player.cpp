@@ -276,6 +276,31 @@ void Player::tick(float dt, World &world, Input &input)
     underLava = isLavaLike(eyeBlock);
     underWater = isWaterLike(eyeBlock);
     bool inLiquid = blockDef(feetBlock).liquid;
+    if (isDown)
+    {
+        return;
+    }
+
+    if (underWater)
+    {
+        breath = std::max(0.f, breath - dt);
+        if (breath <= 0.f)
+        {
+            drownTimer += dt;
+            constexpr float drownInterval = 0.6f;
+            if (drownTimer >= drownInterval)
+            {
+                drownTimer -= drownInterval;
+                applyDamage(1);
+            }
+        }
+    }
+    else
+    {
+        breath = std::min(6.f, breath + (dt * 2.f));
+        drownTimer = 0.f;
+    }
+
     if (isBlockSolid(world, fx, fy, fz))
     {
         position.y += 5.0f;
@@ -389,6 +414,15 @@ void Player::tick(float dt, World &world, Input &input)
     }
 
     bool prevOnGround = onGround;
+    if (prevOnGround)
+    {
+        fallPeakY = position.y;
+    }
+    else
+    {
+        fallPeakY = std::max(fallPeakY, position.y);
+    }
+
     onGround = false;
     resolveAABB(position, velocity * dt, world, onGround);
     if (onGround)
@@ -398,6 +432,18 @@ void Player::tick(float dt, World &world, Input &input)
 
     justLanded = (!prevOnGround && onGround);
     footstepReady = false;
+    if (justLanded)
+    {
+        constexpr float safeFall = 4.f;
+        float fallDist = fallPeakY - position.y;
+        if (fallDist > safeFall)
+        {
+            int dmg = (int)std::floor(fallDist - safeFall) + 1;
+            applyDamage(dmg);
+        }
+    }
+
+    damageFlashT = std::max(0.f, damageFlashT - dt);
     float hspd = std::sqrt((velocity.x * velocity.x) + (velocity.z * velocity.z));
     if (onGround && hspd > 2.f)
     {
@@ -423,6 +469,27 @@ void Player::respawn()
     position = {spawnX, 45.f, spawnZ};
     velocity = {0.f, 0.f, 0.f};
     onGround = false;
+    vitality = maxVitality;
+    isDown = false;
+    damageFlashT = 0.f;
+    breath = 6.f;
+    drownTimer = 0.f;
+    fallPeakY = position.y;
+}
+
+void Player::applyDamage(int amount)
+{
+    if (isDown || amount <= 0)
+    {
+        return;
+    }
+
+    vitality = std::max(0, vitality - amount);
+    damageFlashT = 0.35f;
+    if (vitality <= 0)
+    {
+        isDown = true;
+    }
 }
 
 void Player::resetSpawn()
