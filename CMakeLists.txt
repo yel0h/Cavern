@@ -78,6 +78,9 @@ add_executable(Cavern src/main.cpp
         src/entity/Bolt.hpp
         src/entity/ProjectileManager.cpp
         src/entity/ProjectileManager.hpp
+        src/entity/Sign.hpp
+        src/entity/SignManager.cpp
+        src/entity/SignManager.hpp
 )
 target_include_directories(Cavern PRIVATE ${CMAKE_SOURCE_DIR})
 target_compile_definitions(Cavern PRIVATE GLFW_INCLUDE_NONE)

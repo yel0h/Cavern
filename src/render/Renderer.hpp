@@ -6,6 +6,7 @@
 #include "Shader.hpp"
 #include "TextureAtlas.hpp"
 #include "src/core/Settings.hpp"
+#include "src/entity/Sign.hpp"
 #include "src/net/NetTypes.hpp"
 #include "src/world/Block.hpp"
 #include <array>
@@ -49,6 +50,8 @@ public:
 
     void renderPlayerNames(const std::vector<RemotePlayer> &players, const Camera &cam, int winW, int winH);
 
+    void renderSigns(const std::vector<Sign> &signs, const Camera &cam, int winW, int winH);
+
     void renderChat(const std::vector<std::string> &msgs, bool chatOpen, const std::string &buffer, int winW, int winH);
 
     void renderPlayerList(const std::vector<std::string> &names, int winW, int winH, float mouseX, float mouseY, bool clickable);
@@ -59,7 +62,10 @@ public:
 
     void renderOptionsMenu(int winW, int winH, float mouseX, float mouseY, int pendingRow, const Settings &settings);
 
-    void markAllDirty() { for (auto &m : meshes) m.free(); }
+    void markAllDirty()
+    {
+        for (auto &m: meshes) m.free();
+    }
 
     void cycleFog() { fogLevel = (fogLevel + 1) % 4; }
 

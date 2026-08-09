@@ -1,5 +1,6 @@
 #include "Renderer.hpp"
 #include "../world/World.hpp"
+#include "src/entity/SignManager.hpp"
 #include <glm/gtc/type_ptr.hpp>
 
 static std::array<glm::vec4, 6> extractFrustumPlanes(const glm::mat4 &vp)
@@ -696,6 +697,63 @@ void Renderer::renderPlayerNames(const std::vector<RemotePlayer> &players, const
         drawText(p.name, sx + 2.f, sy + 2.f, scale, winW, winH);
         txtShader.setVec3("uColor", 1.f, 1.f, 1.f);
         drawText(p.name, sx, sy, scale, winW, winH);
+    }
+
+    glEnable(GL_DEPTH_TEST);
+    glDisable(GL_BLEND);
+}
+
+void Renderer::renderSigns(const std::vector<Sign> &signs, const Camera &cam, int winW, int winH)
+{
+    if (signs.empty())
+    {
+        return;
+    }
+
+    float aspect = (winH > 0) ? (float) winW / (float) winH : 1.f;
+    glm::mat4 vp = cam.viewProjection(aspect);
+    txtShader.use();
+    txtShader.setInt("uFont", 1);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, font.texId);
+    glDisable(GL_DEPTH_TEST);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    constexpr int scale = 2;
+    constexpr float maxDist = 20.f;
+    const char *lines[3] = {SignManager::line1, SignManager::line2, SignManager::line3};
+    for (const auto &s : signs)
+    {
+        float dist = glm::length(s.position - cam.position);
+        if (dist > maxDist)
+        {
+            continue;
+        }
+
+        glm::vec4 clip = vp * glm::vec4(s.position.x, s.position.y + 1.1f, s.position.z, 1.f);
+        if (clip.w <= 0.f)
+        {
+            continue;
+        }
+
+        glm::vec3 ndc = glm::vec3(clip) / clip.w;
+        if (ndc.z > 1.f)
+        {
+            continue;
+        }
+
+        float sx = ((ndc.x * 0.5f) + 0.5f) * (float)winW;
+        float sy = (1.f - ((ndc.y * 0.5f) + 0.5f)) * (float)winH;
+        for (int i = 0; i < 3; i++)
+        {
+            float lineW = (float)(std::strlen(lines[i]) * Font::CHAR_W * scale);
+            float lx = sx - (lineW * 0.5f);
+            float ly = sy + ((float)i * ((Font::CHAR_H * scale) + 2.f));
+            txtShader.setVec3("uColor", 0.f, 0.f, 0.f);
+            drawText(lines[i], lx + 2.f, ly + 2.f, scale, winW, winH);
+            txtShader.setVec3("uColor", 0.95f, 0.85f, 0.55f);
+            drawText(lines[i], lx, ly, scale, winW, winH);
+        }
     }
 
     glEnable(GL_DEPTH_TEST);

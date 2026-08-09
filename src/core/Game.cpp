@@ -224,6 +224,8 @@ void Game::init()
         mobs.spawn(world);
     }
 
+    signs.load("signs.dat");
+
     float sx, sz;
     if (loadSpawnFile(sx, sz))
     {
@@ -407,6 +409,12 @@ void Game::tick()
         float pr = glm::radians(player.pitch);
         glm::vec3 dir{std::cos(pr) * std::sin(yr), std::sin(pr), -std::cos(pr) * std::cos(yr)};
         projectiles.spawn(player.eyePos(), dir);
+    }
+
+    if (input.getPlaceSign() && !inventoryOpen && !player.isDown && player.hitBlock.valid)
+    {
+        glm::vec3 pos{(float)player.hitBlock.px + 0.5f, (float)player.hitBlock.py, (float)player.hitBlock.pz + 0.5f};
+        signs.place(pos, player.yaw);
     }
 
     std::vector<MobType> kills;
@@ -659,6 +667,8 @@ void Game::generateNewLevel()
     mobs.reset();
     mobs.spawn(world);
     std::remove("mobs.dat");
+    signs.reset();
+    std::remove("signs.dat");
 }
 
 void Game::restartLevel()
@@ -692,6 +702,7 @@ void Game::render()
         renderer.renderPlayerNames(remotePlayers, camera, winW, winH);
     }
 
+    renderer.renderSigns(signs.signs, camera, winW, winH);
     float aspect = (winH > 0) ? (float)winW / (float)winH : 1.f;
     glm::mat4 vp = camera.viewProjection(aspect);
     particleRenderer.render(particles.particles, vp);

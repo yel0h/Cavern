@@ -7,6 +7,7 @@
 #include "src/entity/MobManager.hpp"
 #include "src/entity/ParticleManager.hpp"
 #include "src/entity/ProjectileManager.hpp"
+#include "src/entity/SignManager.hpp"
 #include "src/entity/WandererManager.hpp"
 #include "src/net/NetTypes.hpp"
 #include "src/player/Player.hpp"
@@ -59,6 +60,7 @@ private:
     MobRenderer mobRenderer;
     ItemDropManager itemDrops;
     ProjectileManager projectiles;
+    SignManager signs;
     std::vector<int> hotbarCounts;
     int score = 0;
     float bobPhase = 0.f;
