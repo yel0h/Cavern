@@ -1,6 +1,6 @@
 #include "Settings.hpp"
-#include <string>
 #include <fstream>
+#include <string>
 
 static void trim(std::string &s)
 {
@@ -57,17 +57,9 @@ bool Settings::load(const char *path)
         {
             keyJump = ival;
         }
-        else if (key == "keyRespawn")
-        {
-            keyRespawn = ival;
-        }
         else if (key == "keySave")
         {
             keySave = ival;
-        }
-        else if (key == "keySpawnWanderer")
-        {
-            keySpawnWanderer = ival;
         }
         else if (key == "keyCycleFog")
         {
@@ -117,6 +109,10 @@ bool Settings::load(const char *path)
         {
             showFps = bval;
         }
+        else if (key == "viewBobbing")
+        {
+            viewBobbing = bval;
+        }
     }
 
     return true;
@@ -135,9 +131,7 @@ bool Settings::save(const char *path) const
     f << "keyLeft=" << keyLeft << '\n';
     f << "keyRight=" << keyRight << '\n';
     f << "keyJump=" << keyJump << '\n';
-    f << "keyRespawn=" << keyRespawn << '\n';
     f << "keySave=" << keySave << '\n';
-    f << "keySpawnWanderer=" << keySpawnWanderer << '\n';
     f << "keyCycleFog=" << keyCycleFog << '\n';
     f << "keyNewLevel=" << keyNewLevel << '\n';
     f << "keyFullscreen=" << keyFullscreen << '\n';
@@ -150,5 +144,6 @@ bool Settings::save(const char *path) const
     f << "soundEnabled=" << (soundEnabled ? 1 : 0) << '\n';
     f << "musicEnabled=" << (musicEnabled ? 1 : 0) << '\n';
     f << "showFps=" << (showFps ? 1 : 0) << '\n';
+    f << "viewBobbing=" << (viewBobbing ? 1 : 0) << '\n';
     return true;
 }

@@ -9,9 +9,7 @@ struct Settings
     int keyLeft = GLFW_KEY_A;
     int keyRight = GLFW_KEY_D;
     int keyJump = GLFW_KEY_SPACE;
-    int keyRespawn = GLFW_KEY_R;
     int keySave = GLFW_KEY_ENTER;
-    int keySpawnWanderer = GLFW_KEY_G;
     int keyCycleFog = GLFW_KEY_F;
     int keyNewLevel = GLFW_KEY_N;
     int keyFullscreen = GLFW_KEY_F11;
@@ -24,6 +22,7 @@ struct Settings
     bool soundEnabled = true;
     bool musicEnabled = true;
     bool showFps = true;
+    bool viewBobbing = false;
 
     bool load(const char *path = "settings.cfg");
 

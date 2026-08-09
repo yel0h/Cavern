@@ -142,19 +142,9 @@ void Input::keyCB(GLFWwindow *, int key, int, int action, int)
         }
     }
 
-    if (justPressed && key == inst->bindRespawn)
-    {
-        inst->respawn = true;
-    }
-
     if (justPressed && key == inst->bindSave)
     {
         inst->save = true;
-    }
-
-    if (justPressed && key == inst->bindSpawnCrawler)
-    {
-        inst->spawnMob = true;
     }
 
     if (justPressed && key == inst->bindCycleFog)
@@ -446,31 +436,10 @@ void Input::scrollCB(GLFWwindow *, double dx, double dy)
     inst->scrollDelta += (dy > 0.0) ? 1 : -1;
 }
 
-bool Input::getPrimaryAction()
-{
-    bool temp = primaryAction;
-    primaryAction = false;
-    return temp;
-}
-
-bool Input::getSwitchMode()
-{
-    bool temp = switchMode;
-    switchMode = false;
-    return temp;
-}
-
 bool Input::getSave()
 {
     bool temp = save;
     save = false;
-    return temp;
-}
-
-bool Input::getSpawnMob()
-{
-    bool temp = spawnMob;
-    spawnMob = false;
     return temp;
 }
 
@@ -513,13 +482,6 @@ bool Input::getPauseToggle()
 {
     bool temp = pauseToggle;
     pauseToggle = false;
-    return temp;
-}
-
-bool Input::getRespawn()
-{
-    bool temp = respawn;
-    respawn = false;
     return temp;
 }
 

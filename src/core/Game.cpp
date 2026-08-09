@@ -182,9 +182,7 @@ void Game::init()
     input.bindLeft = settings.keyLeft;
     input.bindRight = settings.keyRight;
     input.bindJump = settings.keyJump;
-    input.bindRespawn = settings.keyRespawn;
     input.bindSave = settings.keySave;
-    input.bindSpawnCrawler = settings.keySpawnWanderer;
     input.bindCycleFog = settings.keyCycleFog;
     input.bindNewLevel = settings.keyNewLevel;
     input.bindFullscreen = settings.keyFullscreen;
@@ -414,9 +412,6 @@ void Game::tick()
                 break;
 
             case MobType::Boneshade:
-                score += 75;
-                break;
-
             case MobType::Grubbin:
                 score += 75;
                 break;
@@ -452,11 +447,6 @@ void Game::tick()
     }
 
     player.selectedBlock = hotbar[hotbarIdx];
-    if (input.getSpawnMob() && !client)
-    {
-        wanderers.spawnOne(world, player.position.x, player.position.z);
-    }
-
     if (input.getCycleFog())
     {
         renderer.cycleFog();
@@ -850,43 +840,43 @@ void Game::run()
                             break;
 
                         case 5:
-                            settings.keyRespawn = key;
-                            input.bindRespawn = key;
-                            break;
-
-                        case 6:
                             settings.keySave = key;
                             input.bindSave = key;
                             break;
 
-                        case 7:
-                            settings.keySpawnWanderer = key;
-                            input.bindSpawnCrawler = key;
-                            break;
-
-                        case 8:
+                        case 6:
                             settings.keyCycleFog = key;
                             input.bindCycleFog = key;
                             break;
 
-                        case 9:
+                        case 7:
                             settings.keyNewLevel = key;
                             input.bindNewLevel = key;
                             break;
 
-                        case 10:
+                        case 8:
                             settings.keyFullscreen = key;
                             input.bindFullscreen = key;
                             break;
 
-                        case 11:
+                        case 9:
                             settings.keyChat = key;
                             input.bindChat = key;
                             break;
 
-                        case 12:
+                        case 10:
                             settings.keyInventory = key;
                             input.bindInventory = key;
+                            break;
+
+                        case 11:
+                            settings.keyThrowBolt = key;
+                            input.bindThrowBolt = key;
+                            break;
+
+                        case 12:
+                            settings.keyPlaceSign = key;
+                            input.bindPlaceSign = key;
                             break;
                     }
 
@@ -921,7 +911,7 @@ void Game::run()
                 else if (mx >= colRightX && mx < colRightX + colW)
                 {
                     int row = (int)((my - startY) / step);
-                    if (row >= 0 && row < 6 && my < startY + (row * step) + rowH)
+                    if (row >= 0 && row < 7 && my < startY + (row * step) + rowH)
                     {
                         switch (row)
                         {
@@ -956,6 +946,11 @@ void Game::run()
                                 break;
 
                             case 5:
+                                settings.viewBobbing = !settings.viewBobbing;
+                                settings.save();
+                                break;
+
+                            case 6:
                                 screen = ScreenState::Paused;
 
                             default:

@@ -13,7 +13,6 @@ private:
     bool captureIntent = true;
     static Input *inst;
     bool save = false;
-    bool spawnMob = false;
     bool throwBolt = false;
     bool placeSign = false;
     bool slot[8] = {};
@@ -22,7 +21,6 @@ private:
     bool newLevel = false;
     bool jumpPressed = false;
     bool pauseToggle = false;
-    bool respawn = false;
     bool funcKey[10] = {};
     int scrollDelta = 0;
     bool chatToggle = false;
@@ -57,9 +55,7 @@ public:
     int bindLeft = GLFW_KEY_A;
     int bindRight = GLFW_KEY_D;
     int bindJump = GLFW_KEY_SPACE;
-    int bindRespawn = GLFW_KEY_R;
     int bindSave = GLFW_KEY_ENTER;
-    int bindSpawnCrawler = GLFW_KEY_G;
     int bindCycleFog = GLFW_KEY_F;
     int bindNewLevel = GLFW_KEY_N;
     int bindFullscreen = GLFW_KEY_F11;
@@ -91,13 +87,7 @@ public:
 
     void setCaptureMode(bool capture);
 
-    bool getPrimaryAction();
-
-    bool getSwitchMode();
-
     bool getSave();
-
-    bool getSpawnMob();
 
     bool getSlot(unsigned char index);
 
@@ -110,8 +100,6 @@ public:
     bool getJumpPressed();
 
     bool getPauseToggle();
-
-    bool getRespawn();
 
     bool getFuncKey(unsigned char index);
 

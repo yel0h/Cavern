@@ -309,46 +309,34 @@ void Player::tick(float dt, World &world, Input &input)
     hitBlock = castRay(world);
     lastBroken = {};
     lastPlaced = {};
-    if (input.getSwitchMode())
+    placeMode = input.switchHeld;
+    if (hitBlock.valid && input.switchMode)
     {
-        placeMode = !placeMode;
-    }
-
-    if (input.getPrimaryAction() && hitBlock.valid)
-    {
-        if (placeMode)
+        int px = hitBlock.px;
+        int py = hitBlock.py;
+        int pz = hitBlock.pz;
+        BlockType toPlace = (selectedBlock == BlockType::Turf) ? BlockType::Soil : selectedBlock;
+        BlockType existing = world.getBlock(px, py, pz);
+        if ((toPlace != BlockType::Bedrock || isWarden)
+            && World::inBounds(px, py, pz)
+            && (existing == BlockType::Air || blockDef(existing).liquid)
+            && !overlapsPlayer(px, py, pz))
         {
-            int px = hitBlock.px;
-            int py = hitBlock.py;
-            int pz = hitBlock.pz;
-            BlockType toPlace = (selectedBlock == BlockType::Turf) ? BlockType::Soil : selectedBlock;
-            BlockType existing = world.getBlock(px, py, pz);
-            if ((toPlace != BlockType::Bedrock || isWarden)
-                && World::inBounds(px, py, pz)
-                && (existing == BlockType::Air || blockDef(existing).liquid)
-                && !overlapsPlayer(px, py, pz))
-            {
-                world.setBlock(px, py, pz, toPlace);
-                Lighting::propagateColumn(world, px, pz);
-                lastPlaced = {true, px, py, pz, toPlace};
-            }
-        }
-        else
-        {
-            BlockType target = world.getBlock(hitBlock.bx, hitBlock.by, hitBlock.bz);
-            if (target != BlockType::Bedrock || isWarden)
-            {
-                lastBroken = {true, hitBlock.bx, hitBlock.by, hitBlock.bz, target};
-                world.setBlock(hitBlock.bx, hitBlock.by, hitBlock.bz, BlockType::Air);
-                Lighting::propagateColumn(world, hitBlock.bx, hitBlock.bz);
-            }
+            world.setBlock(px, py, pz, toPlace);
+            Lighting::propagateColumn(world, px, pz);
+            lastPlaced = {true, px, py, pz, toPlace};
         }
     }
 
-    if (input.getRespawn())
+    if (hitBlock.valid && input.primaryAction)
     {
-        respawn();
-        return;
+        BlockType target = world.getBlock(hitBlock.bx, hitBlock.by, hitBlock.bz);
+        if (target != BlockType::Bedrock || isWarden)
+        {
+            lastBroken = {true, hitBlock.bx, hitBlock.by, hitBlock.bz, target};
+            world.setBlock(hitBlock.bx, hitBlock.by, hitBlock.bz, BlockType::Air);
+            Lighting::propagateColumn(world, hitBlock.bx, hitBlock.bz);
+        }
     }
 
     float cy = std::cos(glm::radians(yaw));

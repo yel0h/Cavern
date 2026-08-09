@@ -1156,14 +1156,14 @@ void Renderer::renderOptionsMenu(int winW, int winH, float mouseX, float mouseY,
             {"Left", keyName(s.keyLeft)},
             {"Right", keyName(s.keyRight)},
             {"Jump", keyName(s.keyJump)},
-            {"Respawn", keyName(s.keyRespawn)},
             {"Set Spawn", keyName(s.keySave)},
-            {"Spawn Wanderer", keyName(s.keySpawnWanderer)},
             {"Fog Cycle", keyName(s.keyCycleFog)},
             {"New World", keyName(s.keyNewLevel)},
             {"Fullscreen", keyName(s.keyFullscreen)},
             {"Chat", keyName(s.keyChat)},
             {"Inventory", keyName(s.keyInventory)},
+            {"Throw Bolt", keyName(s.keyThrowBolt)},
+            {"Place Sign", keyName(s.keyPlaceSign)},
     };
     for (int i = 0; i < 13; i++)
     {
@@ -1194,15 +1194,16 @@ void Renderer::renderOptionsMenu(int winW, int winH, float mouseX, float mouseY,
 
     char distBuf[16];
     std::snprintf(distBuf, sizeof(distBuf), "%s", fogLevelNames[s.renderDistance % 4]);
-    ToggleRow rightRows[6] = {
+    ToggleRow rightRows[7] = {
             {"Render Distance", false, distBuf},
             {"Invert Mouse", s.invertMouse, s.invertMouse ? "ON" : "OFF"},
             {"Sound Effects", s.soundEnabled, s.soundEnabled ? "ON" : "OFF"},
             {"Music", s.musicEnabled, s.musicEnabled ? "ON" : "OFF"},
             {"Show FPS", s.showFps, s.showFps ? "ON" : "OFF"},
+            {"View Bobbing", s.viewBobbing, s.viewBobbing ? "ON" : "OFF"},
             {"Back", false, ""},
     };
-    for (int j = 0; j < 6; j++)
+    for (int j = 0; j < 7; j++)
     {
         float y0 = startY + (j * step);
         float y1 = y0 + rowH;
