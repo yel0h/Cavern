@@ -1194,6 +1194,7 @@ void Game::shutdown()
     world.save("world.dat");
     wanderers.save("wanderers.dat");
     mobs.save("mobs.dat");
+    signs.save("signs.dat");
     audio.shutdown();
     renderer.shutdown();
     wandererRenderer.shutdown();
