@@ -32,7 +32,14 @@ public:
 
     void shutdown();
 
-    void renderFrame(const World &world, const Camera &cam, int winW, int winH, const Renderer::HighlightBlock &hl, float time, int hotbarSize, int hotbarIdx, int fps, int chunkUpdates, bool placeMode, bool underLava, bool underWater, bool showHotbar);
+    void renderFrame(const World &world, const Camera &cam, int winW, int winH,
+                     const HighlightBlock &hl, float time,
+                     int hotbarSize, int hotbarIdx,
+                     int fps, int chunkUpdates, bool placeMode,
+                     bool underLava, bool underWater, bool showHotbar,
+                     int vitality, int maxVitality);
+
+    void renderVitality(int vitality, int maxVitality, int winW, int winH);
 
     void renderGenerating(int winW, int winH);
 

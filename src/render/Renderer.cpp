@@ -620,6 +620,34 @@ void Renderer::renderDebug(int winW, int winH, int fps, int chunkUpdates, bool p
     glDisable(GL_BLEND);
 }
 
+void Renderer::renderVitality(int vitality, int maxVitality, int winW, int winH)
+{
+    txtShader.use();
+    txtShader.setInt("uFont", 1);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, font.texId);
+    glDisable(GL_DEPTH_TEST);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    char buf[32];
+    std::snprintf(buf, sizeof(buf), "VIT %d/%d", vitality, maxVitality);
+    bool low = vitality <= maxVitality / 4;
+    if (low)
+    {
+        txtShader.setVec3("uColor", 0.85f, 0.2f, 0.15f);
+    }
+    else
+    {
+        txtShader.setVec3("uColor", 1.f, 1.f, 1.f);
+    }
+
+    constexpr int scale = 2;
+    float w = (float)std::strlen(buf) * Font::CHAR_W * scale;
+    drawText(buf, (float)winW - w - 4.f, (float)winH - (Font::CHAR_H * scale) - 4.f, scale, winW, winH);
+    glEnable(GL_DEPTH_TEST);
+    glDisable(GL_BLEND);
+}
+
 static constexpr float fogNear[4] = {8.f, 24.f, 48.f, 96.f};
 static constexpr float fogFar[4] = {16.f, 40.f, 64.f, 128.f};
 
@@ -1195,7 +1223,7 @@ void Renderer::renderOptionsMenu(int winW, int winH, float mouseX, float mouseY,
     }
 }
 
-void Renderer::renderFrame(const World &world, const Camera &cam, int winW, int winH, const Renderer::HighlightBlock &hl, float time, int hotbarSize, int hotbarIdx, int fps, int chunkUpdates, bool placeMode, bool underLava, bool underWater, bool showHotbar)
+void Renderer::renderFrame(const World &world, const Camera &cam, int winW, int winH, const Renderer::HighlightBlock &hl, float time, int hotbarSize, int hotbarIdx, int fps, int chunkUpdates, bool placeMode, bool underLava, bool underWater, bool showHotbar, int vitality, int maxVitality)
 {
     rebuildDirty(world, cam.position);
     float cFogNear;
@@ -1300,6 +1328,7 @@ void Renderer::renderFrame(const World &world, const Camera &cam, int winW, int 
         renderHUD(winW, winH, hotbarSize, hotbarIdx);
     }
 
+    renderVitality(vitality, maxVitality, winW, winH);
     if (showFps)
     {
         renderDebug(winW, winH, fps, chunkUpdates, placeMode);

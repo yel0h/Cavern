@@ -517,7 +517,8 @@ void Game::render()
                          hl, (float)glfwGetTime(),
                          8, hotbarIdx,
                          fps, chunks, player.placeMode,
-                         player.underLava, player.underWater, hotbarOpen);
+                         player.underLava, player.underWater, hotbarOpen,
+                         player.vitality, Player::maxVitality);
     wandererRenderer.render(wanderers, camera, winW, winH, (float)glfwGetTime());
     if (!remotePlayers.empty())
     {
